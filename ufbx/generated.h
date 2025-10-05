@@ -7066,7 +7066,7 @@ static PyObject *Node_get_node_to_parent(Node *self, void *closure) {
     PyObject *slot = self->slots[SLOT_NODE__NODE_TO_PARENT];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_matrix");
+    slot = Matrix_from(&self->data->node_to_parent);
     self->slots[SLOT_NODE__NODE_TO_PARENT] = slot;
     return Py_NewRef(slot);
 }
@@ -7075,7 +7075,7 @@ static PyObject *Node_get_node_to_world(Node *self, void *closure) {
     PyObject *slot = self->slots[SLOT_NODE__NODE_TO_WORLD];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_matrix");
+    slot = Matrix_from(&self->data->node_to_world);
     self->slots[SLOT_NODE__NODE_TO_WORLD] = slot;
     return Py_NewRef(slot);
 }
@@ -7084,7 +7084,7 @@ static PyObject *Node_get_geometry_to_node(Node *self, void *closure) {
     PyObject *slot = self->slots[SLOT_NODE__GEOMETRY_TO_NODE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_matrix");
+    slot = Matrix_from(&self->data->geometry_to_node);
     self->slots[SLOT_NODE__GEOMETRY_TO_NODE] = slot;
     return Py_NewRef(slot);
 }
@@ -7093,7 +7093,7 @@ static PyObject *Node_get_geometry_to_world(Node *self, void *closure) {
     PyObject *slot = self->slots[SLOT_NODE__GEOMETRY_TO_WORLD];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_matrix");
+    slot = Matrix_from(&self->data->geometry_to_world);
     self->slots[SLOT_NODE__GEOMETRY_TO_WORLD] = slot;
     return Py_NewRef(slot);
 }
@@ -7102,7 +7102,7 @@ static PyObject *Node_get_unscaled_node_to_world(Node *self, void *closure) {
     PyObject *slot = self->slots[SLOT_NODE__UNSCALED_NODE_TO_WORLD];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_matrix");
+    slot = Matrix_from(&self->data->unscaled_node_to_world);
     self->slots[SLOT_NODE__UNSCALED_NODE_TO_WORLD] = slot;
     return Py_NewRef(slot);
 }
@@ -10371,7 +10371,7 @@ static PyObject *SkinCluster_get_geometry_to_bone(SkinCluster *self, void *closu
     PyObject *slot = self->slots[SLOT_SKIN_CLUSTER__GEOMETRY_TO_BONE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_matrix");
+    slot = Matrix_from(&self->data->geometry_to_bone);
     self->slots[SLOT_SKIN_CLUSTER__GEOMETRY_TO_BONE] = slot;
     return Py_NewRef(slot);
 }
@@ -10380,7 +10380,7 @@ static PyObject *SkinCluster_get_mesh_node_to_bone(SkinCluster *self, void *clos
     PyObject *slot = self->slots[SLOT_SKIN_CLUSTER__MESH_NODE_TO_BONE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_matrix");
+    slot = Matrix_from(&self->data->mesh_node_to_bone);
     self->slots[SLOT_SKIN_CLUSTER__MESH_NODE_TO_BONE] = slot;
     return Py_NewRef(slot);
 }
@@ -10389,7 +10389,7 @@ static PyObject *SkinCluster_get_bind_to_world(SkinCluster *self, void *closure)
     PyObject *slot = self->slots[SLOT_SKIN_CLUSTER__BIND_TO_WORLD];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_matrix");
+    slot = Matrix_from(&self->data->bind_to_world);
     self->slots[SLOT_SKIN_CLUSTER__BIND_TO_WORLD] = slot;
     return Py_NewRef(slot);
 }
@@ -10398,7 +10398,7 @@ static PyObject *SkinCluster_get_geometry_to_world(SkinCluster *self, void *clos
     PyObject *slot = self->slots[SLOT_SKIN_CLUSTER__GEOMETRY_TO_WORLD];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_matrix");
+    slot = Matrix_from(&self->data->geometry_to_world);
     self->slots[SLOT_SKIN_CLUSTER__GEOMETRY_TO_WORLD] = slot;
     return Py_NewRef(slot);
 }
@@ -12359,7 +12359,7 @@ static PyObject *Texture_get_texture_to_uv(Texture *self, void *closure) {
     PyObject *slot = self->slots[SLOT_TEXTURE__TEXTURE_TO_UV];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_matrix");
+    slot = Matrix_from(&self->data->texture_to_uv);
     self->slots[SLOT_TEXTURE__TEXTURE_TO_UV] = slot;
     return Py_NewRef(slot);
 }
@@ -12368,7 +12368,7 @@ static PyObject *Texture_get_uv_to_texture(Texture *self, void *closure) {
     PyObject *slot = self->slots[SLOT_TEXTURE__UV_TO_TEXTURE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_matrix");
+    slot = Matrix_from(&self->data->uv_to_texture);
     self->slots[SLOT_TEXTURE__UV_TO_TEXTURE] = slot;
     return Py_NewRef(slot);
 }
@@ -14080,7 +14080,7 @@ static PyObject *BonePose_get_bone_to_world(BonePose *self, void *closure) {
     PyObject *slot = self->slots[SLOT_BONE_POSE__BONE_TO_WORLD];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_matrix");
+    slot = Matrix_from(&self->data->bone_to_world);
     self->slots[SLOT_BONE_POSE__BONE_TO_WORLD] = slot;
     return Py_NewRef(slot);
 }
@@ -14089,7 +14089,7 @@ static PyObject *BonePose_get_bone_to_parent(BonePose *self, void *closure) {
     PyObject *slot = self->slots[SLOT_BONE_POSE__BONE_TO_PARENT];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_matrix");
+    slot = Matrix_from(&self->data->bone_to_parent);
     self->slots[SLOT_BONE_POSE__BONE_TO_PARENT] = slot;
     return Py_NewRef(slot);
 }

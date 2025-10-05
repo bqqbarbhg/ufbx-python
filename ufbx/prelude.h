@@ -111,6 +111,17 @@ static PyObject* Transform_from(const ufbx_transform *v)
 	return r;
 }
 
+static PyObject* Matrix_from(const ufbx_matrix *v)
+{
+	PyObject *r = PyTuple_New(4);
+	if (!r) return NULL;
+	PyTuple_SetItem(r, 0, Vec3_from(&v->cols[0]));
+	PyTuple_SetItem(r, 1, Vec3_from(&v->cols[1]));
+	PyTuple_SetItem(r, 2, Vec3_from(&v->cols[2]));
+	PyTuple_SetItem(r, 3, Vec3_from(&v->cols[3]));
+	return r;
+}
+
 static PyObject* String_from(ufbx_string v)
 {
     return PyUnicode_FromStringAndSize(v.data, (Py_ssize_t)v.length);

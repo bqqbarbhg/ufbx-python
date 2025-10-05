@@ -192,6 +192,7 @@ pyobject_manual = {
     "ufbx_vec4": lambda v: f"Vec4_from(&{v})",
     "ufbx_quat": lambda v: f"Quat_from(&{v})",
     "ufbx_transform": lambda v: f"Transform_from(&{v})",
+    "ufbx_matrix": lambda v: f"Matrix_from(&{v})",
     "ufbx_string": lambda v: f"String_from({v})",
     "ufbx_blob": lambda v: f"Blob_from({v})",
 }
