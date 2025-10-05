@@ -812,29 +812,19 @@ static PyObject *BoolList_len(BoolList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *BoolList_subscript(BoolList *self, PyObject *key) {
+static PyObject *BoolList_item(BoolList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return self->data.data[index] ? Py_True : Py_False;
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return self->data.data[index] ? Py_True : Py_False;
 }
 
-static PyMappingMethods BoolList_Mapping = {
-    .mp_length = (lenfunc)&BoolList_len,
-    .mp_subscript = (binaryfunc)&BoolList_subscript,
+static PySequenceMethods BoolList_Sequence = {
+    .sq_length = (lenfunc)&BoolList_len,
+    .sq_item = (ssizeargfunc)&BoolList_item,
 };
 
 static PyTypeObject BoolList_Type = {
@@ -845,7 +835,7 @@ static PyTypeObject BoolList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &BoolList_Mapping,
+    .tp_as_sequence = &BoolList_Sequence,
 };
 
 static PyObject *BoolList_from(ufbx_bool_list list, Context *ctx) {
@@ -868,29 +858,19 @@ static PyObject *Uint32List_len(Uint32List *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *Uint32List_subscript(Uint32List *self, PyObject *key) {
+static PyObject *Uint32List_item(Uint32List *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return PyLong_FromUnsignedLong((unsigned long)self->data.data[index]);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return PyLong_FromUnsignedLong((unsigned long)self->data.data[index]);
 }
 
-static PyMappingMethods Uint32List_Mapping = {
-    .mp_length = (lenfunc)&Uint32List_len,
-    .mp_subscript = (binaryfunc)&Uint32List_subscript,
+static PySequenceMethods Uint32List_Sequence = {
+    .sq_length = (lenfunc)&Uint32List_len,
+    .sq_item = (ssizeargfunc)&Uint32List_item,
 };
 
 static PyTypeObject Uint32List_Type = {
@@ -901,7 +881,7 @@ static PyTypeObject Uint32List_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &Uint32List_Mapping,
+    .tp_as_sequence = &Uint32List_Sequence,
 };
 
 static PyObject *Uint32List_from(ufbx_uint32_list list, Context *ctx) {
@@ -924,29 +904,19 @@ static PyObject *RealList_len(RealList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *RealList_subscript(RealList *self, PyObject *key) {
+static PyObject *RealList_item(RealList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return PyFloat_FromDouble(self->data.data[index]);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return PyFloat_FromDouble(self->data.data[index]);
 }
 
-static PyMappingMethods RealList_Mapping = {
-    .mp_length = (lenfunc)&RealList_len,
-    .mp_subscript = (binaryfunc)&RealList_subscript,
+static PySequenceMethods RealList_Sequence = {
+    .sq_length = (lenfunc)&RealList_len,
+    .sq_item = (ssizeargfunc)&RealList_item,
 };
 
 static PyTypeObject RealList_Type = {
@@ -957,7 +927,7 @@ static PyTypeObject RealList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &RealList_Mapping,
+    .tp_as_sequence = &RealList_Sequence,
 };
 
 static PyObject *RealList_from(ufbx_real_list list, Context *ctx) {
@@ -980,29 +950,19 @@ static PyObject *Vec2List_len(Vec2List *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *Vec2List_subscript(Vec2List *self, PyObject *key) {
+static PyObject *Vec2List_item(Vec2List *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return Vec2_from(&self->data.data[index]);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return Vec2_from(&self->data.data[index]);
 }
 
-static PyMappingMethods Vec2List_Mapping = {
-    .mp_length = (lenfunc)&Vec2List_len,
-    .mp_subscript = (binaryfunc)&Vec2List_subscript,
+static PySequenceMethods Vec2List_Sequence = {
+    .sq_length = (lenfunc)&Vec2List_len,
+    .sq_item = (ssizeargfunc)&Vec2List_item,
 };
 
 static PyTypeObject Vec2List_Type = {
@@ -1013,7 +973,7 @@ static PyTypeObject Vec2List_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &Vec2List_Mapping,
+    .tp_as_sequence = &Vec2List_Sequence,
 };
 
 static PyObject *Vec2List_from(ufbx_vec2_list list, Context *ctx) {
@@ -1036,29 +996,19 @@ static PyObject *Vec3List_len(Vec3List *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *Vec3List_subscript(Vec3List *self, PyObject *key) {
+static PyObject *Vec3List_item(Vec3List *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return Vec3_from(&self->data.data[index]);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return Vec3_from(&self->data.data[index]);
 }
 
-static PyMappingMethods Vec3List_Mapping = {
-    .mp_length = (lenfunc)&Vec3List_len,
-    .mp_subscript = (binaryfunc)&Vec3List_subscript,
+static PySequenceMethods Vec3List_Sequence = {
+    .sq_length = (lenfunc)&Vec3List_len,
+    .sq_item = (ssizeargfunc)&Vec3List_item,
 };
 
 static PyTypeObject Vec3List_Type = {
@@ -1069,7 +1019,7 @@ static PyTypeObject Vec3List_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &Vec3List_Mapping,
+    .tp_as_sequence = &Vec3List_Sequence,
 };
 
 static PyObject *Vec3List_from(ufbx_vec3_list list, Context *ctx) {
@@ -1092,29 +1042,19 @@ static PyObject *Vec4List_len(Vec4List *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *Vec4List_subscript(Vec4List *self, PyObject *key) {
+static PyObject *Vec4List_item(Vec4List *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return Vec4_from(&self->data.data[index]);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return Vec4_from(&self->data.data[index]);
 }
 
-static PyMappingMethods Vec4List_Mapping = {
-    .mp_length = (lenfunc)&Vec4List_len,
-    .mp_subscript = (binaryfunc)&Vec4List_subscript,
+static PySequenceMethods Vec4List_Sequence = {
+    .sq_length = (lenfunc)&Vec4List_len,
+    .sq_item = (ssizeargfunc)&Vec4List_item,
 };
 
 static PyTypeObject Vec4List_Type = {
@@ -1125,7 +1065,7 @@ static PyTypeObject Vec4List_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &Vec4List_Mapping,
+    .tp_as_sequence = &Vec4List_Sequence,
 };
 
 static PyObject *Vec4List_from(ufbx_vec4_list list, Context *ctx) {
@@ -1148,29 +1088,19 @@ static PyObject *StringList_len(StringList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *StringList_subscript(StringList *self, PyObject *key) {
+static PyObject *StringList_item(StringList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return String_from(self->data.data[index]);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return String_from(self->data.data[index]);
 }
 
-static PyMappingMethods StringList_Mapping = {
-    .mp_length = (lenfunc)&StringList_len,
-    .mp_subscript = (binaryfunc)&StringList_subscript,
+static PySequenceMethods StringList_Sequence = {
+    .sq_length = (lenfunc)&StringList_len,
+    .sq_item = (ssizeargfunc)&StringList_item,
 };
 
 static PyTypeObject StringList_Type = {
@@ -1181,7 +1111,7 @@ static PyTypeObject StringList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &StringList_Mapping,
+    .tp_as_sequence = &StringList_Sequence,
 };
 
 static PyObject *StringList_from(ufbx_string_list list, Context *ctx) {
@@ -1204,29 +1134,19 @@ static PyObject *Int32List_len(Int32List *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *Int32List_subscript(Int32List *self, PyObject *key) {
+static PyObject *Int32List_item(Int32List *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return PyLong_FromLong((long)self->data.data[index]);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return PyLong_FromLong((long)self->data.data[index]);
 }
 
-static PyMappingMethods Int32List_Mapping = {
-    .mp_length = (lenfunc)&Int32List_len,
-    .mp_subscript = (binaryfunc)&Int32List_subscript,
+static PySequenceMethods Int32List_Sequence = {
+    .sq_length = (lenfunc)&Int32List_len,
+    .sq_item = (ssizeargfunc)&Int32List_item,
 };
 
 static PyTypeObject Int32List_Type = {
@@ -1237,7 +1157,7 @@ static PyTypeObject Int32List_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &Int32List_Mapping,
+    .tp_as_sequence = &Int32List_Sequence,
 };
 
 static PyObject *Int32List_from(ufbx_int32_list list, Context *ctx) {
@@ -1260,29 +1180,19 @@ static PyObject *Int64List_len(Int64List *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *Int64List_subscript(Int64List *self, PyObject *key) {
+static PyObject *Int64List_item(Int64List *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return PyLong_FromLongLong((long long)self->data.data[index]);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return PyLong_FromLongLong((long long)self->data.data[index]);
 }
 
-static PyMappingMethods Int64List_Mapping = {
-    .mp_length = (lenfunc)&Int64List_len,
-    .mp_subscript = (binaryfunc)&Int64List_subscript,
+static PySequenceMethods Int64List_Sequence = {
+    .sq_length = (lenfunc)&Int64List_len,
+    .sq_item = (ssizeargfunc)&Int64List_item,
 };
 
 static PyTypeObject Int64List_Type = {
@@ -1293,7 +1203,7 @@ static PyTypeObject Int64List_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &Int64List_Mapping,
+    .tp_as_sequence = &Int64List_Sequence,
 };
 
 static PyObject *Int64List_from(ufbx_int64_list list, Context *ctx) {
@@ -1316,29 +1226,19 @@ static PyObject *FloatList_len(FloatList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *FloatList_subscript(FloatList *self, PyObject *key) {
+static PyObject *FloatList_item(FloatList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return PyFloat_FromDouble(self->data.data[index]);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return PyFloat_FromDouble(self->data.data[index]);
 }
 
-static PyMappingMethods FloatList_Mapping = {
-    .mp_length = (lenfunc)&FloatList_len,
-    .mp_subscript = (binaryfunc)&FloatList_subscript,
+static PySequenceMethods FloatList_Sequence = {
+    .sq_length = (lenfunc)&FloatList_len,
+    .sq_item = (ssizeargfunc)&FloatList_item,
 };
 
 static PyTypeObject FloatList_Type = {
@@ -1349,7 +1249,7 @@ static PyTypeObject FloatList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &FloatList_Mapping,
+    .tp_as_sequence = &FloatList_Sequence,
 };
 
 static PyObject *FloatList_from(ufbx_float_list list, Context *ctx) {
@@ -1372,29 +1272,19 @@ static PyObject *DoubleList_len(DoubleList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *DoubleList_subscript(DoubleList *self, PyObject *key) {
+static PyObject *DoubleList_item(DoubleList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return PyFloat_FromDouble(self->data.data[index]);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return PyFloat_FromDouble(self->data.data[index]);
 }
 
-static PyMappingMethods DoubleList_Mapping = {
-    .mp_length = (lenfunc)&DoubleList_len,
-    .mp_subscript = (binaryfunc)&DoubleList_subscript,
+static PySequenceMethods DoubleList_Sequence = {
+    .sq_length = (lenfunc)&DoubleList_len,
+    .sq_item = (ssizeargfunc)&DoubleList_item,
 };
 
 static PyTypeObject DoubleList_Type = {
@@ -1405,7 +1295,7 @@ static PyTypeObject DoubleList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &DoubleList_Mapping,
+    .tp_as_sequence = &DoubleList_Sequence,
 };
 
 static PyObject *DoubleList_from(ufbx_double_list list, Context *ctx) {
@@ -1428,29 +1318,19 @@ static PyObject *BlobList_len(BlobList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *BlobList_subscript(BlobList *self, PyObject *key) {
+static PyObject *BlobList_item(BlobList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return Blob_from(self->data.data[index]);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return Blob_from(self->data.data[index]);
 }
 
-static PyMappingMethods BlobList_Mapping = {
-    .mp_length = (lenfunc)&BlobList_len,
-    .mp_subscript = (binaryfunc)&BlobList_subscript,
+static PySequenceMethods BlobList_Sequence = {
+    .sq_length = (lenfunc)&BlobList_len,
+    .sq_item = (ssizeargfunc)&BlobList_item,
 };
 
 static PyTypeObject BlobList_Type = {
@@ -1461,7 +1341,7 @@ static PyTypeObject BlobList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &BlobList_Mapping,
+    .tp_as_sequence = &BlobList_Sequence,
 };
 
 static PyObject *BlobList_from(ufbx_blob_list list, Context *ctx) {
@@ -1484,29 +1364,19 @@ static PyObject *DomNodeList_len(DomNodeList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *DomNodeList_subscript(DomNodeList *self, PyObject *key) {
+static PyObject *DomNodeList_item(DomNodeList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return to_pyobject_todo("ufbx_dom_node*");
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return to_pyobject_todo("ufbx_dom_node*");
 }
 
-static PyMappingMethods DomNodeList_Mapping = {
-    .mp_length = (lenfunc)&DomNodeList_len,
-    .mp_subscript = (binaryfunc)&DomNodeList_subscript,
+static PySequenceMethods DomNodeList_Sequence = {
+    .sq_length = (lenfunc)&DomNodeList_len,
+    .sq_item = (ssizeargfunc)&DomNodeList_item,
 };
 
 static PyTypeObject DomNodeList_Type = {
@@ -1517,7 +1387,7 @@ static PyTypeObject DomNodeList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &DomNodeList_Mapping,
+    .tp_as_sequence = &DomNodeList_Sequence,
 };
 
 static PyObject *DomNodeList_from(ufbx_dom_node_list list, Context *ctx) {
@@ -1540,29 +1410,19 @@ static PyObject *DomValueList_len(DomValueList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *DomValueList_subscript(DomValueList *self, PyObject *key) {
+static PyObject *DomValueList_item(DomValueList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return DomValue_from(&self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return DomValue_from(&self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods DomValueList_Mapping = {
-    .mp_length = (lenfunc)&DomValueList_len,
-    .mp_subscript = (binaryfunc)&DomValueList_subscript,
+static PySequenceMethods DomValueList_Sequence = {
+    .sq_length = (lenfunc)&DomValueList_len,
+    .sq_item = (ssizeargfunc)&DomValueList_item,
 };
 
 static PyTypeObject DomValueList_Type = {
@@ -1573,7 +1433,7 @@ static PyTypeObject DomValueList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &DomValueList_Mapping,
+    .tp_as_sequence = &DomValueList_Sequence,
 };
 
 static PyObject *DomValueList_from(ufbx_dom_value_list list, Context *ctx) {
@@ -1596,29 +1456,19 @@ static PyObject *PropList_len(PropList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *PropList_subscript(PropList *self, PyObject *key) {
+static PyObject *PropList_item(PropList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return Prop_from(&self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return Prop_from(&self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods PropList_Mapping = {
-    .mp_length = (lenfunc)&PropList_len,
-    .mp_subscript = (binaryfunc)&PropList_subscript,
+static PySequenceMethods PropList_Sequence = {
+    .sq_length = (lenfunc)&PropList_len,
+    .sq_item = (ssizeargfunc)&PropList_item,
 };
 
 static PyTypeObject PropList_Type = {
@@ -1629,7 +1479,7 @@ static PyTypeObject PropList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &PropList_Mapping,
+    .tp_as_sequence = &PropList_Sequence,
 };
 
 static PyObject *PropList_from(ufbx_prop_list list, Context *ctx) {
@@ -1652,29 +1502,19 @@ static PyObject *ElementList_len(ElementList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *ElementList_subscript(ElementList *self, PyObject *key) {
+static PyObject *ElementList_item(ElementList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return to_pyobject_todo("ufbx_element*");
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return to_pyobject_todo("ufbx_element*");
 }
 
-static PyMappingMethods ElementList_Mapping = {
-    .mp_length = (lenfunc)&ElementList_len,
-    .mp_subscript = (binaryfunc)&ElementList_subscript,
+static PySequenceMethods ElementList_Sequence = {
+    .sq_length = (lenfunc)&ElementList_len,
+    .sq_item = (ssizeargfunc)&ElementList_item,
 };
 
 static PyTypeObject ElementList_Type = {
@@ -1685,7 +1525,7 @@ static PyTypeObject ElementList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &ElementList_Mapping,
+    .tp_as_sequence = &ElementList_Sequence,
 };
 
 static PyObject *ElementList_from(ufbx_element_list list, Context *ctx) {
@@ -1708,29 +1548,19 @@ static PyObject *UnknownList_len(UnknownList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *UnknownList_subscript(UnknownList *self, PyObject *key) {
+static PyObject *UnknownList_item(UnknownList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return Element_from(self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return Element_from(self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods UnknownList_Mapping = {
-    .mp_length = (lenfunc)&UnknownList_len,
-    .mp_subscript = (binaryfunc)&UnknownList_subscript,
+static PySequenceMethods UnknownList_Sequence = {
+    .sq_length = (lenfunc)&UnknownList_len,
+    .sq_item = (ssizeargfunc)&UnknownList_item,
 };
 
 static PyTypeObject UnknownList_Type = {
@@ -1741,7 +1571,7 @@ static PyTypeObject UnknownList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &UnknownList_Mapping,
+    .tp_as_sequence = &UnknownList_Sequence,
 };
 
 static PyObject *UnknownList_from(ufbx_unknown_list list, Context *ctx) {
@@ -1764,29 +1594,19 @@ static PyObject *NodeList_len(NodeList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *NodeList_subscript(NodeList *self, PyObject *key) {
+static PyObject *NodeList_item(NodeList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return Element_from(self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return Element_from(self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods NodeList_Mapping = {
-    .mp_length = (lenfunc)&NodeList_len,
-    .mp_subscript = (binaryfunc)&NodeList_subscript,
+static PySequenceMethods NodeList_Sequence = {
+    .sq_length = (lenfunc)&NodeList_len,
+    .sq_item = (ssizeargfunc)&NodeList_item,
 };
 
 static PyTypeObject NodeList_Type = {
@@ -1797,7 +1617,7 @@ static PyTypeObject NodeList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &NodeList_Mapping,
+    .tp_as_sequence = &NodeList_Sequence,
 };
 
 static PyObject *NodeList_from(ufbx_node_list list, Context *ctx) {
@@ -1820,29 +1640,19 @@ static PyObject *MeshList_len(MeshList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *MeshList_subscript(MeshList *self, PyObject *key) {
+static PyObject *MeshList_item(MeshList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return Element_from(self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return Element_from(self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods MeshList_Mapping = {
-    .mp_length = (lenfunc)&MeshList_len,
-    .mp_subscript = (binaryfunc)&MeshList_subscript,
+static PySequenceMethods MeshList_Sequence = {
+    .sq_length = (lenfunc)&MeshList_len,
+    .sq_item = (ssizeargfunc)&MeshList_item,
 };
 
 static PyTypeObject MeshList_Type = {
@@ -1853,7 +1663,7 @@ static PyTypeObject MeshList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &MeshList_Mapping,
+    .tp_as_sequence = &MeshList_Sequence,
 };
 
 static PyObject *MeshList_from(ufbx_mesh_list list, Context *ctx) {
@@ -1876,29 +1686,19 @@ static PyObject *LightList_len(LightList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *LightList_subscript(LightList *self, PyObject *key) {
+static PyObject *LightList_item(LightList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return Element_from(self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return Element_from(self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods LightList_Mapping = {
-    .mp_length = (lenfunc)&LightList_len,
-    .mp_subscript = (binaryfunc)&LightList_subscript,
+static PySequenceMethods LightList_Sequence = {
+    .sq_length = (lenfunc)&LightList_len,
+    .sq_item = (ssizeargfunc)&LightList_item,
 };
 
 static PyTypeObject LightList_Type = {
@@ -1909,7 +1709,7 @@ static PyTypeObject LightList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &LightList_Mapping,
+    .tp_as_sequence = &LightList_Sequence,
 };
 
 static PyObject *LightList_from(ufbx_light_list list, Context *ctx) {
@@ -1932,29 +1732,19 @@ static PyObject *CameraList_len(CameraList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *CameraList_subscript(CameraList *self, PyObject *key) {
+static PyObject *CameraList_item(CameraList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return Element_from(self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return Element_from(self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods CameraList_Mapping = {
-    .mp_length = (lenfunc)&CameraList_len,
-    .mp_subscript = (binaryfunc)&CameraList_subscript,
+static PySequenceMethods CameraList_Sequence = {
+    .sq_length = (lenfunc)&CameraList_len,
+    .sq_item = (ssizeargfunc)&CameraList_item,
 };
 
 static PyTypeObject CameraList_Type = {
@@ -1965,7 +1755,7 @@ static PyTypeObject CameraList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &CameraList_Mapping,
+    .tp_as_sequence = &CameraList_Sequence,
 };
 
 static PyObject *CameraList_from(ufbx_camera_list list, Context *ctx) {
@@ -1988,29 +1778,19 @@ static PyObject *BoneList_len(BoneList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *BoneList_subscript(BoneList *self, PyObject *key) {
+static PyObject *BoneList_item(BoneList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return Element_from(self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return Element_from(self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods BoneList_Mapping = {
-    .mp_length = (lenfunc)&BoneList_len,
-    .mp_subscript = (binaryfunc)&BoneList_subscript,
+static PySequenceMethods BoneList_Sequence = {
+    .sq_length = (lenfunc)&BoneList_len,
+    .sq_item = (ssizeargfunc)&BoneList_item,
 };
 
 static PyTypeObject BoneList_Type = {
@@ -2021,7 +1801,7 @@ static PyTypeObject BoneList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &BoneList_Mapping,
+    .tp_as_sequence = &BoneList_Sequence,
 };
 
 static PyObject *BoneList_from(ufbx_bone_list list, Context *ctx) {
@@ -2044,29 +1824,19 @@ static PyObject *EmptyList_len(EmptyList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *EmptyList_subscript(EmptyList *self, PyObject *key) {
+static PyObject *EmptyList_item(EmptyList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return Element_from(self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return Element_from(self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods EmptyList_Mapping = {
-    .mp_length = (lenfunc)&EmptyList_len,
-    .mp_subscript = (binaryfunc)&EmptyList_subscript,
+static PySequenceMethods EmptyList_Sequence = {
+    .sq_length = (lenfunc)&EmptyList_len,
+    .sq_item = (ssizeargfunc)&EmptyList_item,
 };
 
 static PyTypeObject EmptyList_Type = {
@@ -2077,7 +1847,7 @@ static PyTypeObject EmptyList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &EmptyList_Mapping,
+    .tp_as_sequence = &EmptyList_Sequence,
 };
 
 static PyObject *EmptyList_from(ufbx_empty_list list, Context *ctx) {
@@ -2100,29 +1870,19 @@ static PyObject *LineCurveList_len(LineCurveList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *LineCurveList_subscript(LineCurveList *self, PyObject *key) {
+static PyObject *LineCurveList_item(LineCurveList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return Element_from(self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return Element_from(self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods LineCurveList_Mapping = {
-    .mp_length = (lenfunc)&LineCurveList_len,
-    .mp_subscript = (binaryfunc)&LineCurveList_subscript,
+static PySequenceMethods LineCurveList_Sequence = {
+    .sq_length = (lenfunc)&LineCurveList_len,
+    .sq_item = (ssizeargfunc)&LineCurveList_item,
 };
 
 static PyTypeObject LineCurveList_Type = {
@@ -2133,7 +1893,7 @@ static PyTypeObject LineCurveList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &LineCurveList_Mapping,
+    .tp_as_sequence = &LineCurveList_Sequence,
 };
 
 static PyObject *LineCurveList_from(ufbx_line_curve_list list, Context *ctx) {
@@ -2156,29 +1916,19 @@ static PyObject *NurbsCurveList_len(NurbsCurveList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *NurbsCurveList_subscript(NurbsCurveList *self, PyObject *key) {
+static PyObject *NurbsCurveList_item(NurbsCurveList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return Element_from(self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return Element_from(self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods NurbsCurveList_Mapping = {
-    .mp_length = (lenfunc)&NurbsCurveList_len,
-    .mp_subscript = (binaryfunc)&NurbsCurveList_subscript,
+static PySequenceMethods NurbsCurveList_Sequence = {
+    .sq_length = (lenfunc)&NurbsCurveList_len,
+    .sq_item = (ssizeargfunc)&NurbsCurveList_item,
 };
 
 static PyTypeObject NurbsCurveList_Type = {
@@ -2189,7 +1939,7 @@ static PyTypeObject NurbsCurveList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &NurbsCurveList_Mapping,
+    .tp_as_sequence = &NurbsCurveList_Sequence,
 };
 
 static PyObject *NurbsCurveList_from(ufbx_nurbs_curve_list list, Context *ctx) {
@@ -2212,29 +1962,19 @@ static PyObject *NurbsSurfaceList_len(NurbsSurfaceList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *NurbsSurfaceList_subscript(NurbsSurfaceList *self, PyObject *key) {
+static PyObject *NurbsSurfaceList_item(NurbsSurfaceList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return Element_from(self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return Element_from(self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods NurbsSurfaceList_Mapping = {
-    .mp_length = (lenfunc)&NurbsSurfaceList_len,
-    .mp_subscript = (binaryfunc)&NurbsSurfaceList_subscript,
+static PySequenceMethods NurbsSurfaceList_Sequence = {
+    .sq_length = (lenfunc)&NurbsSurfaceList_len,
+    .sq_item = (ssizeargfunc)&NurbsSurfaceList_item,
 };
 
 static PyTypeObject NurbsSurfaceList_Type = {
@@ -2245,7 +1985,7 @@ static PyTypeObject NurbsSurfaceList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &NurbsSurfaceList_Mapping,
+    .tp_as_sequence = &NurbsSurfaceList_Sequence,
 };
 
 static PyObject *NurbsSurfaceList_from(ufbx_nurbs_surface_list list, Context *ctx) {
@@ -2268,29 +2008,19 @@ static PyObject *NurbsTrimSurfaceList_len(NurbsTrimSurfaceList *self, PyObject *
     return Py_NewRef(self->count);
 }
 
-static PyObject *NurbsTrimSurfaceList_subscript(NurbsTrimSurfaceList *self, PyObject *key) {
+static PyObject *NurbsTrimSurfaceList_item(NurbsTrimSurfaceList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return Element_from(self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return Element_from(self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods NurbsTrimSurfaceList_Mapping = {
-    .mp_length = (lenfunc)&NurbsTrimSurfaceList_len,
-    .mp_subscript = (binaryfunc)&NurbsTrimSurfaceList_subscript,
+static PySequenceMethods NurbsTrimSurfaceList_Sequence = {
+    .sq_length = (lenfunc)&NurbsTrimSurfaceList_len,
+    .sq_item = (ssizeargfunc)&NurbsTrimSurfaceList_item,
 };
 
 static PyTypeObject NurbsTrimSurfaceList_Type = {
@@ -2301,7 +2031,7 @@ static PyTypeObject NurbsTrimSurfaceList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &NurbsTrimSurfaceList_Mapping,
+    .tp_as_sequence = &NurbsTrimSurfaceList_Sequence,
 };
 
 static PyObject *NurbsTrimSurfaceList_from(ufbx_nurbs_trim_surface_list list, Context *ctx) {
@@ -2324,29 +2054,19 @@ static PyObject *NurbsTrimBoundaryList_len(NurbsTrimBoundaryList *self, PyObject
     return Py_NewRef(self->count);
 }
 
-static PyObject *NurbsTrimBoundaryList_subscript(NurbsTrimBoundaryList *self, PyObject *key) {
+static PyObject *NurbsTrimBoundaryList_item(NurbsTrimBoundaryList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return Element_from(self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return Element_from(self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods NurbsTrimBoundaryList_Mapping = {
-    .mp_length = (lenfunc)&NurbsTrimBoundaryList_len,
-    .mp_subscript = (binaryfunc)&NurbsTrimBoundaryList_subscript,
+static PySequenceMethods NurbsTrimBoundaryList_Sequence = {
+    .sq_length = (lenfunc)&NurbsTrimBoundaryList_len,
+    .sq_item = (ssizeargfunc)&NurbsTrimBoundaryList_item,
 };
 
 static PyTypeObject NurbsTrimBoundaryList_Type = {
@@ -2357,7 +2077,7 @@ static PyTypeObject NurbsTrimBoundaryList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &NurbsTrimBoundaryList_Mapping,
+    .tp_as_sequence = &NurbsTrimBoundaryList_Sequence,
 };
 
 static PyObject *NurbsTrimBoundaryList_from(ufbx_nurbs_trim_boundary_list list, Context *ctx) {
@@ -2380,29 +2100,19 @@ static PyObject *ProceduralGeometryList_len(ProceduralGeometryList *self, PyObje
     return Py_NewRef(self->count);
 }
 
-static PyObject *ProceduralGeometryList_subscript(ProceduralGeometryList *self, PyObject *key) {
+static PyObject *ProceduralGeometryList_item(ProceduralGeometryList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return Element_from(self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return Element_from(self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods ProceduralGeometryList_Mapping = {
-    .mp_length = (lenfunc)&ProceduralGeometryList_len,
-    .mp_subscript = (binaryfunc)&ProceduralGeometryList_subscript,
+static PySequenceMethods ProceduralGeometryList_Sequence = {
+    .sq_length = (lenfunc)&ProceduralGeometryList_len,
+    .sq_item = (ssizeargfunc)&ProceduralGeometryList_item,
 };
 
 static PyTypeObject ProceduralGeometryList_Type = {
@@ -2413,7 +2123,7 @@ static PyTypeObject ProceduralGeometryList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &ProceduralGeometryList_Mapping,
+    .tp_as_sequence = &ProceduralGeometryList_Sequence,
 };
 
 static PyObject *ProceduralGeometryList_from(ufbx_procedural_geometry_list list, Context *ctx) {
@@ -2436,29 +2146,19 @@ static PyObject *StereoCameraList_len(StereoCameraList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *StereoCameraList_subscript(StereoCameraList *self, PyObject *key) {
+static PyObject *StereoCameraList_item(StereoCameraList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return Element_from(self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return Element_from(self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods StereoCameraList_Mapping = {
-    .mp_length = (lenfunc)&StereoCameraList_len,
-    .mp_subscript = (binaryfunc)&StereoCameraList_subscript,
+static PySequenceMethods StereoCameraList_Sequence = {
+    .sq_length = (lenfunc)&StereoCameraList_len,
+    .sq_item = (ssizeargfunc)&StereoCameraList_item,
 };
 
 static PyTypeObject StereoCameraList_Type = {
@@ -2469,7 +2169,7 @@ static PyTypeObject StereoCameraList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &StereoCameraList_Mapping,
+    .tp_as_sequence = &StereoCameraList_Sequence,
 };
 
 static PyObject *StereoCameraList_from(ufbx_stereo_camera_list list, Context *ctx) {
@@ -2492,29 +2192,19 @@ static PyObject *CameraSwitcherList_len(CameraSwitcherList *self, PyObject *key)
     return Py_NewRef(self->count);
 }
 
-static PyObject *CameraSwitcherList_subscript(CameraSwitcherList *self, PyObject *key) {
+static PyObject *CameraSwitcherList_item(CameraSwitcherList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return Element_from(self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return Element_from(self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods CameraSwitcherList_Mapping = {
-    .mp_length = (lenfunc)&CameraSwitcherList_len,
-    .mp_subscript = (binaryfunc)&CameraSwitcherList_subscript,
+static PySequenceMethods CameraSwitcherList_Sequence = {
+    .sq_length = (lenfunc)&CameraSwitcherList_len,
+    .sq_item = (ssizeargfunc)&CameraSwitcherList_item,
 };
 
 static PyTypeObject CameraSwitcherList_Type = {
@@ -2525,7 +2215,7 @@ static PyTypeObject CameraSwitcherList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &CameraSwitcherList_Mapping,
+    .tp_as_sequence = &CameraSwitcherList_Sequence,
 };
 
 static PyObject *CameraSwitcherList_from(ufbx_camera_switcher_list list, Context *ctx) {
@@ -2548,29 +2238,19 @@ static PyObject *MarkerList_len(MarkerList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *MarkerList_subscript(MarkerList *self, PyObject *key) {
+static PyObject *MarkerList_item(MarkerList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return Element_from(self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return Element_from(self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods MarkerList_Mapping = {
-    .mp_length = (lenfunc)&MarkerList_len,
-    .mp_subscript = (binaryfunc)&MarkerList_subscript,
+static PySequenceMethods MarkerList_Sequence = {
+    .sq_length = (lenfunc)&MarkerList_len,
+    .sq_item = (ssizeargfunc)&MarkerList_item,
 };
 
 static PyTypeObject MarkerList_Type = {
@@ -2581,7 +2261,7 @@ static PyTypeObject MarkerList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &MarkerList_Mapping,
+    .tp_as_sequence = &MarkerList_Sequence,
 };
 
 static PyObject *MarkerList_from(ufbx_marker_list list, Context *ctx) {
@@ -2604,29 +2284,19 @@ static PyObject *LodGroupList_len(LodGroupList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *LodGroupList_subscript(LodGroupList *self, PyObject *key) {
+static PyObject *LodGroupList_item(LodGroupList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return Element_from(self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return Element_from(self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods LodGroupList_Mapping = {
-    .mp_length = (lenfunc)&LodGroupList_len,
-    .mp_subscript = (binaryfunc)&LodGroupList_subscript,
+static PySequenceMethods LodGroupList_Sequence = {
+    .sq_length = (lenfunc)&LodGroupList_len,
+    .sq_item = (ssizeargfunc)&LodGroupList_item,
 };
 
 static PyTypeObject LodGroupList_Type = {
@@ -2637,7 +2307,7 @@ static PyTypeObject LodGroupList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &LodGroupList_Mapping,
+    .tp_as_sequence = &LodGroupList_Sequence,
 };
 
 static PyObject *LodGroupList_from(ufbx_lod_group_list list, Context *ctx) {
@@ -2660,29 +2330,19 @@ static PyObject *SkinDeformerList_len(SkinDeformerList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *SkinDeformerList_subscript(SkinDeformerList *self, PyObject *key) {
+static PyObject *SkinDeformerList_item(SkinDeformerList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return Element_from(self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return Element_from(self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods SkinDeformerList_Mapping = {
-    .mp_length = (lenfunc)&SkinDeformerList_len,
-    .mp_subscript = (binaryfunc)&SkinDeformerList_subscript,
+static PySequenceMethods SkinDeformerList_Sequence = {
+    .sq_length = (lenfunc)&SkinDeformerList_len,
+    .sq_item = (ssizeargfunc)&SkinDeformerList_item,
 };
 
 static PyTypeObject SkinDeformerList_Type = {
@@ -2693,7 +2353,7 @@ static PyTypeObject SkinDeformerList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &SkinDeformerList_Mapping,
+    .tp_as_sequence = &SkinDeformerList_Sequence,
 };
 
 static PyObject *SkinDeformerList_from(ufbx_skin_deformer_list list, Context *ctx) {
@@ -2716,29 +2376,19 @@ static PyObject *SkinClusterList_len(SkinClusterList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *SkinClusterList_subscript(SkinClusterList *self, PyObject *key) {
+static PyObject *SkinClusterList_item(SkinClusterList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return Element_from(self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return Element_from(self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods SkinClusterList_Mapping = {
-    .mp_length = (lenfunc)&SkinClusterList_len,
-    .mp_subscript = (binaryfunc)&SkinClusterList_subscript,
+static PySequenceMethods SkinClusterList_Sequence = {
+    .sq_length = (lenfunc)&SkinClusterList_len,
+    .sq_item = (ssizeargfunc)&SkinClusterList_item,
 };
 
 static PyTypeObject SkinClusterList_Type = {
@@ -2749,7 +2399,7 @@ static PyTypeObject SkinClusterList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &SkinClusterList_Mapping,
+    .tp_as_sequence = &SkinClusterList_Sequence,
 };
 
 static PyObject *SkinClusterList_from(ufbx_skin_cluster_list list, Context *ctx) {
@@ -2772,29 +2422,19 @@ static PyObject *BlendDeformerList_len(BlendDeformerList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *BlendDeformerList_subscript(BlendDeformerList *self, PyObject *key) {
+static PyObject *BlendDeformerList_item(BlendDeformerList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return Element_from(self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return Element_from(self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods BlendDeformerList_Mapping = {
-    .mp_length = (lenfunc)&BlendDeformerList_len,
-    .mp_subscript = (binaryfunc)&BlendDeformerList_subscript,
+static PySequenceMethods BlendDeformerList_Sequence = {
+    .sq_length = (lenfunc)&BlendDeformerList_len,
+    .sq_item = (ssizeargfunc)&BlendDeformerList_item,
 };
 
 static PyTypeObject BlendDeformerList_Type = {
@@ -2805,7 +2445,7 @@ static PyTypeObject BlendDeformerList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &BlendDeformerList_Mapping,
+    .tp_as_sequence = &BlendDeformerList_Sequence,
 };
 
 static PyObject *BlendDeformerList_from(ufbx_blend_deformer_list list, Context *ctx) {
@@ -2828,29 +2468,19 @@ static PyObject *BlendChannelList_len(BlendChannelList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *BlendChannelList_subscript(BlendChannelList *self, PyObject *key) {
+static PyObject *BlendChannelList_item(BlendChannelList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return Element_from(self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return Element_from(self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods BlendChannelList_Mapping = {
-    .mp_length = (lenfunc)&BlendChannelList_len,
-    .mp_subscript = (binaryfunc)&BlendChannelList_subscript,
+static PySequenceMethods BlendChannelList_Sequence = {
+    .sq_length = (lenfunc)&BlendChannelList_len,
+    .sq_item = (ssizeargfunc)&BlendChannelList_item,
 };
 
 static PyTypeObject BlendChannelList_Type = {
@@ -2861,7 +2491,7 @@ static PyTypeObject BlendChannelList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &BlendChannelList_Mapping,
+    .tp_as_sequence = &BlendChannelList_Sequence,
 };
 
 static PyObject *BlendChannelList_from(ufbx_blend_channel_list list, Context *ctx) {
@@ -2884,29 +2514,19 @@ static PyObject *BlendShapeList_len(BlendShapeList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *BlendShapeList_subscript(BlendShapeList *self, PyObject *key) {
+static PyObject *BlendShapeList_item(BlendShapeList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return Element_from(self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return Element_from(self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods BlendShapeList_Mapping = {
-    .mp_length = (lenfunc)&BlendShapeList_len,
-    .mp_subscript = (binaryfunc)&BlendShapeList_subscript,
+static PySequenceMethods BlendShapeList_Sequence = {
+    .sq_length = (lenfunc)&BlendShapeList_len,
+    .sq_item = (ssizeargfunc)&BlendShapeList_item,
 };
 
 static PyTypeObject BlendShapeList_Type = {
@@ -2917,7 +2537,7 @@ static PyTypeObject BlendShapeList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &BlendShapeList_Mapping,
+    .tp_as_sequence = &BlendShapeList_Sequence,
 };
 
 static PyObject *BlendShapeList_from(ufbx_blend_shape_list list, Context *ctx) {
@@ -2940,29 +2560,19 @@ static PyObject *CacheDeformerList_len(CacheDeformerList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *CacheDeformerList_subscript(CacheDeformerList *self, PyObject *key) {
+static PyObject *CacheDeformerList_item(CacheDeformerList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return Element_from(self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return Element_from(self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods CacheDeformerList_Mapping = {
-    .mp_length = (lenfunc)&CacheDeformerList_len,
-    .mp_subscript = (binaryfunc)&CacheDeformerList_subscript,
+static PySequenceMethods CacheDeformerList_Sequence = {
+    .sq_length = (lenfunc)&CacheDeformerList_len,
+    .sq_item = (ssizeargfunc)&CacheDeformerList_item,
 };
 
 static PyTypeObject CacheDeformerList_Type = {
@@ -2973,7 +2583,7 @@ static PyTypeObject CacheDeformerList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &CacheDeformerList_Mapping,
+    .tp_as_sequence = &CacheDeformerList_Sequence,
 };
 
 static PyObject *CacheDeformerList_from(ufbx_cache_deformer_list list, Context *ctx) {
@@ -2996,29 +2606,19 @@ static PyObject *CacheFileList_len(CacheFileList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *CacheFileList_subscript(CacheFileList *self, PyObject *key) {
+static PyObject *CacheFileList_item(CacheFileList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return Element_from(self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return Element_from(self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods CacheFileList_Mapping = {
-    .mp_length = (lenfunc)&CacheFileList_len,
-    .mp_subscript = (binaryfunc)&CacheFileList_subscript,
+static PySequenceMethods CacheFileList_Sequence = {
+    .sq_length = (lenfunc)&CacheFileList_len,
+    .sq_item = (ssizeargfunc)&CacheFileList_item,
 };
 
 static PyTypeObject CacheFileList_Type = {
@@ -3029,7 +2629,7 @@ static PyTypeObject CacheFileList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &CacheFileList_Mapping,
+    .tp_as_sequence = &CacheFileList_Sequence,
 };
 
 static PyObject *CacheFileList_from(ufbx_cache_file_list list, Context *ctx) {
@@ -3052,29 +2652,19 @@ static PyObject *MaterialList_len(MaterialList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *MaterialList_subscript(MaterialList *self, PyObject *key) {
+static PyObject *MaterialList_item(MaterialList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return Element_from(self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return Element_from(self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods MaterialList_Mapping = {
-    .mp_length = (lenfunc)&MaterialList_len,
-    .mp_subscript = (binaryfunc)&MaterialList_subscript,
+static PySequenceMethods MaterialList_Sequence = {
+    .sq_length = (lenfunc)&MaterialList_len,
+    .sq_item = (ssizeargfunc)&MaterialList_item,
 };
 
 static PyTypeObject MaterialList_Type = {
@@ -3085,7 +2675,7 @@ static PyTypeObject MaterialList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &MaterialList_Mapping,
+    .tp_as_sequence = &MaterialList_Sequence,
 };
 
 static PyObject *MaterialList_from(ufbx_material_list list, Context *ctx) {
@@ -3108,29 +2698,19 @@ static PyObject *TextureList_len(TextureList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *TextureList_subscript(TextureList *self, PyObject *key) {
+static PyObject *TextureList_item(TextureList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return Element_from(self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return Element_from(self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods TextureList_Mapping = {
-    .mp_length = (lenfunc)&TextureList_len,
-    .mp_subscript = (binaryfunc)&TextureList_subscript,
+static PySequenceMethods TextureList_Sequence = {
+    .sq_length = (lenfunc)&TextureList_len,
+    .sq_item = (ssizeargfunc)&TextureList_item,
 };
 
 static PyTypeObject TextureList_Type = {
@@ -3141,7 +2721,7 @@ static PyTypeObject TextureList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &TextureList_Mapping,
+    .tp_as_sequence = &TextureList_Sequence,
 };
 
 static PyObject *TextureList_from(ufbx_texture_list list, Context *ctx) {
@@ -3164,29 +2744,19 @@ static PyObject *VideoList_len(VideoList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *VideoList_subscript(VideoList *self, PyObject *key) {
+static PyObject *VideoList_item(VideoList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return Element_from(self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return Element_from(self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods VideoList_Mapping = {
-    .mp_length = (lenfunc)&VideoList_len,
-    .mp_subscript = (binaryfunc)&VideoList_subscript,
+static PySequenceMethods VideoList_Sequence = {
+    .sq_length = (lenfunc)&VideoList_len,
+    .sq_item = (ssizeargfunc)&VideoList_item,
 };
 
 static PyTypeObject VideoList_Type = {
@@ -3197,7 +2767,7 @@ static PyTypeObject VideoList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &VideoList_Mapping,
+    .tp_as_sequence = &VideoList_Sequence,
 };
 
 static PyObject *VideoList_from(ufbx_video_list list, Context *ctx) {
@@ -3220,29 +2790,19 @@ static PyObject *ShaderList_len(ShaderList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *ShaderList_subscript(ShaderList *self, PyObject *key) {
+static PyObject *ShaderList_item(ShaderList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return Element_from(self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return Element_from(self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods ShaderList_Mapping = {
-    .mp_length = (lenfunc)&ShaderList_len,
-    .mp_subscript = (binaryfunc)&ShaderList_subscript,
+static PySequenceMethods ShaderList_Sequence = {
+    .sq_length = (lenfunc)&ShaderList_len,
+    .sq_item = (ssizeargfunc)&ShaderList_item,
 };
 
 static PyTypeObject ShaderList_Type = {
@@ -3253,7 +2813,7 @@ static PyTypeObject ShaderList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &ShaderList_Mapping,
+    .tp_as_sequence = &ShaderList_Sequence,
 };
 
 static PyObject *ShaderList_from(ufbx_shader_list list, Context *ctx) {
@@ -3276,29 +2836,19 @@ static PyObject *ShaderBindingList_len(ShaderBindingList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *ShaderBindingList_subscript(ShaderBindingList *self, PyObject *key) {
+static PyObject *ShaderBindingList_item(ShaderBindingList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return Element_from(self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return Element_from(self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods ShaderBindingList_Mapping = {
-    .mp_length = (lenfunc)&ShaderBindingList_len,
-    .mp_subscript = (binaryfunc)&ShaderBindingList_subscript,
+static PySequenceMethods ShaderBindingList_Sequence = {
+    .sq_length = (lenfunc)&ShaderBindingList_len,
+    .sq_item = (ssizeargfunc)&ShaderBindingList_item,
 };
 
 static PyTypeObject ShaderBindingList_Type = {
@@ -3309,7 +2859,7 @@ static PyTypeObject ShaderBindingList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &ShaderBindingList_Mapping,
+    .tp_as_sequence = &ShaderBindingList_Sequence,
 };
 
 static PyObject *ShaderBindingList_from(ufbx_shader_binding_list list, Context *ctx) {
@@ -3332,29 +2882,19 @@ static PyObject *AnimStackList_len(AnimStackList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *AnimStackList_subscript(AnimStackList *self, PyObject *key) {
+static PyObject *AnimStackList_item(AnimStackList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return Element_from(self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return Element_from(self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods AnimStackList_Mapping = {
-    .mp_length = (lenfunc)&AnimStackList_len,
-    .mp_subscript = (binaryfunc)&AnimStackList_subscript,
+static PySequenceMethods AnimStackList_Sequence = {
+    .sq_length = (lenfunc)&AnimStackList_len,
+    .sq_item = (ssizeargfunc)&AnimStackList_item,
 };
 
 static PyTypeObject AnimStackList_Type = {
@@ -3365,7 +2905,7 @@ static PyTypeObject AnimStackList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &AnimStackList_Mapping,
+    .tp_as_sequence = &AnimStackList_Sequence,
 };
 
 static PyObject *AnimStackList_from(ufbx_anim_stack_list list, Context *ctx) {
@@ -3388,29 +2928,19 @@ static PyObject *AnimLayerList_len(AnimLayerList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *AnimLayerList_subscript(AnimLayerList *self, PyObject *key) {
+static PyObject *AnimLayerList_item(AnimLayerList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return Element_from(self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return Element_from(self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods AnimLayerList_Mapping = {
-    .mp_length = (lenfunc)&AnimLayerList_len,
-    .mp_subscript = (binaryfunc)&AnimLayerList_subscript,
+static PySequenceMethods AnimLayerList_Sequence = {
+    .sq_length = (lenfunc)&AnimLayerList_len,
+    .sq_item = (ssizeargfunc)&AnimLayerList_item,
 };
 
 static PyTypeObject AnimLayerList_Type = {
@@ -3421,7 +2951,7 @@ static PyTypeObject AnimLayerList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &AnimLayerList_Mapping,
+    .tp_as_sequence = &AnimLayerList_Sequence,
 };
 
 static PyObject *AnimLayerList_from(ufbx_anim_layer_list list, Context *ctx) {
@@ -3444,29 +2974,19 @@ static PyObject *AnimValueList_len(AnimValueList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *AnimValueList_subscript(AnimValueList *self, PyObject *key) {
+static PyObject *AnimValueList_item(AnimValueList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return Element_from(self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return Element_from(self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods AnimValueList_Mapping = {
-    .mp_length = (lenfunc)&AnimValueList_len,
-    .mp_subscript = (binaryfunc)&AnimValueList_subscript,
+static PySequenceMethods AnimValueList_Sequence = {
+    .sq_length = (lenfunc)&AnimValueList_len,
+    .sq_item = (ssizeargfunc)&AnimValueList_item,
 };
 
 static PyTypeObject AnimValueList_Type = {
@@ -3477,7 +2997,7 @@ static PyTypeObject AnimValueList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &AnimValueList_Mapping,
+    .tp_as_sequence = &AnimValueList_Sequence,
 };
 
 static PyObject *AnimValueList_from(ufbx_anim_value_list list, Context *ctx) {
@@ -3500,29 +3020,19 @@ static PyObject *AnimCurveList_len(AnimCurveList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *AnimCurveList_subscript(AnimCurveList *self, PyObject *key) {
+static PyObject *AnimCurveList_item(AnimCurveList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return Element_from(self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return Element_from(self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods AnimCurveList_Mapping = {
-    .mp_length = (lenfunc)&AnimCurveList_len,
-    .mp_subscript = (binaryfunc)&AnimCurveList_subscript,
+static PySequenceMethods AnimCurveList_Sequence = {
+    .sq_length = (lenfunc)&AnimCurveList_len,
+    .sq_item = (ssizeargfunc)&AnimCurveList_item,
 };
 
 static PyTypeObject AnimCurveList_Type = {
@@ -3533,7 +3043,7 @@ static PyTypeObject AnimCurveList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &AnimCurveList_Mapping,
+    .tp_as_sequence = &AnimCurveList_Sequence,
 };
 
 static PyObject *AnimCurveList_from(ufbx_anim_curve_list list, Context *ctx) {
@@ -3556,29 +3066,19 @@ static PyObject *DisplayLayerList_len(DisplayLayerList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *DisplayLayerList_subscript(DisplayLayerList *self, PyObject *key) {
+static PyObject *DisplayLayerList_item(DisplayLayerList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return Element_from(self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return Element_from(self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods DisplayLayerList_Mapping = {
-    .mp_length = (lenfunc)&DisplayLayerList_len,
-    .mp_subscript = (binaryfunc)&DisplayLayerList_subscript,
+static PySequenceMethods DisplayLayerList_Sequence = {
+    .sq_length = (lenfunc)&DisplayLayerList_len,
+    .sq_item = (ssizeargfunc)&DisplayLayerList_item,
 };
 
 static PyTypeObject DisplayLayerList_Type = {
@@ -3589,7 +3089,7 @@ static PyTypeObject DisplayLayerList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &DisplayLayerList_Mapping,
+    .tp_as_sequence = &DisplayLayerList_Sequence,
 };
 
 static PyObject *DisplayLayerList_from(ufbx_display_layer_list list, Context *ctx) {
@@ -3612,29 +3112,19 @@ static PyObject *SelectionSetList_len(SelectionSetList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *SelectionSetList_subscript(SelectionSetList *self, PyObject *key) {
+static PyObject *SelectionSetList_item(SelectionSetList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return Element_from(self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return Element_from(self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods SelectionSetList_Mapping = {
-    .mp_length = (lenfunc)&SelectionSetList_len,
-    .mp_subscript = (binaryfunc)&SelectionSetList_subscript,
+static PySequenceMethods SelectionSetList_Sequence = {
+    .sq_length = (lenfunc)&SelectionSetList_len,
+    .sq_item = (ssizeargfunc)&SelectionSetList_item,
 };
 
 static PyTypeObject SelectionSetList_Type = {
@@ -3645,7 +3135,7 @@ static PyTypeObject SelectionSetList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &SelectionSetList_Mapping,
+    .tp_as_sequence = &SelectionSetList_Sequence,
 };
 
 static PyObject *SelectionSetList_from(ufbx_selection_set_list list, Context *ctx) {
@@ -3668,29 +3158,19 @@ static PyObject *SelectionNodeList_len(SelectionNodeList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *SelectionNodeList_subscript(SelectionNodeList *self, PyObject *key) {
+static PyObject *SelectionNodeList_item(SelectionNodeList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return Element_from(self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return Element_from(self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods SelectionNodeList_Mapping = {
-    .mp_length = (lenfunc)&SelectionNodeList_len,
-    .mp_subscript = (binaryfunc)&SelectionNodeList_subscript,
+static PySequenceMethods SelectionNodeList_Sequence = {
+    .sq_length = (lenfunc)&SelectionNodeList_len,
+    .sq_item = (ssizeargfunc)&SelectionNodeList_item,
 };
 
 static PyTypeObject SelectionNodeList_Type = {
@@ -3701,7 +3181,7 @@ static PyTypeObject SelectionNodeList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &SelectionNodeList_Mapping,
+    .tp_as_sequence = &SelectionNodeList_Sequence,
 };
 
 static PyObject *SelectionNodeList_from(ufbx_selection_node_list list, Context *ctx) {
@@ -3724,29 +3204,19 @@ static PyObject *CharacterList_len(CharacterList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *CharacterList_subscript(CharacterList *self, PyObject *key) {
+static PyObject *CharacterList_item(CharacterList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return Element_from(self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return Element_from(self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods CharacterList_Mapping = {
-    .mp_length = (lenfunc)&CharacterList_len,
-    .mp_subscript = (binaryfunc)&CharacterList_subscript,
+static PySequenceMethods CharacterList_Sequence = {
+    .sq_length = (lenfunc)&CharacterList_len,
+    .sq_item = (ssizeargfunc)&CharacterList_item,
 };
 
 static PyTypeObject CharacterList_Type = {
@@ -3757,7 +3227,7 @@ static PyTypeObject CharacterList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &CharacterList_Mapping,
+    .tp_as_sequence = &CharacterList_Sequence,
 };
 
 static PyObject *CharacterList_from(ufbx_character_list list, Context *ctx) {
@@ -3780,29 +3250,19 @@ static PyObject *ConstraintList_len(ConstraintList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *ConstraintList_subscript(ConstraintList *self, PyObject *key) {
+static PyObject *ConstraintList_item(ConstraintList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return Element_from(self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return Element_from(self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods ConstraintList_Mapping = {
-    .mp_length = (lenfunc)&ConstraintList_len,
-    .mp_subscript = (binaryfunc)&ConstraintList_subscript,
+static PySequenceMethods ConstraintList_Sequence = {
+    .sq_length = (lenfunc)&ConstraintList_len,
+    .sq_item = (ssizeargfunc)&ConstraintList_item,
 };
 
 static PyTypeObject ConstraintList_Type = {
@@ -3813,7 +3273,7 @@ static PyTypeObject ConstraintList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &ConstraintList_Mapping,
+    .tp_as_sequence = &ConstraintList_Sequence,
 };
 
 static PyObject *ConstraintList_from(ufbx_constraint_list list, Context *ctx) {
@@ -3836,29 +3296,19 @@ static PyObject *AudioLayerList_len(AudioLayerList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *AudioLayerList_subscript(AudioLayerList *self, PyObject *key) {
+static PyObject *AudioLayerList_item(AudioLayerList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return Element_from(self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return Element_from(self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods AudioLayerList_Mapping = {
-    .mp_length = (lenfunc)&AudioLayerList_len,
-    .mp_subscript = (binaryfunc)&AudioLayerList_subscript,
+static PySequenceMethods AudioLayerList_Sequence = {
+    .sq_length = (lenfunc)&AudioLayerList_len,
+    .sq_item = (ssizeargfunc)&AudioLayerList_item,
 };
 
 static PyTypeObject AudioLayerList_Type = {
@@ -3869,7 +3319,7 @@ static PyTypeObject AudioLayerList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &AudioLayerList_Mapping,
+    .tp_as_sequence = &AudioLayerList_Sequence,
 };
 
 static PyObject *AudioLayerList_from(ufbx_audio_layer_list list, Context *ctx) {
@@ -3892,29 +3342,19 @@ static PyObject *AudioClipList_len(AudioClipList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *AudioClipList_subscript(AudioClipList *self, PyObject *key) {
+static PyObject *AudioClipList_item(AudioClipList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return Element_from(self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return Element_from(self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods AudioClipList_Mapping = {
-    .mp_length = (lenfunc)&AudioClipList_len,
-    .mp_subscript = (binaryfunc)&AudioClipList_subscript,
+static PySequenceMethods AudioClipList_Sequence = {
+    .sq_length = (lenfunc)&AudioClipList_len,
+    .sq_item = (ssizeargfunc)&AudioClipList_item,
 };
 
 static PyTypeObject AudioClipList_Type = {
@@ -3925,7 +3365,7 @@ static PyTypeObject AudioClipList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &AudioClipList_Mapping,
+    .tp_as_sequence = &AudioClipList_Sequence,
 };
 
 static PyObject *AudioClipList_from(ufbx_audio_clip_list list, Context *ctx) {
@@ -3948,29 +3388,19 @@ static PyObject *PoseList_len(PoseList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *PoseList_subscript(PoseList *self, PyObject *key) {
+static PyObject *PoseList_item(PoseList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return Element_from(self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return Element_from(self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods PoseList_Mapping = {
-    .mp_length = (lenfunc)&PoseList_len,
-    .mp_subscript = (binaryfunc)&PoseList_subscript,
+static PySequenceMethods PoseList_Sequence = {
+    .sq_length = (lenfunc)&PoseList_len,
+    .sq_item = (ssizeargfunc)&PoseList_item,
 };
 
 static PyTypeObject PoseList_Type = {
@@ -3981,7 +3411,7 @@ static PyTypeObject PoseList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &PoseList_Mapping,
+    .tp_as_sequence = &PoseList_Sequence,
 };
 
 static PyObject *PoseList_from(ufbx_pose_list list, Context *ctx) {
@@ -4004,29 +3434,19 @@ static PyObject *MetadataObjectList_len(MetadataObjectList *self, PyObject *key)
     return Py_NewRef(self->count);
 }
 
-static PyObject *MetadataObjectList_subscript(MetadataObjectList *self, PyObject *key) {
+static PyObject *MetadataObjectList_item(MetadataObjectList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return Element_from(self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return Element_from(self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods MetadataObjectList_Mapping = {
-    .mp_length = (lenfunc)&MetadataObjectList_len,
-    .mp_subscript = (binaryfunc)&MetadataObjectList_subscript,
+static PySequenceMethods MetadataObjectList_Sequence = {
+    .sq_length = (lenfunc)&MetadataObjectList_len,
+    .sq_item = (ssizeargfunc)&MetadataObjectList_item,
 };
 
 static PyTypeObject MetadataObjectList_Type = {
@@ -4037,7 +3457,7 @@ static PyTypeObject MetadataObjectList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &MetadataObjectList_Mapping,
+    .tp_as_sequence = &MetadataObjectList_Sequence,
 };
 
 static PyObject *MetadataObjectList_from(ufbx_metadata_object_list list, Context *ctx) {
@@ -4060,29 +3480,19 @@ static PyObject *ConnectionList_len(ConnectionList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *ConnectionList_subscript(ConnectionList *self, PyObject *key) {
+static PyObject *ConnectionList_item(ConnectionList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return Connection_from(&self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return Connection_from(&self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods ConnectionList_Mapping = {
-    .mp_length = (lenfunc)&ConnectionList_len,
-    .mp_subscript = (binaryfunc)&ConnectionList_subscript,
+static PySequenceMethods ConnectionList_Sequence = {
+    .sq_length = (lenfunc)&ConnectionList_len,
+    .sq_item = (ssizeargfunc)&ConnectionList_item,
 };
 
 static PyTypeObject ConnectionList_Type = {
@@ -4093,7 +3503,7 @@ static PyTypeObject ConnectionList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &ConnectionList_Mapping,
+    .tp_as_sequence = &ConnectionList_Sequence,
 };
 
 static PyObject *ConnectionList_from(ufbx_connection_list list, Context *ctx) {
@@ -4116,29 +3526,19 @@ static PyObject *UvSetList_len(UvSetList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *UvSetList_subscript(UvSetList *self, PyObject *key) {
+static PyObject *UvSetList_item(UvSetList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return UvSet_from(&self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return UvSet_from(&self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods UvSetList_Mapping = {
-    .mp_length = (lenfunc)&UvSetList_len,
-    .mp_subscript = (binaryfunc)&UvSetList_subscript,
+static PySequenceMethods UvSetList_Sequence = {
+    .sq_length = (lenfunc)&UvSetList_len,
+    .sq_item = (ssizeargfunc)&UvSetList_item,
 };
 
 static PyTypeObject UvSetList_Type = {
@@ -4149,7 +3549,7 @@ static PyTypeObject UvSetList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &UvSetList_Mapping,
+    .tp_as_sequence = &UvSetList_Sequence,
 };
 
 static PyObject *UvSetList_from(ufbx_uv_set_list list, Context *ctx) {
@@ -4172,29 +3572,19 @@ static PyObject *ColorSetList_len(ColorSetList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *ColorSetList_subscript(ColorSetList *self, PyObject *key) {
+static PyObject *ColorSetList_item(ColorSetList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return ColorSet_from(&self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return ColorSet_from(&self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods ColorSetList_Mapping = {
-    .mp_length = (lenfunc)&ColorSetList_len,
-    .mp_subscript = (binaryfunc)&ColorSetList_subscript,
+static PySequenceMethods ColorSetList_Sequence = {
+    .sq_length = (lenfunc)&ColorSetList_len,
+    .sq_item = (ssizeargfunc)&ColorSetList_item,
 };
 
 static PyTypeObject ColorSetList_Type = {
@@ -4205,7 +3595,7 @@ static PyTypeObject ColorSetList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &ColorSetList_Mapping,
+    .tp_as_sequence = &ColorSetList_Sequence,
 };
 
 static PyObject *ColorSetList_from(ufbx_color_set_list list, Context *ctx) {
@@ -4228,29 +3618,19 @@ static PyObject *EdgeList_len(EdgeList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *EdgeList_subscript(EdgeList *self, PyObject *key) {
+static PyObject *EdgeList_item(EdgeList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return to_pyobject_todo("ufbx_edge");
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return to_pyobject_todo("ufbx_edge");
 }
 
-static PyMappingMethods EdgeList_Mapping = {
-    .mp_length = (lenfunc)&EdgeList_len,
-    .mp_subscript = (binaryfunc)&EdgeList_subscript,
+static PySequenceMethods EdgeList_Sequence = {
+    .sq_length = (lenfunc)&EdgeList_len,
+    .sq_item = (ssizeargfunc)&EdgeList_item,
 };
 
 static PyTypeObject EdgeList_Type = {
@@ -4261,7 +3641,7 @@ static PyTypeObject EdgeList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &EdgeList_Mapping,
+    .tp_as_sequence = &EdgeList_Sequence,
 };
 
 static PyObject *EdgeList_from(ufbx_edge_list list, Context *ctx) {
@@ -4284,29 +3664,19 @@ static PyObject *FaceList_len(FaceList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *FaceList_subscript(FaceList *self, PyObject *key) {
+static PyObject *FaceList_item(FaceList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return to_pyobject_todo("ufbx_face");
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return to_pyobject_todo("ufbx_face");
 }
 
-static PyMappingMethods FaceList_Mapping = {
-    .mp_length = (lenfunc)&FaceList_len,
-    .mp_subscript = (binaryfunc)&FaceList_subscript,
+static PySequenceMethods FaceList_Sequence = {
+    .sq_length = (lenfunc)&FaceList_len,
+    .sq_item = (ssizeargfunc)&FaceList_item,
 };
 
 static PyTypeObject FaceList_Type = {
@@ -4317,7 +3687,7 @@ static PyTypeObject FaceList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &FaceList_Mapping,
+    .tp_as_sequence = &FaceList_Sequence,
 };
 
 static PyObject *FaceList_from(ufbx_face_list list, Context *ctx) {
@@ -4340,29 +3710,19 @@ static PyObject *MeshPartList_len(MeshPartList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *MeshPartList_subscript(MeshPartList *self, PyObject *key) {
+static PyObject *MeshPartList_item(MeshPartList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return MeshPart_from(&self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return MeshPart_from(&self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods MeshPartList_Mapping = {
-    .mp_length = (lenfunc)&MeshPartList_len,
-    .mp_subscript = (binaryfunc)&MeshPartList_subscript,
+static PySequenceMethods MeshPartList_Sequence = {
+    .sq_length = (lenfunc)&MeshPartList_len,
+    .sq_item = (ssizeargfunc)&MeshPartList_item,
 };
 
 static PyTypeObject MeshPartList_Type = {
@@ -4373,7 +3733,7 @@ static PyTypeObject MeshPartList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &MeshPartList_Mapping,
+    .tp_as_sequence = &MeshPartList_Sequence,
 };
 
 static PyObject *MeshPartList_from(ufbx_mesh_part_list list, Context *ctx) {
@@ -4396,29 +3756,19 @@ static PyObject *FaceGroupList_len(FaceGroupList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *FaceGroupList_subscript(FaceGroupList *self, PyObject *key) {
+static PyObject *FaceGroupList_item(FaceGroupList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return FaceGroup_from(&self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return FaceGroup_from(&self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods FaceGroupList_Mapping = {
-    .mp_length = (lenfunc)&FaceGroupList_len,
-    .mp_subscript = (binaryfunc)&FaceGroupList_subscript,
+static PySequenceMethods FaceGroupList_Sequence = {
+    .sq_length = (lenfunc)&FaceGroupList_len,
+    .sq_item = (ssizeargfunc)&FaceGroupList_item,
 };
 
 static PyTypeObject FaceGroupList_Type = {
@@ -4429,7 +3779,7 @@ static PyTypeObject FaceGroupList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &FaceGroupList_Mapping,
+    .tp_as_sequence = &FaceGroupList_Sequence,
 };
 
 static PyObject *FaceGroupList_from(ufbx_face_group_list list, Context *ctx) {
@@ -4452,29 +3802,19 @@ static PyObject *SubdivisionWeightRangeList_len(SubdivisionWeightRangeList *self
     return Py_NewRef(self->count);
 }
 
-static PyObject *SubdivisionWeightRangeList_subscript(SubdivisionWeightRangeList *self, PyObject *key) {
+static PyObject *SubdivisionWeightRangeList_item(SubdivisionWeightRangeList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return SubdivisionWeightRange_from(&self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return SubdivisionWeightRange_from(&self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods SubdivisionWeightRangeList_Mapping = {
-    .mp_length = (lenfunc)&SubdivisionWeightRangeList_len,
-    .mp_subscript = (binaryfunc)&SubdivisionWeightRangeList_subscript,
+static PySequenceMethods SubdivisionWeightRangeList_Sequence = {
+    .sq_length = (lenfunc)&SubdivisionWeightRangeList_len,
+    .sq_item = (ssizeargfunc)&SubdivisionWeightRangeList_item,
 };
 
 static PyTypeObject SubdivisionWeightRangeList_Type = {
@@ -4485,7 +3825,7 @@ static PyTypeObject SubdivisionWeightRangeList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &SubdivisionWeightRangeList_Mapping,
+    .tp_as_sequence = &SubdivisionWeightRangeList_Sequence,
 };
 
 static PyObject *SubdivisionWeightRangeList_from(ufbx_subdivision_weight_range_list list, Context *ctx) {
@@ -4508,29 +3848,19 @@ static PyObject *SubdivisionWeightList_len(SubdivisionWeightList *self, PyObject
     return Py_NewRef(self->count);
 }
 
-static PyObject *SubdivisionWeightList_subscript(SubdivisionWeightList *self, PyObject *key) {
+static PyObject *SubdivisionWeightList_item(SubdivisionWeightList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return SubdivisionWeight_from(&self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return SubdivisionWeight_from(&self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods SubdivisionWeightList_Mapping = {
-    .mp_length = (lenfunc)&SubdivisionWeightList_len,
-    .mp_subscript = (binaryfunc)&SubdivisionWeightList_subscript,
+static PySequenceMethods SubdivisionWeightList_Sequence = {
+    .sq_length = (lenfunc)&SubdivisionWeightList_len,
+    .sq_item = (ssizeargfunc)&SubdivisionWeightList_item,
 };
 
 static PyTypeObject SubdivisionWeightList_Type = {
@@ -4541,7 +3871,7 @@ static PyTypeObject SubdivisionWeightList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &SubdivisionWeightList_Mapping,
+    .tp_as_sequence = &SubdivisionWeightList_Sequence,
 };
 
 static PyObject *SubdivisionWeightList_from(ufbx_subdivision_weight_list list, Context *ctx) {
@@ -4564,29 +3894,19 @@ static PyObject *LineSegmentList_len(LineSegmentList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *LineSegmentList_subscript(LineSegmentList *self, PyObject *key) {
+static PyObject *LineSegmentList_item(LineSegmentList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return LineSegment_from(&self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return LineSegment_from(&self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods LineSegmentList_Mapping = {
-    .mp_length = (lenfunc)&LineSegmentList_len,
-    .mp_subscript = (binaryfunc)&LineSegmentList_subscript,
+static PySequenceMethods LineSegmentList_Sequence = {
+    .sq_length = (lenfunc)&LineSegmentList_len,
+    .sq_item = (ssizeargfunc)&LineSegmentList_item,
 };
 
 static PyTypeObject LineSegmentList_Type = {
@@ -4597,7 +3917,7 @@ static PyTypeObject LineSegmentList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &LineSegmentList_Mapping,
+    .tp_as_sequence = &LineSegmentList_Sequence,
 };
 
 static PyObject *LineSegmentList_from(ufbx_line_segment_list list, Context *ctx) {
@@ -4620,29 +3940,19 @@ static PyObject *LodLevelList_len(LodLevelList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *LodLevelList_subscript(LodLevelList *self, PyObject *key) {
+static PyObject *LodLevelList_item(LodLevelList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return to_pyobject_todo("ufbx_lod_level");
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return to_pyobject_todo("ufbx_lod_level");
 }
 
-static PyMappingMethods LodLevelList_Mapping = {
-    .mp_length = (lenfunc)&LodLevelList_len,
-    .mp_subscript = (binaryfunc)&LodLevelList_subscript,
+static PySequenceMethods LodLevelList_Sequence = {
+    .sq_length = (lenfunc)&LodLevelList_len,
+    .sq_item = (ssizeargfunc)&LodLevelList_item,
 };
 
 static PyTypeObject LodLevelList_Type = {
@@ -4653,7 +3963,7 @@ static PyTypeObject LodLevelList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &LodLevelList_Mapping,
+    .tp_as_sequence = &LodLevelList_Sequence,
 };
 
 static PyObject *LodLevelList_from(ufbx_lod_level_list list, Context *ctx) {
@@ -4676,29 +3986,19 @@ static PyObject *SkinVertexList_len(SkinVertexList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *SkinVertexList_subscript(SkinVertexList *self, PyObject *key) {
+static PyObject *SkinVertexList_item(SkinVertexList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return to_pyobject_todo("ufbx_skin_vertex");
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return to_pyobject_todo("ufbx_skin_vertex");
 }
 
-static PyMappingMethods SkinVertexList_Mapping = {
-    .mp_length = (lenfunc)&SkinVertexList_len,
-    .mp_subscript = (binaryfunc)&SkinVertexList_subscript,
+static PySequenceMethods SkinVertexList_Sequence = {
+    .sq_length = (lenfunc)&SkinVertexList_len,
+    .sq_item = (ssizeargfunc)&SkinVertexList_item,
 };
 
 static PyTypeObject SkinVertexList_Type = {
@@ -4709,7 +4009,7 @@ static PyTypeObject SkinVertexList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &SkinVertexList_Mapping,
+    .tp_as_sequence = &SkinVertexList_Sequence,
 };
 
 static PyObject *SkinVertexList_from(ufbx_skin_vertex_list list, Context *ctx) {
@@ -4732,29 +4032,19 @@ static PyObject *SkinWeightList_len(SkinWeightList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *SkinWeightList_subscript(SkinWeightList *self, PyObject *key) {
+static PyObject *SkinWeightList_item(SkinWeightList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return to_pyobject_todo("ufbx_skin_weight");
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return to_pyobject_todo("ufbx_skin_weight");
 }
 
-static PyMappingMethods SkinWeightList_Mapping = {
-    .mp_length = (lenfunc)&SkinWeightList_len,
-    .mp_subscript = (binaryfunc)&SkinWeightList_subscript,
+static PySequenceMethods SkinWeightList_Sequence = {
+    .sq_length = (lenfunc)&SkinWeightList_len,
+    .sq_item = (ssizeargfunc)&SkinWeightList_item,
 };
 
 static PyTypeObject SkinWeightList_Type = {
@@ -4765,7 +4055,7 @@ static PyTypeObject SkinWeightList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &SkinWeightList_Mapping,
+    .tp_as_sequence = &SkinWeightList_Sequence,
 };
 
 static PyObject *SkinWeightList_from(ufbx_skin_weight_list list, Context *ctx) {
@@ -4788,29 +4078,19 @@ static PyObject *BlendKeyframeList_len(BlendKeyframeList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *BlendKeyframeList_subscript(BlendKeyframeList *self, PyObject *key) {
+static PyObject *BlendKeyframeList_item(BlendKeyframeList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return BlendKeyframe_from(&self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return BlendKeyframe_from(&self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods BlendKeyframeList_Mapping = {
-    .mp_length = (lenfunc)&BlendKeyframeList_len,
-    .mp_subscript = (binaryfunc)&BlendKeyframeList_subscript,
+static PySequenceMethods BlendKeyframeList_Sequence = {
+    .sq_length = (lenfunc)&BlendKeyframeList_len,
+    .sq_item = (ssizeargfunc)&BlendKeyframeList_item,
 };
 
 static PyTypeObject BlendKeyframeList_Type = {
@@ -4821,7 +4101,7 @@ static PyTypeObject BlendKeyframeList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &BlendKeyframeList_Mapping,
+    .tp_as_sequence = &BlendKeyframeList_Sequence,
 };
 
 static PyObject *BlendKeyframeList_from(ufbx_blend_keyframe_list list, Context *ctx) {
@@ -4844,29 +4124,19 @@ static PyObject *CacheFrameList_len(CacheFrameList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *CacheFrameList_subscript(CacheFrameList *self, PyObject *key) {
+static PyObject *CacheFrameList_item(CacheFrameList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return CacheFrame_from(&self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return CacheFrame_from(&self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods CacheFrameList_Mapping = {
-    .mp_length = (lenfunc)&CacheFrameList_len,
-    .mp_subscript = (binaryfunc)&CacheFrameList_subscript,
+static PySequenceMethods CacheFrameList_Sequence = {
+    .sq_length = (lenfunc)&CacheFrameList_len,
+    .sq_item = (ssizeargfunc)&CacheFrameList_item,
 };
 
 static PyTypeObject CacheFrameList_Type = {
@@ -4877,7 +4147,7 @@ static PyTypeObject CacheFrameList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &CacheFrameList_Mapping,
+    .tp_as_sequence = &CacheFrameList_Sequence,
 };
 
 static PyObject *CacheFrameList_from(ufbx_cache_frame_list list, Context *ctx) {
@@ -4900,29 +4170,19 @@ static PyObject *CacheChannelList_len(CacheChannelList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *CacheChannelList_subscript(CacheChannelList *self, PyObject *key) {
+static PyObject *CacheChannelList_item(CacheChannelList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return CacheChannel_from(&self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return CacheChannel_from(&self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods CacheChannelList_Mapping = {
-    .mp_length = (lenfunc)&CacheChannelList_len,
-    .mp_subscript = (binaryfunc)&CacheChannelList_subscript,
+static PySequenceMethods CacheChannelList_Sequence = {
+    .sq_length = (lenfunc)&CacheChannelList_len,
+    .sq_item = (ssizeargfunc)&CacheChannelList_item,
 };
 
 static PyTypeObject CacheChannelList_Type = {
@@ -4933,7 +4193,7 @@ static PyTypeObject CacheChannelList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &CacheChannelList_Mapping,
+    .tp_as_sequence = &CacheChannelList_Sequence,
 };
 
 static PyObject *CacheChannelList_from(ufbx_cache_channel_list list, Context *ctx) {
@@ -4956,29 +4216,19 @@ static PyObject *MaterialTextureList_len(MaterialTextureList *self, PyObject *ke
     return Py_NewRef(self->count);
 }
 
-static PyObject *MaterialTextureList_subscript(MaterialTextureList *self, PyObject *key) {
+static PyObject *MaterialTextureList_item(MaterialTextureList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return MaterialTexture_from(&self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return MaterialTexture_from(&self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods MaterialTextureList_Mapping = {
-    .mp_length = (lenfunc)&MaterialTextureList_len,
-    .mp_subscript = (binaryfunc)&MaterialTextureList_subscript,
+static PySequenceMethods MaterialTextureList_Sequence = {
+    .sq_length = (lenfunc)&MaterialTextureList_len,
+    .sq_item = (ssizeargfunc)&MaterialTextureList_item,
 };
 
 static PyTypeObject MaterialTextureList_Type = {
@@ -4989,7 +4239,7 @@ static PyTypeObject MaterialTextureList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &MaterialTextureList_Mapping,
+    .tp_as_sequence = &MaterialTextureList_Sequence,
 };
 
 static PyObject *MaterialTextureList_from(ufbx_material_texture_list list, Context *ctx) {
@@ -5012,29 +4262,19 @@ static PyObject *TextureLayerList_len(TextureLayerList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *TextureLayerList_subscript(TextureLayerList *self, PyObject *key) {
+static PyObject *TextureLayerList_item(TextureLayerList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return TextureLayer_from(&self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return TextureLayer_from(&self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods TextureLayerList_Mapping = {
-    .mp_length = (lenfunc)&TextureLayerList_len,
-    .mp_subscript = (binaryfunc)&TextureLayerList_subscript,
+static PySequenceMethods TextureLayerList_Sequence = {
+    .sq_length = (lenfunc)&TextureLayerList_len,
+    .sq_item = (ssizeargfunc)&TextureLayerList_item,
 };
 
 static PyTypeObject TextureLayerList_Type = {
@@ -5045,7 +4285,7 @@ static PyTypeObject TextureLayerList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &TextureLayerList_Mapping,
+    .tp_as_sequence = &TextureLayerList_Sequence,
 };
 
 static PyObject *TextureLayerList_from(ufbx_texture_layer_list list, Context *ctx) {
@@ -5068,29 +4308,19 @@ static PyObject *ShaderTextureInputList_len(ShaderTextureInputList *self, PyObje
     return Py_NewRef(self->count);
 }
 
-static PyObject *ShaderTextureInputList_subscript(ShaderTextureInputList *self, PyObject *key) {
+static PyObject *ShaderTextureInputList_item(ShaderTextureInputList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return ShaderTextureInput_from(&self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return ShaderTextureInput_from(&self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods ShaderTextureInputList_Mapping = {
-    .mp_length = (lenfunc)&ShaderTextureInputList_len,
-    .mp_subscript = (binaryfunc)&ShaderTextureInputList_subscript,
+static PySequenceMethods ShaderTextureInputList_Sequence = {
+    .sq_length = (lenfunc)&ShaderTextureInputList_len,
+    .sq_item = (ssizeargfunc)&ShaderTextureInputList_item,
 };
 
 static PyTypeObject ShaderTextureInputList_Type = {
@@ -5101,7 +4331,7 @@ static PyTypeObject ShaderTextureInputList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &ShaderTextureInputList_Mapping,
+    .tp_as_sequence = &ShaderTextureInputList_Sequence,
 };
 
 static PyObject *ShaderTextureInputList_from(ufbx_shader_texture_input_list list, Context *ctx) {
@@ -5124,29 +4354,19 @@ static PyObject *TextureFileList_len(TextureFileList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *TextureFileList_subscript(TextureFileList *self, PyObject *key) {
+static PyObject *TextureFileList_item(TextureFileList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return TextureFile_from(&self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return TextureFile_from(&self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods TextureFileList_Mapping = {
-    .mp_length = (lenfunc)&TextureFileList_len,
-    .mp_subscript = (binaryfunc)&TextureFileList_subscript,
+static PySequenceMethods TextureFileList_Sequence = {
+    .sq_length = (lenfunc)&TextureFileList_len,
+    .sq_item = (ssizeargfunc)&TextureFileList_item,
 };
 
 static PyTypeObject TextureFileList_Type = {
@@ -5157,7 +4377,7 @@ static PyTypeObject TextureFileList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &TextureFileList_Mapping,
+    .tp_as_sequence = &TextureFileList_Sequence,
 };
 
 static PyObject *TextureFileList_from(ufbx_texture_file_list list, Context *ctx) {
@@ -5180,29 +4400,19 @@ static PyObject *ShaderPropBindingList_len(ShaderPropBindingList *self, PyObject
     return Py_NewRef(self->count);
 }
 
-static PyObject *ShaderPropBindingList_subscript(ShaderPropBindingList *self, PyObject *key) {
+static PyObject *ShaderPropBindingList_item(ShaderPropBindingList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return ShaderPropBinding_from(&self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return ShaderPropBinding_from(&self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods ShaderPropBindingList_Mapping = {
-    .mp_length = (lenfunc)&ShaderPropBindingList_len,
-    .mp_subscript = (binaryfunc)&ShaderPropBindingList_subscript,
+static PySequenceMethods ShaderPropBindingList_Sequence = {
+    .sq_length = (lenfunc)&ShaderPropBindingList_len,
+    .sq_item = (ssizeargfunc)&ShaderPropBindingList_item,
 };
 
 static PyTypeObject ShaderPropBindingList_Type = {
@@ -5213,7 +4423,7 @@ static PyTypeObject ShaderPropBindingList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &ShaderPropBindingList_Mapping,
+    .tp_as_sequence = &ShaderPropBindingList_Sequence,
 };
 
 static PyObject *ShaderPropBindingList_from(ufbx_shader_prop_binding_list list, Context *ctx) {
@@ -5236,29 +4446,19 @@ static PyObject *PropOverrideList_len(PropOverrideList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *PropOverrideList_subscript(PropOverrideList *self, PyObject *key) {
+static PyObject *PropOverrideList_item(PropOverrideList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return PropOverride_from(&self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return PropOverride_from(&self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods PropOverrideList_Mapping = {
-    .mp_length = (lenfunc)&PropOverrideList_len,
-    .mp_subscript = (binaryfunc)&PropOverrideList_subscript,
+static PySequenceMethods PropOverrideList_Sequence = {
+    .sq_length = (lenfunc)&PropOverrideList_len,
+    .sq_item = (ssizeargfunc)&PropOverrideList_item,
 };
 
 static PyTypeObject PropOverrideList_Type = {
@@ -5269,7 +4469,7 @@ static PyTypeObject PropOverrideList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &PropOverrideList_Mapping,
+    .tp_as_sequence = &PropOverrideList_Sequence,
 };
 
 static PyObject *PropOverrideList_from(ufbx_prop_override_list list, Context *ctx) {
@@ -5292,29 +4492,19 @@ static PyObject *TransformOverrideList_len(TransformOverrideList *self, PyObject
     return Py_NewRef(self->count);
 }
 
-static PyObject *TransformOverrideList_subscript(TransformOverrideList *self, PyObject *key) {
+static PyObject *TransformOverrideList_item(TransformOverrideList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return to_pyobject_todo("ufbx_transform_override");
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return to_pyobject_todo("ufbx_transform_override");
 }
 
-static PyMappingMethods TransformOverrideList_Mapping = {
-    .mp_length = (lenfunc)&TransformOverrideList_len,
-    .mp_subscript = (binaryfunc)&TransformOverrideList_subscript,
+static PySequenceMethods TransformOverrideList_Sequence = {
+    .sq_length = (lenfunc)&TransformOverrideList_len,
+    .sq_item = (ssizeargfunc)&TransformOverrideList_item,
 };
 
 static PyTypeObject TransformOverrideList_Type = {
@@ -5325,7 +4515,7 @@ static PyTypeObject TransformOverrideList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &TransformOverrideList_Mapping,
+    .tp_as_sequence = &TransformOverrideList_Sequence,
 };
 
 static PyObject *TransformOverrideList_from(ufbx_transform_override_list list, Context *ctx) {
@@ -5348,29 +4538,19 @@ static PyObject *AnimPropList_len(AnimPropList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *AnimPropList_subscript(AnimPropList *self, PyObject *key) {
+static PyObject *AnimPropList_item(AnimPropList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return AnimProp_from(&self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return AnimProp_from(&self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods AnimPropList_Mapping = {
-    .mp_length = (lenfunc)&AnimPropList_len,
-    .mp_subscript = (binaryfunc)&AnimPropList_subscript,
+static PySequenceMethods AnimPropList_Sequence = {
+    .sq_length = (lenfunc)&AnimPropList_len,
+    .sq_item = (ssizeargfunc)&AnimPropList_item,
 };
 
 static PyTypeObject AnimPropList_Type = {
@@ -5381,7 +4561,7 @@ static PyTypeObject AnimPropList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &AnimPropList_Mapping,
+    .tp_as_sequence = &AnimPropList_Sequence,
 };
 
 static PyObject *AnimPropList_from(ufbx_anim_prop_list list, Context *ctx) {
@@ -5404,29 +4584,19 @@ static PyObject *KeyframeList_len(KeyframeList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *KeyframeList_subscript(KeyframeList *self, PyObject *key) {
+static PyObject *KeyframeList_item(KeyframeList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return to_pyobject_todo("ufbx_keyframe");
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return to_pyobject_todo("ufbx_keyframe");
 }
 
-static PyMappingMethods KeyframeList_Mapping = {
-    .mp_length = (lenfunc)&KeyframeList_len,
-    .mp_subscript = (binaryfunc)&KeyframeList_subscript,
+static PySequenceMethods KeyframeList_Sequence = {
+    .sq_length = (lenfunc)&KeyframeList_len,
+    .sq_item = (ssizeargfunc)&KeyframeList_item,
 };
 
 static PyTypeObject KeyframeList_Type = {
@@ -5437,7 +4607,7 @@ static PyTypeObject KeyframeList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &KeyframeList_Mapping,
+    .tp_as_sequence = &KeyframeList_Sequence,
 };
 
 static PyObject *KeyframeList_from(ufbx_keyframe_list list, Context *ctx) {
@@ -5460,29 +4630,19 @@ static PyObject *ConstraintTargetList_len(ConstraintTargetList *self, PyObject *
     return Py_NewRef(self->count);
 }
 
-static PyObject *ConstraintTargetList_subscript(ConstraintTargetList *self, PyObject *key) {
+static PyObject *ConstraintTargetList_item(ConstraintTargetList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return ConstraintTarget_from(&self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return ConstraintTarget_from(&self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods ConstraintTargetList_Mapping = {
-    .mp_length = (lenfunc)&ConstraintTargetList_len,
-    .mp_subscript = (binaryfunc)&ConstraintTargetList_subscript,
+static PySequenceMethods ConstraintTargetList_Sequence = {
+    .sq_length = (lenfunc)&ConstraintTargetList_len,
+    .sq_item = (ssizeargfunc)&ConstraintTargetList_item,
 };
 
 static PyTypeObject ConstraintTargetList_Type = {
@@ -5493,7 +4653,7 @@ static PyTypeObject ConstraintTargetList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &ConstraintTargetList_Mapping,
+    .tp_as_sequence = &ConstraintTargetList_Sequence,
 };
 
 static PyObject *ConstraintTargetList_from(ufbx_constraint_target_list list, Context *ctx) {
@@ -5516,29 +4676,19 @@ static PyObject *BonePoseList_len(BonePoseList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *BonePoseList_subscript(BonePoseList *self, PyObject *key) {
+static PyObject *BonePoseList_item(BonePoseList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return BonePose_from(&self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return BonePose_from(&self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods BonePoseList_Mapping = {
-    .mp_length = (lenfunc)&BonePoseList_len,
-    .mp_subscript = (binaryfunc)&BonePoseList_subscript,
+static PySequenceMethods BonePoseList_Sequence = {
+    .sq_length = (lenfunc)&BonePoseList_len,
+    .sq_item = (ssizeargfunc)&BonePoseList_item,
 };
 
 static PyTypeObject BonePoseList_Type = {
@@ -5549,7 +4699,7 @@ static PyTypeObject BonePoseList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &BonePoseList_Mapping,
+    .tp_as_sequence = &BonePoseList_Sequence,
 };
 
 static PyObject *BonePoseList_from(ufbx_bone_pose_list list, Context *ctx) {
@@ -5572,29 +4722,19 @@ static PyObject *NameElementList_len(NameElementList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *NameElementList_subscript(NameElementList *self, PyObject *key) {
+static PyObject *NameElementList_item(NameElementList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return NameElement_from(&self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return NameElement_from(&self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods NameElementList_Mapping = {
-    .mp_length = (lenfunc)&NameElementList_len,
-    .mp_subscript = (binaryfunc)&NameElementList_subscript,
+static PySequenceMethods NameElementList_Sequence = {
+    .sq_length = (lenfunc)&NameElementList_len,
+    .sq_item = (ssizeargfunc)&NameElementList_item,
 };
 
 static PyTypeObject NameElementList_Type = {
@@ -5605,7 +4745,7 @@ static PyTypeObject NameElementList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &NameElementList_Mapping,
+    .tp_as_sequence = &NameElementList_Sequence,
 };
 
 static PyObject *NameElementList_from(ufbx_name_element_list list, Context *ctx) {
@@ -5628,29 +4768,19 @@ static PyObject *WarningList_len(WarningList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *WarningList_subscript(WarningList *self, PyObject *key) {
+static PyObject *WarningList_item(WarningList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return Warning_from(&self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return Warning_from(&self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods WarningList_Mapping = {
-    .mp_length = (lenfunc)&WarningList_len,
-    .mp_subscript = (binaryfunc)&WarningList_subscript,
+static PySequenceMethods WarningList_Sequence = {
+    .sq_length = (lenfunc)&WarningList_len,
+    .sq_item = (ssizeargfunc)&WarningList_item,
 };
 
 static PyTypeObject WarningList_Type = {
@@ -5661,7 +4791,7 @@ static PyTypeObject WarningList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &WarningList_Mapping,
+    .tp_as_sequence = &WarningList_Sequence,
 };
 
 static PyObject *WarningList_from(ufbx_warning_list list, Context *ctx) {
@@ -5684,29 +4814,19 @@ static PyObject *BakedVec3List_len(BakedVec3List *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *BakedVec3List_subscript(BakedVec3List *self, PyObject *key) {
+static PyObject *BakedVec3List_item(BakedVec3List *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return BakedVec3_from(&self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return BakedVec3_from(&self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods BakedVec3List_Mapping = {
-    .mp_length = (lenfunc)&BakedVec3List_len,
-    .mp_subscript = (binaryfunc)&BakedVec3List_subscript,
+static PySequenceMethods BakedVec3List_Sequence = {
+    .sq_length = (lenfunc)&BakedVec3List_len,
+    .sq_item = (ssizeargfunc)&BakedVec3List_item,
 };
 
 static PyTypeObject BakedVec3List_Type = {
@@ -5717,7 +4837,7 @@ static PyTypeObject BakedVec3List_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &BakedVec3List_Mapping,
+    .tp_as_sequence = &BakedVec3List_Sequence,
 };
 
 static PyObject *BakedVec3List_from(ufbx_baked_vec3_list list, Context *ctx) {
@@ -5740,29 +4860,19 @@ static PyObject *BakedQuatList_len(BakedQuatList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *BakedQuatList_subscript(BakedQuatList *self, PyObject *key) {
+static PyObject *BakedQuatList_item(BakedQuatList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return BakedQuat_from(&self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return BakedQuat_from(&self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods BakedQuatList_Mapping = {
-    .mp_length = (lenfunc)&BakedQuatList_len,
-    .mp_subscript = (binaryfunc)&BakedQuatList_subscript,
+static PySequenceMethods BakedQuatList_Sequence = {
+    .sq_length = (lenfunc)&BakedQuatList_len,
+    .sq_item = (ssizeargfunc)&BakedQuatList_item,
 };
 
 static PyTypeObject BakedQuatList_Type = {
@@ -5773,7 +4883,7 @@ static PyTypeObject BakedQuatList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &BakedQuatList_Mapping,
+    .tp_as_sequence = &BakedQuatList_Sequence,
 };
 
 static PyObject *BakedQuatList_from(ufbx_baked_quat_list list, Context *ctx) {
@@ -5796,29 +4906,19 @@ static PyObject *BakedNodeList_len(BakedNodeList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *BakedNodeList_subscript(BakedNodeList *self, PyObject *key) {
+static PyObject *BakedNodeList_item(BakedNodeList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return BakedNode_from(&self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return BakedNode_from(&self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods BakedNodeList_Mapping = {
-    .mp_length = (lenfunc)&BakedNodeList_len,
-    .mp_subscript = (binaryfunc)&BakedNodeList_subscript,
+static PySequenceMethods BakedNodeList_Sequence = {
+    .sq_length = (lenfunc)&BakedNodeList_len,
+    .sq_item = (ssizeargfunc)&BakedNodeList_item,
 };
 
 static PyTypeObject BakedNodeList_Type = {
@@ -5829,7 +4929,7 @@ static PyTypeObject BakedNodeList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &BakedNodeList_Mapping,
+    .tp_as_sequence = &BakedNodeList_Sequence,
 };
 
 static PyObject *BakedNodeList_from(ufbx_baked_node_list list, Context *ctx) {
@@ -5852,29 +4952,19 @@ static PyObject *BakedPropList_len(BakedPropList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *BakedPropList_subscript(BakedPropList *self, PyObject *key) {
+static PyObject *BakedPropList_item(BakedPropList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return BakedProp_from(&self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return BakedProp_from(&self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods BakedPropList_Mapping = {
-    .mp_length = (lenfunc)&BakedPropList_len,
-    .mp_subscript = (binaryfunc)&BakedPropList_subscript,
+static PySequenceMethods BakedPropList_Sequence = {
+    .sq_length = (lenfunc)&BakedPropList_len,
+    .sq_item = (ssizeargfunc)&BakedPropList_item,
 };
 
 static PyTypeObject BakedPropList_Type = {
@@ -5885,7 +4975,7 @@ static PyTypeObject BakedPropList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &BakedPropList_Mapping,
+    .tp_as_sequence = &BakedPropList_Sequence,
 };
 
 static PyObject *BakedPropList_from(ufbx_baked_prop_list list, Context *ctx) {
@@ -5908,29 +4998,19 @@ static PyObject *BakedElementList_len(BakedElementList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *BakedElementList_subscript(BakedElementList *self, PyObject *key) {
+static PyObject *BakedElementList_item(BakedElementList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return BakedElement_from(&self->data.data[index], self->ctx);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return BakedElement_from(&self->data.data[index], self->ctx);
 }
 
-static PyMappingMethods BakedElementList_Mapping = {
-    .mp_length = (lenfunc)&BakedElementList_len,
-    .mp_subscript = (binaryfunc)&BakedElementList_subscript,
+static PySequenceMethods BakedElementList_Sequence = {
+    .sq_length = (lenfunc)&BakedElementList_len,
+    .sq_item = (ssizeargfunc)&BakedElementList_item,
 };
 
 static PyTypeObject BakedElementList_Type = {
@@ -5941,7 +5021,7 @@ static PyTypeObject BakedElementList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &BakedElementList_Mapping,
+    .tp_as_sequence = &BakedElementList_Sequence,
 };
 
 static PyObject *BakedElementList_from(ufbx_baked_element_list list, Context *ctx) {
@@ -5964,29 +5044,19 @@ static PyObject *ConstUint32List_len(ConstUint32List *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *ConstUint32List_subscript(ConstUint32List *self, PyObject *key) {
+static PyObject *ConstUint32List_item(ConstUint32List *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return PyLong_FromUnsignedLong((unsigned long)self->data.data[index]);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return PyLong_FromUnsignedLong((unsigned long)self->data.data[index]);
 }
 
-static PyMappingMethods ConstUint32List_Mapping = {
-    .mp_length = (lenfunc)&ConstUint32List_len,
-    .mp_subscript = (binaryfunc)&ConstUint32List_subscript,
+static PySequenceMethods ConstUint32List_Sequence = {
+    .sq_length = (lenfunc)&ConstUint32List_len,
+    .sq_item = (ssizeargfunc)&ConstUint32List_item,
 };
 
 static PyTypeObject ConstUint32List_Type = {
@@ -5997,7 +5067,7 @@ static PyTypeObject ConstUint32List_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &ConstUint32List_Mapping,
+    .tp_as_sequence = &ConstUint32List_Sequence,
 };
 
 static PyObject *ConstUint32List_from(ufbx_const_uint32_list list, Context *ctx) {
@@ -6020,29 +5090,19 @@ static PyObject *ConstRealList_len(ConstRealList *self, PyObject *key) {
     return Py_NewRef(self->count);
 }
 
-static PyObject *ConstRealList_subscript(ConstRealList *self, PyObject *key) {
+static PyObject *ConstRealList_item(ConstRealList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return PyFloat_FromDouble(self->data.data[index]);
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return PyFloat_FromDouble(self->data.data[index]);
 }
 
-static PyMappingMethods ConstRealList_Mapping = {
-    .mp_length = (lenfunc)&ConstRealList_len,
-    .mp_subscript = (binaryfunc)&ConstRealList_subscript,
+static PySequenceMethods ConstRealList_Sequence = {
+    .sq_length = (lenfunc)&ConstRealList_len,
+    .sq_item = (ssizeargfunc)&ConstRealList_item,
 };
 
 static PyTypeObject ConstRealList_Type = {
@@ -6053,7 +5113,7 @@ static PyTypeObject ConstRealList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &ConstRealList_Mapping,
+    .tp_as_sequence = &ConstRealList_Sequence,
 };
 
 static PyObject *ConstRealList_from(ufbx_const_real_list list, Context *ctx) {
@@ -6076,29 +5136,19 @@ static PyObject *ConstPropOverrideDescList_len(ConstPropOverrideDescList *self, 
     return Py_NewRef(self->count);
 }
 
-static PyObject *ConstPropOverrideDescList_subscript(ConstPropOverrideDescList *self, PyObject *key) {
+static PyObject *ConstPropOverrideDescList_item(ConstPropOverrideDescList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return to_pyobject_todo("ufbx_prop_override_desc");
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return to_pyobject_todo("ufbx_prop_override_desc");
 }
 
-static PyMappingMethods ConstPropOverrideDescList_Mapping = {
-    .mp_length = (lenfunc)&ConstPropOverrideDescList_len,
-    .mp_subscript = (binaryfunc)&ConstPropOverrideDescList_subscript,
+static PySequenceMethods ConstPropOverrideDescList_Sequence = {
+    .sq_length = (lenfunc)&ConstPropOverrideDescList_len,
+    .sq_item = (ssizeargfunc)&ConstPropOverrideDescList_item,
 };
 
 static PyTypeObject ConstPropOverrideDescList_Type = {
@@ -6109,7 +5159,7 @@ static PyTypeObject ConstPropOverrideDescList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &ConstPropOverrideDescList_Mapping,
+    .tp_as_sequence = &ConstPropOverrideDescList_Sequence,
 };
 
 static PyObject *ConstPropOverrideDescList_from(ufbx_const_prop_override_desc_list list, Context *ctx) {
@@ -6132,29 +5182,19 @@ static PyObject *ConstTransformOverrideList_len(ConstTransformOverrideList *self
     return Py_NewRef(self->count);
 }
 
-static PyObject *ConstTransformOverrideList_subscript(ConstTransformOverrideList *self, PyObject *key) {
+static PyObject *ConstTransformOverrideList_item(ConstTransformOverrideList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    if (PyLong_Check(key)) {
-        size_t count = self->data.count;
-        Py_ssize_t index = PyLong_AsSsize_t(key);
-        if (index == -1 && PyErr_Occurred()) return NULL;
-        if (index < 0) index += (Py_ssize_t)count;
-        if (index < 0 || (size_t)index >= count) {
-            PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-            return NULL;
-        }
-        return to_pyobject_todo("ufbx_transform_override");
-    } else if (PySlice_Check(key)) {
-        return pyobject_todo("todo: slicing");
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+    size_t count = self->count;
+    if (index < 0 || (size_t)index >= count) {
+        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
+    return to_pyobject_todo("ufbx_transform_override");
 }
 
-static PyMappingMethods ConstTransformOverrideList_Mapping = {
-    .mp_length = (lenfunc)&ConstTransformOverrideList_len,
-    .mp_subscript = (binaryfunc)&ConstTransformOverrideList_subscript,
+static PySequenceMethods ConstTransformOverrideList_Sequence = {
+    .sq_length = (lenfunc)&ConstTransformOverrideList_len,
+    .sq_item = (ssizeargfunc)&ConstTransformOverrideList_item,
 };
 
 static PyTypeObject ConstTransformOverrideList_Type = {
@@ -6165,7 +5205,7 @@ static PyTypeObject ConstTransformOverrideList_Type = {
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
-    .tp_as_mapping = &ConstTransformOverrideList_Mapping,
+    .tp_as_sequence = &ConstTransformOverrideList_Sequence,
 };
 
 static PyObject *ConstTransformOverrideList_from(ufbx_const_transform_override_list list, Context *ctx) {

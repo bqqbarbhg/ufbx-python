@@ -15,6 +15,8 @@ py_structs: dict[str, "PythonStruct"] = { }
 py_enums: dict[str, "PythonEnum"] = { }
 py_funcs: dict[str, "PythonFunc"] = { }
 
+pyi_structs = set()
+
 module_types = []
 module_funcs = []
 
@@ -94,9 +96,61 @@ c_types = {
     "ufbx_real": "ufbx_real",
 }
 
+primitive_types = {
+    "void": "None",
+    "char": "int",
+    "int8_t": "int",
+    "uint8_t": "int",
+    "int32_t": "int",
+    "uint32_t": "int",
+    "int64_t": "int",
+    "uint64_t": "int",
+    "float": "float",
+    "double": "float",
+    "size_t": "int",
+    "uintptr_t": "int",
+    "ptrdiff_t": "int",
+    "bool": "bool",
+    "ufbx_real": "float",
+    "ufbx_string": "str",
+    "ufbx_blob": "bytes",
+}
+
+pod_types = {
+    "ufbx_vec2": "Vec2",
+    "ufbx_vec3": "Vec3",
+    "ufbx_vec4": "Vec4",
+    "ufbx_quat": "Quat",
+    "ufbx_transform": "Transform",
+    "ufbx_matrix": "Matrix",
+}
+
 class PythonType:
     def __init__(self, ir_type: ir.Type):
         self.ir = ir_type
+
+    def pyi_name(self) -> str:
+        prim = primitive_types.get(self.ir.key)
+        if prim:
+            return prim
+
+        pod = pod_types.get(self.ir.key)
+        if pod:
+            return pod
+
+        inner = self.ir
+        while inner.inner:
+            inner = g_file.types[inner.inner]
+
+        if inner.kind == "struct":
+            ps = py_structs[inner.key]
+            if ps.is_emitted or ps.ir.is_list:
+                if inner.key in pyi_structs:
+                    return ps.name
+                else:
+                    return f"\"{ps.name}\""
+
+        return "Any"
 
     def c_name(self) -> str:
         c_name = c_types.get(self.ir.key)
@@ -166,31 +220,23 @@ class PythonFunc:
         self.ir = ir_func
         self.name = get_func_name(self.ir)
 
-primitive_types = {
-    "void": "None",
-    "char": "int",
-    "int8_t": "int",
-    "uint8_t": "int",
-    "int32_t": "int",
-    "uint32_t": "int",
-    "int64_t": "int",
-    "uint64_t": "int",
-    "float": "float",
-    "double": "float",
-    "size_t": "int",
-    "uintptr_t": "int",
-    "ptrdiff_t": "int",
-    "bool": "bool",
-    "ufbx_real": "float",
-}
+        do_emit = True
+        if self.ir.is_inline: do_emit = False
+        if self.ir.is_ffi: do_emit = False
+        if self.ir.catch_name: do_emit = False
+        if self.ir.len_name: do_emit = False
+        if self.ir.kind in ("retain", "free"): do_emit = False
+        if self.ir.name in unsupported_funcs: do_emit = False
+        self.is_emitted = do_emit
 
-pod_types = {
-    "ufbx_vec2": "Vec2",
-    "ufbx_vec3": "Vec3",
-    "ufbx_vec4": "Vec4",
-    "ufbx_quat": "Quat",
-    "ufbx_transform": "Transform",
-}
+        args = []
+        try:
+            args = [func_arg(arg) for arg in self.ir.arguments]
+        except FunctionArgNotImplemented:
+            # TODO
+            self.is_emitted = False
+        args = [arg for arg in args if arg]
+        self.args = args
 
 manual_types = { "ufbx_string", "ufbx_blob" }
 
@@ -336,33 +382,23 @@ def emit_list(ps: PythonStruct):
     get_expr = to_pyobject(data_type.ir, get_arg, "self->ctx")
     emit()
     emit_lines(f"""
-        static PyObject *{name}_subscript({name} *self, PyObject *key) {{
+        static PyObject *{name}_item({name} *self, Py_ssize_t index) {{
             if (!self->ctx->ok) return Context_error(self->ctx);
-            if (PyLong_Check(key)) {{
-                size_t count = self->data.count;
-                Py_ssize_t index = PyLong_AsSsize_t(key);
-                if (index == -1 && PyErr_Occurred()) return NULL;
-                if (index < 0) index += (Py_ssize_t)count;
-                if (index < 0 || (size_t)index >= count) {{
-                    PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-                    return NULL;
-                }}
-                return {get_expr};
-            }} else if (PySlice_Check(key)) {{
-                return pyobject_todo("todo: slicing");
-            }} else {{
-                PyErr_SetString(PyExc_TypeError, "expected integer or slice");
+            size_t count = self->count;
+            if (index < 0 || (size_t)index >= count) {{
+                PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
                 return NULL;
             }}
+            return {get_expr};
         }}
     """)
 
     # Type declaration
     emit()
     emit_lines(f"""
-    static PyMappingMethods {ps.name}_Mapping = {{
-        .mp_length = (lenfunc)&{name}_len,
-        .mp_subscript = (binaryfunc)&{name}_subscript,
+    static PySequenceMethods {ps.name}_Sequence = {{
+        .sq_length = (lenfunc)&{name}_len,
+        .sq_item = (ssizeargfunc)&{name}_item,
     }};
 
     static PyTypeObject {ps.name}_Type = {{
@@ -373,7 +409,7 @@ def emit_list(ps: PythonStruct):
         .tp_itemsize = 0,
         .tp_flags = Py_TPFLAGS_DEFAULT,
         .tp_new = PyType_GenericNew,
-        .tp_as_mapping = &{ps.name}_Mapping,
+        .tp_as_sequence = &{ps.name}_Sequence,
     }};
     """)
 
@@ -584,25 +620,16 @@ def func_arg(arg: ir.Argument) -> Optional[PyhtonArg]:
                     """, ctx=f"{name}->ctx")
                 elif ps.ir.is_input:
                     # TODO
-                    return PyhtonArg(name, "", "", "", f"&{name}", f"""
+                    return PyhtonArg("", "", "", "", f"&{name}", f"""
                             {ps.ir.name} {name} = {{ 0 }};
                         """)
 
         raise FunctionArgNotImplemented()
 
 def emit_func(pf: PythonFunc):
-    if pf.ir.is_inline: return
-    if pf.ir.is_ffi: return
-    if pf.ir.catch_name: return
-    if pf.ir.len_name: return
-    if pf.ir.kind in ("retain", "free"): return
-    if pf.ir.name in unsupported_funcs: return
+    if not pf.is_emitted: return
 
-    try:
-        args = [func_arg(arg) for arg in pf.ir.arguments]
-    except FunctionArgNotImplemented:
-        return
-    args = [arg for arg in args if arg]
+    args = pf.args
 
     module_funcs.append(pf)
 
@@ -737,6 +764,143 @@ def emit_module_types():
     unindent()
     emit("};")
 
+def emit_pyi_prefix():
+    emit_lines(f"""
+        from typing import Any, Union, Iterator, Tuple, NamedTuple, Optional
+    """)
+
+    emit()
+    emit_lines(f"""
+        class Vec2(NamedTuple):
+            x: float
+            y: float
+
+        class Vec3(NamedTuple):
+            x: float
+            y: float
+            z: float
+
+        class Vec4(NamedTuple):
+            x: float
+            y: float
+            z: float
+            w: float
+
+        class Quat(NamedTuple):
+            x: float
+            y: float
+            z: float
+            w: float
+
+        class Transform(NamedTuple):
+            translation: Vec3
+            rotation: Quat
+            scale: Vec3
+
+        Matrix = Tuple[Vec3, Vec3, Vec3, Vec3]
+    """)
+
+    emit()
+    emit_lines(f"""
+        class UfbxError(Exception):
+            pass
+    """)
+
+    # Error types
+    err_enum = g_file.enums["ufbx_error_type"]
+    for val_key in err_enum.values:
+        if val_key == "UFBX_ERROR_NONE":
+            continue
+        value = g_file.enum_values[val_key]
+        name = ir.to_pascal(value.short_name)
+        name = f"{name}Error"
+        emit()
+        emit_lines(f"""
+            class {name}(UfbxError):
+                pass
+        """)
+
+def emit_pyi_list(ps: PythonStruct):
+    if not ps.ir.is_list:
+        return
+    if ps.ir.name in manual_types:
+        return
+
+    pyi_structs.add(ps.ir.name)
+
+    data_field = ps.fields[0]
+    ptr_type = py_types[data_field.ir.type]
+    data_type = py_types[ptr_type.ir.inner]
+
+    data_py = data_type.pyi_name()
+
+    emit()
+    emit(f"class {ps.name}:")
+    indent()
+
+    emit_lines(f"""
+        def __len__(self) -> int: ...
+        def __getitem__(self, index: int) -> {data_py}: ...
+        def __iter__(self) -> Iterator[{data_py}]: ...
+    """)
+
+    unindent()
+
+def emit_pyi_struct(ps: PythonStruct):
+    if not ps.is_emitted:
+        return
+
+    pyi_structs.add(ps.ir.name)
+
+    emit()
+    emit(f"class {ps.name}:")
+    indent()
+
+    has_any = False
+    if ps.fields:
+        for pf in ps.fields:
+            pt = py_types[pf.ir.type]
+            emit_lines(f"""
+                @property
+                def {pf.name}(self) -> {pt.pyi_name()}: ...
+            """)
+
+        has_any = True
+
+    if not has_any:
+        emit("...")
+
+    unindent()
+
+def emit_pyi_func(pf: PythonFunc):
+    if not pf.is_emitted:
+        return
+
+    def format_args():
+        for arg in pf.args:
+            if not arg.name:
+                continue
+            yield f"{arg.name}: {arg.typ}"
+
+    ret_pt = None
+    if pf.ir.return_type != "void":
+        ret_pt = py_types[pf.ir.return_type]
+
+    arg_str = ", ".join(format_args())
+    ret_str = "None"
+
+    if ret_pt:
+        ret_str = ret_pt.pyi_name()
+
+    if pf.ir.nullable_return:
+        ret_str = f"Optional[{ret_str}]"
+
+    emit()
+    emit_lines(f"""
+        def {pf.name}({arg_str}) -> {ret_str}:
+            ...
+    """)
+
 def main():
     global g_argv
     global g_file
@@ -805,6 +969,20 @@ def main():
         emit_module_types()
 
         emit()
+
+    with open(os.path.join(output_path, "ufbx.pyi"), "wt", encoding="utf-8") as f:
+        g_outfile = f
+
+        emit_pyi_prefix()
+
+        for ps in py_structs.values():
+            emit_pyi_list(ps)
+
+        for ps in py_structs.values():
+            emit_pyi_struct(ps)
+
+        for pf in py_funcs.values():
+            emit_pyi_func(pf)
 
 if __name__ == "__main__":
     main()
