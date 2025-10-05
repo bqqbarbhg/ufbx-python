@@ -1369,7 +1369,7 @@ def main():
 
         emit()
 
-    with open(os.path.join(output_path, "ufbx.pyi"), "wt", encoding="utf-8") as f:
+    with open(os.path.join(output_path, "_native.pyi"), "wt", encoding="utf-8") as f:
         g_outfile = f
 
         emit_pyi_prefix()

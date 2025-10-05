@@ -119,8 +119,11 @@ static struct PyModuleDef ufbx_module = {
     .m_methods = mod_methods,
 };
 
-PyMODINIT_FUNC
-PyInit_ufbx(void)
+#ifndef MODULE_NAME
+#define MODULE_NAME PyInit__native
+#endif
+
+PyMODINIT_FUNC MODULE_NAME(void)
 {
     return PyModuleDef_Init(&ufbx_module);
 }

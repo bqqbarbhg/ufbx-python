@@ -1,7 +1,7 @@
 from setuptools import setup, Extension, find_packages
 
 ufbx_module = Extension(
-    "ufbx.native",
+    "ufbx._native",
     sources=["ufbx/native.c", "ufbx/ufbx.c"],
     extra_compile_args=["-O2"],
 )

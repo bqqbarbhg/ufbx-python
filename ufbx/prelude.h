@@ -7,6 +7,7 @@
 
 static PyObject *UfbxError = NULL;
 
+#if PY_MINOR_VERSION < 10
 static PyObject *_Py_NewRef(PyObject *obj)
 {
 	Py_XINCREF(obj);
@@ -14,6 +15,7 @@ static PyObject *_Py_NewRef(PyObject *obj)
 }
 
 #define Py_NewRef(obj) _Py_NewRef((PyObject*)(obj))
+#endif
 
 typedef struct {
 	PyObject_HEAD
@@ -297,7 +299,7 @@ static void register_pod_types(PyObject *m)
 			{ NULL },
 		};
 		PyStructSequence_Desc desc = {
-			"Vec2", "2-dimensional vector", fields, (int)array_count(fields),
+			"ufbx.Vec2", "2-dimensional vector", fields, (int)array_count(fields) - 1,
 		};
 		Vec2_Type = PyStructSequence_NewType(&desc);
 		register_type(m, Vec2_Type, "Vec2");
@@ -311,7 +313,7 @@ static void register_pod_types(PyObject *m)
 			{ NULL },
 		};
 		PyStructSequence_Desc desc = {
-			"Vec3", "3-dimensional vector", fields, (int)array_count(fields),
+			"ufbx.Vec3", "3-dimensional vector", fields, (int)array_count(fields) - 1,
 		};
 		Vec3_Type = PyStructSequence_NewType(&desc);
 		register_type(m, Vec3_Type, "Vec3");
@@ -326,7 +328,7 @@ static void register_pod_types(PyObject *m)
 			{ NULL },
 		};
 		PyStructSequence_Desc desc = {
-			"Vec4", "4-dimensional vector", fields, (int)array_count(fields),
+			"ufbx.Vec4", "4-dimensional vector", fields, (int)array_count(fields) - 1,
 		};
 		Vec4_Type = PyStructSequence_NewType(&desc);
 		register_type(m, Vec4_Type, "Vec4");
@@ -341,7 +343,7 @@ static void register_pod_types(PyObject *m)
 			{ NULL },
 		};
 		PyStructSequence_Desc desc = {
-			"Quat", "Quaternion", fields, (int)array_count(fields),
+			"ufbx.Quat", "Quaternion", fields, (int)array_count(fields) - 1,
 		};
 		Quat_Type = PyStructSequence_NewType(&desc);
 		register_type(m, Quat_Type, "Quat");
@@ -355,7 +357,7 @@ static void register_pod_types(PyObject *m)
 			{ NULL },
 		};
 		PyStructSequence_Desc desc = {
-			"Transform", "Transform", fields, (int)array_count(fields),
+			"ufbx.Transform", "Transform", fields, (int)array_count(fields) - 1,
 		};
 		Transform_Type = PyStructSequence_NewType(&desc);
 		register_type(m, Transform_Type, "Transform");
