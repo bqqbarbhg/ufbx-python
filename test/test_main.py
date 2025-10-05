@@ -40,3 +40,19 @@ def test_ignore_geometry():
     mesh = node.mesh
     assert mesh
     assert len(mesh.vertices) == 0
+
+def test_element_idenitty():
+    scene = ufbx.load_file(os.path.join(root, "blender-default.fbx"),
+        ignore_geometry=True)
+
+    a = scene.root_node
+    b = scene.root_node
+    assert a is b
+
+    a = ufbx.find_node(scene, "Cube")
+    b = ufbx.find_node(scene, "Cube")
+    assert a is b
+
+    pos_a = a.local_transform.translation
+    pos_b = a.local_transform.translation
+    assert pos_a is pos_b
