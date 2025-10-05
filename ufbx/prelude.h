@@ -60,71 +60,6 @@ static PyTypeObject *Vec4_Type;
 static PyTypeObject *Quat_Type;
 static PyTypeObject *Transform_Type;
 
-static void setup_pod_types(void)
-{
-	{
-		PyStructSequence_Field fields[] = {
-			{ "x", "X component" },
-			{ "y", "Y component" },
-		};
-		PyStructSequence_Desc desc = {
-			"Vec2", "2-dimensional vector", fields, (int)array_count(fields),
-		};
-		Vec2_Type = PyStructSequence_NewType(&desc);
-	}
-
-	{
-		PyStructSequence_Field fields[] = {
-			{ "x", "X component" },
-			{ "y", "Y component" },
-			{ "z", "Z component" },
-		};
-		PyStructSequence_Desc desc = {
-			"Vec3", "3-dimensional vector", fields, (int)array_count(fields),
-		};
-		Vec3_Type = PyStructSequence_NewType(&desc);
-	}
-
-	{
-		PyStructSequence_Field fields[] = {
-			{ "x", "X component" },
-			{ "y", "Y component" },
-			{ "z", "Z component" },
-			{ "w", "W component" },
-		};
-		PyStructSequence_Desc desc = {
-			"Vec4", "4-dimensional vector", fields, (int)array_count(fields),
-		};
-		Vec4_Type = PyStructSequence_NewType(&desc);
-	}
-
-	{
-		PyStructSequence_Field fields[] = {
-			{ "x", "X component" },
-			{ "y", "Y component" },
-			{ "z", "Z component" },
-			{ "w", "W component" },
-		};
-		PyStructSequence_Desc desc = {
-			"Quat", "Quaternion", fields, (int)array_count(fields),
-		};
-		Quat_Type = PyStructSequence_NewType(&desc);
-	}
-
-	{
-		PyStructSequence_Field fields[] = {
-			{ "translation", "Translationj" },
-			{ "rotation", "Rotation" },
-			{ "scale", "Scale" },
-		};
-		PyStructSequence_Desc desc = {
-			"Transform", "Transform", fields, (int)array_count(fields),
-		};
-		Transform_Type = PyStructSequence_NewType(&desc);
-	}
-
-}
-
 static PyObject* Vec2_from(const ufbx_vec2 *v)
 {
 	PyObject *r = PyStructSequence_New(Vec2_Type);
@@ -233,3 +168,79 @@ static bool register_type(PyObject *m, PyTypeObject *type, const char *name)
 	}
 	return true;
 }
+
+static void register_pod_types(PyObject *m)
+{
+	{
+		PyStructSequence_Field fields[] = {
+			{ "x", "X component" },
+			{ "y", "Y component" },
+			{ NULL },
+		};
+		PyStructSequence_Desc desc = {
+			"Vec2", "2-dimensional vector", fields, (int)array_count(fields),
+		};
+		Vec2_Type = PyStructSequence_NewType(&desc);
+		register_type(m, Vec2_Type, "Vec2");
+	}
+
+	{
+		PyStructSequence_Field fields[] = {
+			{ "x", "X component" },
+			{ "y", "Y component" },
+			{ "z", "Z component" },
+			{ NULL },
+		};
+		PyStructSequence_Desc desc = {
+			"Vec3", "3-dimensional vector", fields, (int)array_count(fields),
+		};
+		Vec3_Type = PyStructSequence_NewType(&desc);
+		register_type(m, Vec3_Type, "Vec3");
+	}
+
+	{
+		PyStructSequence_Field fields[] = {
+			{ "x", "X component" },
+			{ "y", "Y component" },
+			{ "z", "Z component" },
+			{ "w", "W component" },
+			{ NULL },
+		};
+		PyStructSequence_Desc desc = {
+			"Vec4", "4-dimensional vector", fields, (int)array_count(fields),
+		};
+		Vec4_Type = PyStructSequence_NewType(&desc);
+		register_type(m, Vec4_Type, "Vec4");
+	}
+
+	{
+		PyStructSequence_Field fields[] = {
+			{ "x", "X component" },
+			{ "y", "Y component" },
+			{ "z", "Z component" },
+			{ "w", "W component" },
+			{ NULL },
+		};
+		PyStructSequence_Desc desc = {
+			"Quat", "Quaternion", fields, (int)array_count(fields),
+		};
+		Quat_Type = PyStructSequence_NewType(&desc);
+		register_type(m, Quat_Type, "Quat");
+	}
+
+	{
+		PyStructSequence_Field fields[] = {
+			{ "translation", "Translationj" },
+			{ "rotation", "Rotation" },
+			{ "scale", "Scale" },
+			{ NULL },
+		};
+		PyStructSequence_Desc desc = {
+			"Transform", "Transform", fields, (int)array_count(fields),
+		};
+		Transform_Type = PyStructSequence_NewType(&desc);
+		register_type(m, Transform_Type, "Transform");
+	}
+
+}
+

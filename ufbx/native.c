@@ -46,6 +46,8 @@ static int ufbx_module_exec(PyObject *m)
         register_type(m, generated_types[i].type, generated_types[i].name);
     }
 
+    register_pod_types(m);
+
     return 0;
 }
 
