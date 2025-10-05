@@ -3,3 +3,6 @@
 build/
 proj/
 __pycache__/
+dist/
+*.egg-info/
+*.pyd

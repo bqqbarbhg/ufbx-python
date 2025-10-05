@@ -360,8 +360,8 @@ def emit_struct(ps: PythonStruct):
         slot_count = len(ps.fields)
         emit(f"static PyGetSetDef {ps.name}_getset[] = {{")
         indent()
-        for field in ps.fields:
-            emit(f"{{ \"{field.name}\", (getter){ps.name}_get_{pf.lower}, NULL, \"{field.name}\" }},")
+        for pf in ps.fields:
+            emit(f"{{ \"{pf.name}\", (getter){ps.name}_get_{pf.lower}, NULL, \"{pf.name}\" }},")
         emit("{ NULL },")
         unindent()
         emit("};")
@@ -452,7 +452,7 @@ if __name__ == "__main__":
 
     output_path = argv.o
     if not output_path:
-        output_path = os.path.join(src_path, "..", "src", "ufbx")
+        output_path = os.path.join(src_path, "..", "ufbx")
 
     with open(input_file, "rt") as f:
         file = ir.from_json(ir.File, json.load(f))
@@ -461,7 +461,7 @@ if __name__ == "__main__":
     if not os.path.exists(output_path):
         os.makedirs(output_path, exist_ok=True)
 
-    with open(os.path.join(output_path, "native", "generated.h"), "wt", encoding="utf-8") as f:
+    with open(os.path.join(output_path, "generated.h"), "wt", encoding="utf-8") as f:
         g_outfile = f
 
         emit_prefix()

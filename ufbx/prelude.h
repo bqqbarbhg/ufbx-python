@@ -5,6 +5,14 @@
 
 #define array_count(arr) (sizeof(arr) / sizeof(*(arr)))
 
+static PyObject *_Py_NewRef(PyObject *obj)
+{
+	Py_XINCREF(obj);
+	return obj;
+}
+
+#define Py_NewRef(obj) _Py_NewRef((PyObject*)(obj))
+
 typedef struct {
 	PyObject_HEAD
 	bool ok;
@@ -180,6 +188,7 @@ static PyObject* Blob_from(ufbx_blob v)
 
 static PyObject* Element_from(void *p_elem, Context *ctx)
 {
+	if (!p_elem) return Py_None;
     if (!ctx->ok) return Context_error(ctx);
 
     ufbx_element *elem = (ufbx_element*)p_elem;
@@ -218,7 +227,7 @@ static bool register_type(PyObject *m, PyTypeObject *type, const char *name)
 		return false;
 	}
 	if (name) {
-		if (PyModule_AddObjectRef(m, name, (PyObject*)type) < 0) {
+		if (PyModule_AddObject(m, name, Py_NewRef(type)) < 0) {
 			return false;
 		}
 	}

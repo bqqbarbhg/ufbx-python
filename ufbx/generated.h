@@ -5409,7 +5409,7 @@ static PyObject *VoidList_get_count(VoidList *self, void *closure) {
 }
 
 static PyGetSetDef VoidList_getset[] = {
-    { "data", (getter)VoidList_get_count, NULL, "data" },
+    { "data", (getter)VoidList_get_data, NULL, "data" },
     { "count", (getter)VoidList_get_count, NULL, "count" },
     { NULL },
 };
@@ -5487,10 +5487,10 @@ static PyObject *DomValue_get_value_float(DomValue *self, void *closure) {
 }
 
 static PyGetSetDef DomValue_getset[] = {
-    { "type", (getter)DomValue_get_value_float, NULL, "type" },
-    { "value_str", (getter)DomValue_get_value_float, NULL, "value_str" },
-    { "value_blob", (getter)DomValue_get_value_float, NULL, "value_blob" },
-    { "value_int", (getter)DomValue_get_value_float, NULL, "value_int" },
+    { "type", (getter)DomValue_get_type, NULL, "type" },
+    { "value_str", (getter)DomValue_get_value_str, NULL, "value_str" },
+    { "value_blob", (getter)DomValue_get_value_blob, NULL, "value_blob" },
+    { "value_int", (getter)DomValue_get_value_int, NULL, "value_int" },
     { "value_float", (getter)DomValue_get_value_float, NULL, "value_float" },
     { NULL },
 };
@@ -5548,8 +5548,8 @@ static PyObject *DomNode_get_values(DomNode *self, void *closure) {
 }
 
 static PyGetSetDef DomNode_getset[] = {
-    { "name", (getter)DomNode_get_values, NULL, "name" },
-    { "children", (getter)DomNode_get_values, NULL, "children" },
+    { "name", (getter)DomNode_get_name, NULL, "name" },
+    { "children", (getter)DomNode_get_children, NULL, "children" },
     { "values", (getter)DomNode_get_values, NULL, "values" },
     { NULL },
 };
@@ -5637,11 +5637,11 @@ static PyObject *Prop_get_value_int(Prop *self, void *closure) {
 }
 
 static PyGetSetDef Prop_getset[] = {
-    { "name", (getter)Prop_get_value_int, NULL, "name" },
-    { "type", (getter)Prop_get_value_int, NULL, "type" },
-    { "flags", (getter)Prop_get_value_int, NULL, "flags" },
-    { "value_str", (getter)Prop_get_value_int, NULL, "value_str" },
-    { "value_blob", (getter)Prop_get_value_int, NULL, "value_blob" },
+    { "name", (getter)Prop_get_name, NULL, "name" },
+    { "type", (getter)Prop_get_type, NULL, "type" },
+    { "flags", (getter)Prop_get_flags, NULL, "flags" },
+    { "value_str", (getter)Prop_get_value_str, NULL, "value_str" },
+    { "value_blob", (getter)Prop_get_value_blob, NULL, "value_blob" },
     { "value_int", (getter)Prop_get_value_int, NULL, "value_int" },
     { NULL },
 };
@@ -5699,8 +5699,8 @@ static PyObject *Props_get_defaults(Props *self, void *closure) {
 }
 
 static PyGetSetDef Props_getset[] = {
-    { "props", (getter)Props_get_defaults, NULL, "props" },
-    { "num_animated", (getter)Props_get_defaults, NULL, "num_animated" },
+    { "props", (getter)Props_get_props, NULL, "props" },
+    { "num_animated", (getter)Props_get_num_animated, NULL, "num_animated" },
     { "defaults", (getter)Props_get_defaults, NULL, "defaults" },
     { NULL },
 };
@@ -5768,9 +5768,9 @@ static PyObject *Connection_get_dst_prop(Connection *self, void *closure) {
 }
 
 static PyGetSetDef Connection_getset[] = {
-    { "src", (getter)Connection_get_dst_prop, NULL, "src" },
-    { "dst", (getter)Connection_get_dst_prop, NULL, "dst" },
-    { "src_prop", (getter)Connection_get_dst_prop, NULL, "src_prop" },
+    { "src", (getter)Connection_get_src, NULL, "src" },
+    { "dst", (getter)Connection_get_dst, NULL, "dst" },
+    { "src_prop", (getter)Connection_get_src_prop, NULL, "src_prop" },
     { "dst_prop", (getter)Connection_get_dst_prop, NULL, "dst_prop" },
     { NULL },
 };
@@ -5898,15 +5898,15 @@ static PyObject *Element_get_scene(Element *self, void *closure) {
 }
 
 static PyGetSetDef Element_getset[] = {
-    { "name", (getter)Element_get_scene, NULL, "name" },
-    { "props", (getter)Element_get_scene, NULL, "props" },
-    { "element_id", (getter)Element_get_scene, NULL, "element_id" },
-    { "typed_id", (getter)Element_get_scene, NULL, "typed_id" },
-    { "instances", (getter)Element_get_scene, NULL, "instances" },
-    { "type", (getter)Element_get_scene, NULL, "type" },
-    { "connections_src", (getter)Element_get_scene, NULL, "connections_src" },
-    { "connections_dst", (getter)Element_get_scene, NULL, "connections_dst" },
-    { "dom_node", (getter)Element_get_scene, NULL, "dom_node" },
+    { "name", (getter)Element_get_name, NULL, "name" },
+    { "props", (getter)Element_get_props, NULL, "props" },
+    { "element_id", (getter)Element_get_element_id, NULL, "element_id" },
+    { "typed_id", (getter)Element_get_typed_id, NULL, "typed_id" },
+    { "instances", (getter)Element_get_instances, NULL, "instances" },
+    { "type", (getter)Element_get_type, NULL, "type" },
+    { "connections_src", (getter)Element_get_connections_src, NULL, "connections_src" },
+    { "connections_dst", (getter)Element_get_connections_dst, NULL, "connections_dst" },
+    { "dom_node", (getter)Element_get_dom_node, NULL, "dom_node" },
     { "scene", (getter)Element_get_scene, NULL, "scene" },
     { NULL },
 };
@@ -5969,8 +5969,8 @@ static PyObject *Unknown_get_sub_type(Unknown *self, void *closure) {
 }
 
 static PyGetSetDef Unknown_getset[] = {
-    { "type", (getter)Unknown_get_sub_type, NULL, "type" },
-    { "super_type", (getter)Unknown_get_sub_type, NULL, "super_type" },
+    { "type", (getter)Unknown_get_type, NULL, "type" },
+    { "super_type", (getter)Unknown_get_super_type, NULL, "super_type" },
     { "sub_type", (getter)Unknown_get_sub_type, NULL, "sub_type" },
     { NULL },
 };
@@ -6424,47 +6424,47 @@ static PyObject *Node_get_node_depth(Node *self, void *closure) {
 }
 
 static PyGetSetDef Node_getset[] = {
-    { "parent", (getter)Node_get_node_depth, NULL, "parent" },
-    { "children", (getter)Node_get_node_depth, NULL, "children" },
-    { "mesh", (getter)Node_get_node_depth, NULL, "mesh" },
-    { "light", (getter)Node_get_node_depth, NULL, "light" },
-    { "camera", (getter)Node_get_node_depth, NULL, "camera" },
-    { "bone", (getter)Node_get_node_depth, NULL, "bone" },
-    { "attrib", (getter)Node_get_node_depth, NULL, "attrib" },
-    { "geometry_transform_helper", (getter)Node_get_node_depth, NULL, "geometry_transform_helper" },
-    { "scale_helper", (getter)Node_get_node_depth, NULL, "scale_helper" },
-    { "attrib_type", (getter)Node_get_node_depth, NULL, "attrib_type" },
-    { "all_attribs", (getter)Node_get_node_depth, NULL, "all_attribs" },
-    { "inherit_mode", (getter)Node_get_node_depth, NULL, "inherit_mode" },
-    { "original_inherit_mode", (getter)Node_get_node_depth, NULL, "original_inherit_mode" },
-    { "local_transform", (getter)Node_get_node_depth, NULL, "local_transform" },
-    { "geometry_transform", (getter)Node_get_node_depth, NULL, "geometry_transform" },
-    { "inherit_scale", (getter)Node_get_node_depth, NULL, "inherit_scale" },
-    { "inherit_scale_node", (getter)Node_get_node_depth, NULL, "inherit_scale_node" },
-    { "rotation_order", (getter)Node_get_node_depth, NULL, "rotation_order" },
-    { "euler_rotation", (getter)Node_get_node_depth, NULL, "euler_rotation" },
-    { "node_to_parent", (getter)Node_get_node_depth, NULL, "node_to_parent" },
-    { "node_to_world", (getter)Node_get_node_depth, NULL, "node_to_world" },
-    { "geometry_to_node", (getter)Node_get_node_depth, NULL, "geometry_to_node" },
-    { "geometry_to_world", (getter)Node_get_node_depth, NULL, "geometry_to_world" },
-    { "unscaled_node_to_world", (getter)Node_get_node_depth, NULL, "unscaled_node_to_world" },
-    { "adjust_pre_translation", (getter)Node_get_node_depth, NULL, "adjust_pre_translation" },
-    { "adjust_pre_rotation", (getter)Node_get_node_depth, NULL, "adjust_pre_rotation" },
-    { "adjust_pre_scale", (getter)Node_get_node_depth, NULL, "adjust_pre_scale" },
-    { "adjust_post_rotation", (getter)Node_get_node_depth, NULL, "adjust_post_rotation" },
-    { "adjust_post_scale", (getter)Node_get_node_depth, NULL, "adjust_post_scale" },
-    { "adjust_translation_scale", (getter)Node_get_node_depth, NULL, "adjust_translation_scale" },
-    { "adjust_mirror_axis", (getter)Node_get_node_depth, NULL, "adjust_mirror_axis" },
-    { "materials", (getter)Node_get_node_depth, NULL, "materials" },
-    { "bind_pose", (getter)Node_get_node_depth, NULL, "bind_pose" },
-    { "visible", (getter)Node_get_node_depth, NULL, "visible" },
-    { "is_root", (getter)Node_get_node_depth, NULL, "is_root" },
-    { "has_geometry_transform", (getter)Node_get_node_depth, NULL, "has_geometry_transform" },
-    { "has_adjust_transform", (getter)Node_get_node_depth, NULL, "has_adjust_transform" },
-    { "has_root_adjust_transform", (getter)Node_get_node_depth, NULL, "has_root_adjust_transform" },
-    { "is_geometry_transform_helper", (getter)Node_get_node_depth, NULL, "is_geometry_transform_helper" },
-    { "is_scale_helper", (getter)Node_get_node_depth, NULL, "is_scale_helper" },
-    { "is_scale_compensate_parent", (getter)Node_get_node_depth, NULL, "is_scale_compensate_parent" },
+    { "parent", (getter)Node_get_parent, NULL, "parent" },
+    { "children", (getter)Node_get_children, NULL, "children" },
+    { "mesh", (getter)Node_get_mesh, NULL, "mesh" },
+    { "light", (getter)Node_get_light, NULL, "light" },
+    { "camera", (getter)Node_get_camera, NULL, "camera" },
+    { "bone", (getter)Node_get_bone, NULL, "bone" },
+    { "attrib", (getter)Node_get_attrib, NULL, "attrib" },
+    { "geometry_transform_helper", (getter)Node_get_geometry_transform_helper, NULL, "geometry_transform_helper" },
+    { "scale_helper", (getter)Node_get_scale_helper, NULL, "scale_helper" },
+    { "attrib_type", (getter)Node_get_attrib_type, NULL, "attrib_type" },
+    { "all_attribs", (getter)Node_get_all_attribs, NULL, "all_attribs" },
+    { "inherit_mode", (getter)Node_get_inherit_mode, NULL, "inherit_mode" },
+    { "original_inherit_mode", (getter)Node_get_original_inherit_mode, NULL, "original_inherit_mode" },
+    { "local_transform", (getter)Node_get_local_transform, NULL, "local_transform" },
+    { "geometry_transform", (getter)Node_get_geometry_transform, NULL, "geometry_transform" },
+    { "inherit_scale", (getter)Node_get_inherit_scale, NULL, "inherit_scale" },
+    { "inherit_scale_node", (getter)Node_get_inherit_scale_node, NULL, "inherit_scale_node" },
+    { "rotation_order", (getter)Node_get_rotation_order, NULL, "rotation_order" },
+    { "euler_rotation", (getter)Node_get_euler_rotation, NULL, "euler_rotation" },
+    { "node_to_parent", (getter)Node_get_node_to_parent, NULL, "node_to_parent" },
+    { "node_to_world", (getter)Node_get_node_to_world, NULL, "node_to_world" },
+    { "geometry_to_node", (getter)Node_get_geometry_to_node, NULL, "geometry_to_node" },
+    { "geometry_to_world", (getter)Node_get_geometry_to_world, NULL, "geometry_to_world" },
+    { "unscaled_node_to_world", (getter)Node_get_unscaled_node_to_world, NULL, "unscaled_node_to_world" },
+    { "adjust_pre_translation", (getter)Node_get_adjust_pre_translation, NULL, "adjust_pre_translation" },
+    { "adjust_pre_rotation", (getter)Node_get_adjust_pre_rotation, NULL, "adjust_pre_rotation" },
+    { "adjust_pre_scale", (getter)Node_get_adjust_pre_scale, NULL, "adjust_pre_scale" },
+    { "adjust_post_rotation", (getter)Node_get_adjust_post_rotation, NULL, "adjust_post_rotation" },
+    { "adjust_post_scale", (getter)Node_get_adjust_post_scale, NULL, "adjust_post_scale" },
+    { "adjust_translation_scale", (getter)Node_get_adjust_translation_scale, NULL, "adjust_translation_scale" },
+    { "adjust_mirror_axis", (getter)Node_get_adjust_mirror_axis, NULL, "adjust_mirror_axis" },
+    { "materials", (getter)Node_get_materials, NULL, "materials" },
+    { "bind_pose", (getter)Node_get_bind_pose, NULL, "bind_pose" },
+    { "visible", (getter)Node_get_visible, NULL, "visible" },
+    { "is_root", (getter)Node_get_is_root, NULL, "is_root" },
+    { "has_geometry_transform", (getter)Node_get_has_geometry_transform, NULL, "has_geometry_transform" },
+    { "has_adjust_transform", (getter)Node_get_has_adjust_transform, NULL, "has_adjust_transform" },
+    { "has_root_adjust_transform", (getter)Node_get_has_root_adjust_transform, NULL, "has_root_adjust_transform" },
+    { "is_geometry_transform_helper", (getter)Node_get_is_geometry_transform_helper, NULL, "is_geometry_transform_helper" },
+    { "is_scale_helper", (getter)Node_get_is_scale_helper, NULL, "is_scale_helper" },
+    { "is_scale_compensate_parent", (getter)Node_get_is_scale_compensate_parent, NULL, "is_scale_compensate_parent" },
     { "node_depth", (getter)Node_get_node_depth, NULL, "node_depth" },
     { NULL },
 };
@@ -6553,11 +6553,11 @@ static PyObject *VertexAttrib_get_values_w(VertexAttrib *self, void *closure) {
 }
 
 static PyGetSetDef VertexAttrib_getset[] = {
-    { "exists", (getter)VertexAttrib_get_values_w, NULL, "exists" },
-    { "values", (getter)VertexAttrib_get_values_w, NULL, "values" },
-    { "indices", (getter)VertexAttrib_get_values_w, NULL, "indices" },
-    { "value_reals", (getter)VertexAttrib_get_values_w, NULL, "value_reals" },
-    { "unique_per_vertex", (getter)VertexAttrib_get_values_w, NULL, "unique_per_vertex" },
+    { "exists", (getter)VertexAttrib_get_exists, NULL, "exists" },
+    { "values", (getter)VertexAttrib_get_values, NULL, "values" },
+    { "indices", (getter)VertexAttrib_get_indices, NULL, "indices" },
+    { "value_reals", (getter)VertexAttrib_get_value_reals, NULL, "value_reals" },
+    { "unique_per_vertex", (getter)VertexAttrib_get_unique_per_vertex, NULL, "unique_per_vertex" },
     { "values_w", (getter)VertexAttrib_get_values_w, NULL, "values_w" },
     { NULL },
 };
@@ -6645,11 +6645,11 @@ static PyObject *VertexReal_get_values_w(VertexReal *self, void *closure) {
 }
 
 static PyGetSetDef VertexReal_getset[] = {
-    { "exists", (getter)VertexReal_get_values_w, NULL, "exists" },
-    { "values", (getter)VertexReal_get_values_w, NULL, "values" },
-    { "indices", (getter)VertexReal_get_values_w, NULL, "indices" },
-    { "value_reals", (getter)VertexReal_get_values_w, NULL, "value_reals" },
-    { "unique_per_vertex", (getter)VertexReal_get_values_w, NULL, "unique_per_vertex" },
+    { "exists", (getter)VertexReal_get_exists, NULL, "exists" },
+    { "values", (getter)VertexReal_get_values, NULL, "values" },
+    { "indices", (getter)VertexReal_get_indices, NULL, "indices" },
+    { "value_reals", (getter)VertexReal_get_value_reals, NULL, "value_reals" },
+    { "unique_per_vertex", (getter)VertexReal_get_unique_per_vertex, NULL, "unique_per_vertex" },
     { "values_w", (getter)VertexReal_get_values_w, NULL, "values_w" },
     { NULL },
 };
@@ -6737,11 +6737,11 @@ static PyObject *VertexVec2_get_values_w(VertexVec2 *self, void *closure) {
 }
 
 static PyGetSetDef VertexVec2_getset[] = {
-    { "exists", (getter)VertexVec2_get_values_w, NULL, "exists" },
-    { "values", (getter)VertexVec2_get_values_w, NULL, "values" },
-    { "indices", (getter)VertexVec2_get_values_w, NULL, "indices" },
-    { "value_reals", (getter)VertexVec2_get_values_w, NULL, "value_reals" },
-    { "unique_per_vertex", (getter)VertexVec2_get_values_w, NULL, "unique_per_vertex" },
+    { "exists", (getter)VertexVec2_get_exists, NULL, "exists" },
+    { "values", (getter)VertexVec2_get_values, NULL, "values" },
+    { "indices", (getter)VertexVec2_get_indices, NULL, "indices" },
+    { "value_reals", (getter)VertexVec2_get_value_reals, NULL, "value_reals" },
+    { "unique_per_vertex", (getter)VertexVec2_get_unique_per_vertex, NULL, "unique_per_vertex" },
     { "values_w", (getter)VertexVec2_get_values_w, NULL, "values_w" },
     { NULL },
 };
@@ -6829,11 +6829,11 @@ static PyObject *VertexVec3_get_values_w(VertexVec3 *self, void *closure) {
 }
 
 static PyGetSetDef VertexVec3_getset[] = {
-    { "exists", (getter)VertexVec3_get_values_w, NULL, "exists" },
-    { "values", (getter)VertexVec3_get_values_w, NULL, "values" },
-    { "indices", (getter)VertexVec3_get_values_w, NULL, "indices" },
-    { "value_reals", (getter)VertexVec3_get_values_w, NULL, "value_reals" },
-    { "unique_per_vertex", (getter)VertexVec3_get_values_w, NULL, "unique_per_vertex" },
+    { "exists", (getter)VertexVec3_get_exists, NULL, "exists" },
+    { "values", (getter)VertexVec3_get_values, NULL, "values" },
+    { "indices", (getter)VertexVec3_get_indices, NULL, "indices" },
+    { "value_reals", (getter)VertexVec3_get_value_reals, NULL, "value_reals" },
+    { "unique_per_vertex", (getter)VertexVec3_get_unique_per_vertex, NULL, "unique_per_vertex" },
     { "values_w", (getter)VertexVec3_get_values_w, NULL, "values_w" },
     { NULL },
 };
@@ -6921,11 +6921,11 @@ static PyObject *VertexVec4_get_values_w(VertexVec4 *self, void *closure) {
 }
 
 static PyGetSetDef VertexVec4_getset[] = {
-    { "exists", (getter)VertexVec4_get_values_w, NULL, "exists" },
-    { "values", (getter)VertexVec4_get_values_w, NULL, "values" },
-    { "indices", (getter)VertexVec4_get_values_w, NULL, "indices" },
-    { "value_reals", (getter)VertexVec4_get_values_w, NULL, "value_reals" },
-    { "unique_per_vertex", (getter)VertexVec4_get_values_w, NULL, "unique_per_vertex" },
+    { "exists", (getter)VertexVec4_get_exists, NULL, "exists" },
+    { "values", (getter)VertexVec4_get_values, NULL, "values" },
+    { "indices", (getter)VertexVec4_get_indices, NULL, "indices" },
+    { "value_reals", (getter)VertexVec4_get_value_reals, NULL, "value_reals" },
+    { "unique_per_vertex", (getter)VertexVec4_get_unique_per_vertex, NULL, "unique_per_vertex" },
     { "values_w", (getter)VertexVec4_get_values_w, NULL, "values_w" },
     { NULL },
 };
@@ -7003,10 +7003,10 @@ static PyObject *UvSet_get_vertex_bitangent(UvSet *self, void *closure) {
 }
 
 static PyGetSetDef UvSet_getset[] = {
-    { "name", (getter)UvSet_get_vertex_bitangent, NULL, "name" },
-    { "index", (getter)UvSet_get_vertex_bitangent, NULL, "index" },
-    { "vertex_uv", (getter)UvSet_get_vertex_bitangent, NULL, "vertex_uv" },
-    { "vertex_tangent", (getter)UvSet_get_vertex_bitangent, NULL, "vertex_tangent" },
+    { "name", (getter)UvSet_get_name, NULL, "name" },
+    { "index", (getter)UvSet_get_index, NULL, "index" },
+    { "vertex_uv", (getter)UvSet_get_vertex_uv, NULL, "vertex_uv" },
+    { "vertex_tangent", (getter)UvSet_get_vertex_tangent, NULL, "vertex_tangent" },
     { "vertex_bitangent", (getter)UvSet_get_vertex_bitangent, NULL, "vertex_bitangent" },
     { NULL },
 };
@@ -7064,8 +7064,8 @@ static PyObject *ColorSet_get_vertex_color(ColorSet *self, void *closure) {
 }
 
 static PyGetSetDef ColorSet_getset[] = {
-    { "name", (getter)ColorSet_get_vertex_color, NULL, "name" },
-    { "index", (getter)ColorSet_get_vertex_color, NULL, "index" },
+    { "name", (getter)ColorSet_get_name, NULL, "name" },
+    { "index", (getter)ColorSet_get_index, NULL, "index" },
     { "vertex_color", (getter)ColorSet_get_vertex_color, NULL, "vertex_color" },
     { NULL },
 };
@@ -7163,12 +7163,12 @@ static PyObject *MeshPart_get_face_indices(MeshPart *self, void *closure) {
 }
 
 static PyGetSetDef MeshPart_getset[] = {
-    { "index", (getter)MeshPart_get_face_indices, NULL, "index" },
-    { "num_faces", (getter)MeshPart_get_face_indices, NULL, "num_faces" },
-    { "num_triangles", (getter)MeshPart_get_face_indices, NULL, "num_triangles" },
-    { "num_empty_faces", (getter)MeshPart_get_face_indices, NULL, "num_empty_faces" },
-    { "num_point_faces", (getter)MeshPart_get_face_indices, NULL, "num_point_faces" },
-    { "num_line_faces", (getter)MeshPart_get_face_indices, NULL, "num_line_faces" },
+    { "index", (getter)MeshPart_get_index, NULL, "index" },
+    { "num_faces", (getter)MeshPart_get_num_faces, NULL, "num_faces" },
+    { "num_triangles", (getter)MeshPart_get_num_triangles, NULL, "num_triangles" },
+    { "num_empty_faces", (getter)MeshPart_get_num_empty_faces, NULL, "num_empty_faces" },
+    { "num_point_faces", (getter)MeshPart_get_num_point_faces, NULL, "num_point_faces" },
+    { "num_line_faces", (getter)MeshPart_get_num_line_faces, NULL, "num_line_faces" },
     { "face_indices", (getter)MeshPart_get_face_indices, NULL, "face_indices" },
     { NULL },
 };
@@ -7216,7 +7216,7 @@ static PyObject *FaceGroup_get_name(FaceGroup *self, void *closure) {
 }
 
 static PyGetSetDef FaceGroup_getset[] = {
-    { "id", (getter)FaceGroup_get_name, NULL, "id" },
+    { "id", (getter)FaceGroup_get_id, NULL, "id" },
     { "name", (getter)FaceGroup_get_name, NULL, "name" },
     { NULL },
 };
@@ -7264,7 +7264,7 @@ static PyObject *SubdivisionWeightRange_get_num_weights(SubdivisionWeightRange *
 }
 
 static PyGetSetDef SubdivisionWeightRange_getset[] = {
-    { "weight_begin", (getter)SubdivisionWeightRange_get_num_weights, NULL, "weight_begin" },
+    { "weight_begin", (getter)SubdivisionWeightRange_get_weight_begin, NULL, "weight_begin" },
     { "num_weights", (getter)SubdivisionWeightRange_get_num_weights, NULL, "num_weights" },
     { NULL },
 };
@@ -7312,7 +7312,7 @@ static PyObject *SubdivisionWeight_get_index(SubdivisionWeight *self, void *clos
 }
 
 static PyGetSetDef SubdivisionWeight_getset[] = {
-    { "weight", (getter)SubdivisionWeight_get_index, NULL, "weight" },
+    { "weight", (getter)SubdivisionWeight_get_weight, NULL, "weight" },
     { "index", (getter)SubdivisionWeight_get_index, NULL, "index" },
     { NULL },
 };
@@ -7420,13 +7420,13 @@ static PyObject *SubdivisionResult_get_skin_cluster_weights(SubdivisionResult *s
 }
 
 static PyGetSetDef SubdivisionResult_getset[] = {
-    { "result_memory_used", (getter)SubdivisionResult_get_skin_cluster_weights, NULL, "result_memory_used" },
-    { "temp_memory_used", (getter)SubdivisionResult_get_skin_cluster_weights, NULL, "temp_memory_used" },
-    { "result_allocs", (getter)SubdivisionResult_get_skin_cluster_weights, NULL, "result_allocs" },
-    { "temp_allocs", (getter)SubdivisionResult_get_skin_cluster_weights, NULL, "temp_allocs" },
-    { "source_vertex_ranges", (getter)SubdivisionResult_get_skin_cluster_weights, NULL, "source_vertex_ranges" },
-    { "source_vertex_weights", (getter)SubdivisionResult_get_skin_cluster_weights, NULL, "source_vertex_weights" },
-    { "skin_cluster_ranges", (getter)SubdivisionResult_get_skin_cluster_weights, NULL, "skin_cluster_ranges" },
+    { "result_memory_used", (getter)SubdivisionResult_get_result_memory_used, NULL, "result_memory_used" },
+    { "temp_memory_used", (getter)SubdivisionResult_get_temp_memory_used, NULL, "temp_memory_used" },
+    { "result_allocs", (getter)SubdivisionResult_get_result_allocs, NULL, "result_allocs" },
+    { "temp_allocs", (getter)SubdivisionResult_get_temp_allocs, NULL, "temp_allocs" },
+    { "source_vertex_ranges", (getter)SubdivisionResult_get_source_vertex_ranges, NULL, "source_vertex_ranges" },
+    { "source_vertex_weights", (getter)SubdivisionResult_get_source_vertex_weights, NULL, "source_vertex_weights" },
+    { "skin_cluster_ranges", (getter)SubdivisionResult_get_skin_cluster_ranges, NULL, "skin_cluster_ranges" },
     { "skin_cluster_weights", (getter)SubdivisionResult_get_skin_cluster_weights, NULL, "skin_cluster_weights" },
     { NULL },
 };
@@ -7979,57 +7979,57 @@ static PyObject *Mesh_get_from_tessellated_nurbs(Mesh *self, void *closure) {
 }
 
 static PyGetSetDef Mesh_getset[] = {
-    { "num_vertices", (getter)Mesh_get_from_tessellated_nurbs, NULL, "num_vertices" },
-    { "num_indices", (getter)Mesh_get_from_tessellated_nurbs, NULL, "num_indices" },
-    { "num_faces", (getter)Mesh_get_from_tessellated_nurbs, NULL, "num_faces" },
-    { "num_triangles", (getter)Mesh_get_from_tessellated_nurbs, NULL, "num_triangles" },
-    { "num_edges", (getter)Mesh_get_from_tessellated_nurbs, NULL, "num_edges" },
-    { "max_face_triangles", (getter)Mesh_get_from_tessellated_nurbs, NULL, "max_face_triangles" },
-    { "num_empty_faces", (getter)Mesh_get_from_tessellated_nurbs, NULL, "num_empty_faces" },
-    { "num_point_faces", (getter)Mesh_get_from_tessellated_nurbs, NULL, "num_point_faces" },
-    { "num_line_faces", (getter)Mesh_get_from_tessellated_nurbs, NULL, "num_line_faces" },
-    { "faces", (getter)Mesh_get_from_tessellated_nurbs, NULL, "faces" },
-    { "face_smoothing", (getter)Mesh_get_from_tessellated_nurbs, NULL, "face_smoothing" },
-    { "face_material", (getter)Mesh_get_from_tessellated_nurbs, NULL, "face_material" },
-    { "face_group", (getter)Mesh_get_from_tessellated_nurbs, NULL, "face_group" },
-    { "face_hole", (getter)Mesh_get_from_tessellated_nurbs, NULL, "face_hole" },
-    { "edges", (getter)Mesh_get_from_tessellated_nurbs, NULL, "edges" },
-    { "edge_smoothing", (getter)Mesh_get_from_tessellated_nurbs, NULL, "edge_smoothing" },
-    { "edge_crease", (getter)Mesh_get_from_tessellated_nurbs, NULL, "edge_crease" },
-    { "edge_visibility", (getter)Mesh_get_from_tessellated_nurbs, NULL, "edge_visibility" },
-    { "vertex_indices", (getter)Mesh_get_from_tessellated_nurbs, NULL, "vertex_indices" },
-    { "vertices", (getter)Mesh_get_from_tessellated_nurbs, NULL, "vertices" },
-    { "vertex_first_index", (getter)Mesh_get_from_tessellated_nurbs, NULL, "vertex_first_index" },
-    { "vertex_position", (getter)Mesh_get_from_tessellated_nurbs, NULL, "vertex_position" },
-    { "vertex_normal", (getter)Mesh_get_from_tessellated_nurbs, NULL, "vertex_normal" },
-    { "vertex_uv", (getter)Mesh_get_from_tessellated_nurbs, NULL, "vertex_uv" },
-    { "vertex_tangent", (getter)Mesh_get_from_tessellated_nurbs, NULL, "vertex_tangent" },
-    { "vertex_bitangent", (getter)Mesh_get_from_tessellated_nurbs, NULL, "vertex_bitangent" },
-    { "vertex_color", (getter)Mesh_get_from_tessellated_nurbs, NULL, "vertex_color" },
-    { "vertex_crease", (getter)Mesh_get_from_tessellated_nurbs, NULL, "vertex_crease" },
-    { "uv_sets", (getter)Mesh_get_from_tessellated_nurbs, NULL, "uv_sets" },
-    { "color_sets", (getter)Mesh_get_from_tessellated_nurbs, NULL, "color_sets" },
-    { "materials", (getter)Mesh_get_from_tessellated_nurbs, NULL, "materials" },
-    { "face_groups", (getter)Mesh_get_from_tessellated_nurbs, NULL, "face_groups" },
-    { "material_parts", (getter)Mesh_get_from_tessellated_nurbs, NULL, "material_parts" },
-    { "face_group_parts", (getter)Mesh_get_from_tessellated_nurbs, NULL, "face_group_parts" },
-    { "material_part_usage_order", (getter)Mesh_get_from_tessellated_nurbs, NULL, "material_part_usage_order" },
-    { "skinned_is_local", (getter)Mesh_get_from_tessellated_nurbs, NULL, "skinned_is_local" },
-    { "skinned_position", (getter)Mesh_get_from_tessellated_nurbs, NULL, "skinned_position" },
-    { "skinned_normal", (getter)Mesh_get_from_tessellated_nurbs, NULL, "skinned_normal" },
-    { "skin_deformers", (getter)Mesh_get_from_tessellated_nurbs, NULL, "skin_deformers" },
-    { "blend_deformers", (getter)Mesh_get_from_tessellated_nurbs, NULL, "blend_deformers" },
-    { "cache_deformers", (getter)Mesh_get_from_tessellated_nurbs, NULL, "cache_deformers" },
-    { "all_deformers", (getter)Mesh_get_from_tessellated_nurbs, NULL, "all_deformers" },
-    { "subdivision_preview_levels", (getter)Mesh_get_from_tessellated_nurbs, NULL, "subdivision_preview_levels" },
-    { "subdivision_render_levels", (getter)Mesh_get_from_tessellated_nurbs, NULL, "subdivision_render_levels" },
-    { "subdivision_display_mode", (getter)Mesh_get_from_tessellated_nurbs, NULL, "subdivision_display_mode" },
-    { "subdivision_boundary", (getter)Mesh_get_from_tessellated_nurbs, NULL, "subdivision_boundary" },
-    { "subdivision_uv_boundary", (getter)Mesh_get_from_tessellated_nurbs, NULL, "subdivision_uv_boundary" },
-    { "reversed_winding", (getter)Mesh_get_from_tessellated_nurbs, NULL, "reversed_winding" },
-    { "generated_normals", (getter)Mesh_get_from_tessellated_nurbs, NULL, "generated_normals" },
-    { "subdivision_evaluated", (getter)Mesh_get_from_tessellated_nurbs, NULL, "subdivision_evaluated" },
-    { "subdivision_result", (getter)Mesh_get_from_tessellated_nurbs, NULL, "subdivision_result" },
+    { "num_vertices", (getter)Mesh_get_num_vertices, NULL, "num_vertices" },
+    { "num_indices", (getter)Mesh_get_num_indices, NULL, "num_indices" },
+    { "num_faces", (getter)Mesh_get_num_faces, NULL, "num_faces" },
+    { "num_triangles", (getter)Mesh_get_num_triangles, NULL, "num_triangles" },
+    { "num_edges", (getter)Mesh_get_num_edges, NULL, "num_edges" },
+    { "max_face_triangles", (getter)Mesh_get_max_face_triangles, NULL, "max_face_triangles" },
+    { "num_empty_faces", (getter)Mesh_get_num_empty_faces, NULL, "num_empty_faces" },
+    { "num_point_faces", (getter)Mesh_get_num_point_faces, NULL, "num_point_faces" },
+    { "num_line_faces", (getter)Mesh_get_num_line_faces, NULL, "num_line_faces" },
+    { "faces", (getter)Mesh_get_faces, NULL, "faces" },
+    { "face_smoothing", (getter)Mesh_get_face_smoothing, NULL, "face_smoothing" },
+    { "face_material", (getter)Mesh_get_face_material, NULL, "face_material" },
+    { "face_group", (getter)Mesh_get_face_group, NULL, "face_group" },
+    { "face_hole", (getter)Mesh_get_face_hole, NULL, "face_hole" },
+    { "edges", (getter)Mesh_get_edges, NULL, "edges" },
+    { "edge_smoothing", (getter)Mesh_get_edge_smoothing, NULL, "edge_smoothing" },
+    { "edge_crease", (getter)Mesh_get_edge_crease, NULL, "edge_crease" },
+    { "edge_visibility", (getter)Mesh_get_edge_visibility, NULL, "edge_visibility" },
+    { "vertex_indices", (getter)Mesh_get_vertex_indices, NULL, "vertex_indices" },
+    { "vertices", (getter)Mesh_get_vertices, NULL, "vertices" },
+    { "vertex_first_index", (getter)Mesh_get_vertex_first_index, NULL, "vertex_first_index" },
+    { "vertex_position", (getter)Mesh_get_vertex_position, NULL, "vertex_position" },
+    { "vertex_normal", (getter)Mesh_get_vertex_normal, NULL, "vertex_normal" },
+    { "vertex_uv", (getter)Mesh_get_vertex_uv, NULL, "vertex_uv" },
+    { "vertex_tangent", (getter)Mesh_get_vertex_tangent, NULL, "vertex_tangent" },
+    { "vertex_bitangent", (getter)Mesh_get_vertex_bitangent, NULL, "vertex_bitangent" },
+    { "vertex_color", (getter)Mesh_get_vertex_color, NULL, "vertex_color" },
+    { "vertex_crease", (getter)Mesh_get_vertex_crease, NULL, "vertex_crease" },
+    { "uv_sets", (getter)Mesh_get_uv_sets, NULL, "uv_sets" },
+    { "color_sets", (getter)Mesh_get_color_sets, NULL, "color_sets" },
+    { "materials", (getter)Mesh_get_materials, NULL, "materials" },
+    { "face_groups", (getter)Mesh_get_face_groups, NULL, "face_groups" },
+    { "material_parts", (getter)Mesh_get_material_parts, NULL, "material_parts" },
+    { "face_group_parts", (getter)Mesh_get_face_group_parts, NULL, "face_group_parts" },
+    { "material_part_usage_order", (getter)Mesh_get_material_part_usage_order, NULL, "material_part_usage_order" },
+    { "skinned_is_local", (getter)Mesh_get_skinned_is_local, NULL, "skinned_is_local" },
+    { "skinned_position", (getter)Mesh_get_skinned_position, NULL, "skinned_position" },
+    { "skinned_normal", (getter)Mesh_get_skinned_normal, NULL, "skinned_normal" },
+    { "skin_deformers", (getter)Mesh_get_skin_deformers, NULL, "skin_deformers" },
+    { "blend_deformers", (getter)Mesh_get_blend_deformers, NULL, "blend_deformers" },
+    { "cache_deformers", (getter)Mesh_get_cache_deformers, NULL, "cache_deformers" },
+    { "all_deformers", (getter)Mesh_get_all_deformers, NULL, "all_deformers" },
+    { "subdivision_preview_levels", (getter)Mesh_get_subdivision_preview_levels, NULL, "subdivision_preview_levels" },
+    { "subdivision_render_levels", (getter)Mesh_get_subdivision_render_levels, NULL, "subdivision_render_levels" },
+    { "subdivision_display_mode", (getter)Mesh_get_subdivision_display_mode, NULL, "subdivision_display_mode" },
+    { "subdivision_boundary", (getter)Mesh_get_subdivision_boundary, NULL, "subdivision_boundary" },
+    { "subdivision_uv_boundary", (getter)Mesh_get_subdivision_uv_boundary, NULL, "subdivision_uv_boundary" },
+    { "reversed_winding", (getter)Mesh_get_reversed_winding, NULL, "reversed_winding" },
+    { "generated_normals", (getter)Mesh_get_generated_normals, NULL, "generated_normals" },
+    { "subdivision_evaluated", (getter)Mesh_get_subdivision_evaluated, NULL, "subdivision_evaluated" },
+    { "subdivision_result", (getter)Mesh_get_subdivision_result, NULL, "subdivision_result" },
     { "from_tessellated_nurbs", (getter)Mesh_get_from_tessellated_nurbs, NULL, "from_tessellated_nurbs" },
     { NULL },
 };
@@ -8163,15 +8163,15 @@ static PyObject *Light_get_cast_shadows(Light *self, void *closure) {
 }
 
 static PyGetSetDef Light_getset[] = {
-    { "color", (getter)Light_get_cast_shadows, NULL, "color" },
-    { "intensity", (getter)Light_get_cast_shadows, NULL, "intensity" },
-    { "local_direction", (getter)Light_get_cast_shadows, NULL, "local_direction" },
-    { "type", (getter)Light_get_cast_shadows, NULL, "type" },
-    { "decay", (getter)Light_get_cast_shadows, NULL, "decay" },
-    { "area_shape", (getter)Light_get_cast_shadows, NULL, "area_shape" },
-    { "inner_angle", (getter)Light_get_cast_shadows, NULL, "inner_angle" },
-    { "outer_angle", (getter)Light_get_cast_shadows, NULL, "outer_angle" },
-    { "cast_light", (getter)Light_get_cast_shadows, NULL, "cast_light" },
+    { "color", (getter)Light_get_color, NULL, "color" },
+    { "intensity", (getter)Light_get_intensity, NULL, "intensity" },
+    { "local_direction", (getter)Light_get_local_direction, NULL, "local_direction" },
+    { "type", (getter)Light_get_type, NULL, "type" },
+    { "decay", (getter)Light_get_decay, NULL, "decay" },
+    { "area_shape", (getter)Light_get_area_shape, NULL, "area_shape" },
+    { "inner_angle", (getter)Light_get_inner_angle, NULL, "inner_angle" },
+    { "outer_angle", (getter)Light_get_outer_angle, NULL, "outer_angle" },
+    { "cast_light", (getter)Light_get_cast_light, NULL, "cast_light" },
     { "cast_shadows", (getter)Light_get_cast_shadows, NULL, "cast_shadows" },
     { NULL },
 };
@@ -8405,25 +8405,25 @@ static PyObject *Camera_get_squeeze_ratio(Camera *self, void *closure) {
 }
 
 static PyGetSetDef Camera_getset[] = {
-    { "projection_mode", (getter)Camera_get_squeeze_ratio, NULL, "projection_mode" },
-    { "resolution_is_pixels", (getter)Camera_get_squeeze_ratio, NULL, "resolution_is_pixels" },
-    { "resolution", (getter)Camera_get_squeeze_ratio, NULL, "resolution" },
-    { "field_of_view_deg", (getter)Camera_get_squeeze_ratio, NULL, "field_of_view_deg" },
-    { "field_of_view_tan", (getter)Camera_get_squeeze_ratio, NULL, "field_of_view_tan" },
-    { "orthographic_extent", (getter)Camera_get_squeeze_ratio, NULL, "orthographic_extent" },
-    { "orthographic_size", (getter)Camera_get_squeeze_ratio, NULL, "orthographic_size" },
-    { "projection_plane", (getter)Camera_get_squeeze_ratio, NULL, "projection_plane" },
-    { "aspect_ratio", (getter)Camera_get_squeeze_ratio, NULL, "aspect_ratio" },
-    { "near_plane", (getter)Camera_get_squeeze_ratio, NULL, "near_plane" },
-    { "far_plane", (getter)Camera_get_squeeze_ratio, NULL, "far_plane" },
-    { "projection_axes", (getter)Camera_get_squeeze_ratio, NULL, "projection_axes" },
-    { "aspect_mode", (getter)Camera_get_squeeze_ratio, NULL, "aspect_mode" },
-    { "aperture_mode", (getter)Camera_get_squeeze_ratio, NULL, "aperture_mode" },
-    { "gate_fit", (getter)Camera_get_squeeze_ratio, NULL, "gate_fit" },
-    { "aperture_format", (getter)Camera_get_squeeze_ratio, NULL, "aperture_format" },
-    { "focal_length_mm", (getter)Camera_get_squeeze_ratio, NULL, "focal_length_mm" },
-    { "film_size_inch", (getter)Camera_get_squeeze_ratio, NULL, "film_size_inch" },
-    { "aperture_size_inch", (getter)Camera_get_squeeze_ratio, NULL, "aperture_size_inch" },
+    { "projection_mode", (getter)Camera_get_projection_mode, NULL, "projection_mode" },
+    { "resolution_is_pixels", (getter)Camera_get_resolution_is_pixels, NULL, "resolution_is_pixels" },
+    { "resolution", (getter)Camera_get_resolution, NULL, "resolution" },
+    { "field_of_view_deg", (getter)Camera_get_field_of_view_deg, NULL, "field_of_view_deg" },
+    { "field_of_view_tan", (getter)Camera_get_field_of_view_tan, NULL, "field_of_view_tan" },
+    { "orthographic_extent", (getter)Camera_get_orthographic_extent, NULL, "orthographic_extent" },
+    { "orthographic_size", (getter)Camera_get_orthographic_size, NULL, "orthographic_size" },
+    { "projection_plane", (getter)Camera_get_projection_plane, NULL, "projection_plane" },
+    { "aspect_ratio", (getter)Camera_get_aspect_ratio, NULL, "aspect_ratio" },
+    { "near_plane", (getter)Camera_get_near_plane, NULL, "near_plane" },
+    { "far_plane", (getter)Camera_get_far_plane, NULL, "far_plane" },
+    { "projection_axes", (getter)Camera_get_projection_axes, NULL, "projection_axes" },
+    { "aspect_mode", (getter)Camera_get_aspect_mode, NULL, "aspect_mode" },
+    { "aperture_mode", (getter)Camera_get_aperture_mode, NULL, "aperture_mode" },
+    { "gate_fit", (getter)Camera_get_gate_fit, NULL, "gate_fit" },
+    { "aperture_format", (getter)Camera_get_aperture_format, NULL, "aperture_format" },
+    { "focal_length_mm", (getter)Camera_get_focal_length_mm, NULL, "focal_length_mm" },
+    { "film_size_inch", (getter)Camera_get_film_size_inch, NULL, "film_size_inch" },
+    { "aperture_size_inch", (getter)Camera_get_aperture_size_inch, NULL, "aperture_size_inch" },
     { "squeeze_ratio", (getter)Camera_get_squeeze_ratio, NULL, "squeeze_ratio" },
     { NULL },
 };
@@ -8487,8 +8487,8 @@ static PyObject *Bone_get_is_root(Bone *self, void *closure) {
 }
 
 static PyGetSetDef Bone_getset[] = {
-    { "radius", (getter)Bone_get_is_root, NULL, "radius" },
-    { "relative_length", (getter)Bone_get_is_root, NULL, "relative_length" },
+    { "radius", (getter)Bone_get_radius, NULL, "radius" },
+    { "relative_length", (getter)Bone_get_relative_length, NULL, "relative_length" },
     { "is_root", (getter)Bone_get_is_root, NULL, "is_root" },
     { NULL },
 };
@@ -8559,7 +8559,7 @@ static PyObject *LineSegment_get_num_indices(LineSegment *self, void *closure) {
 }
 
 static PyGetSetDef LineSegment_getset[] = {
-    { "index_begin", (getter)LineSegment_get_num_indices, NULL, "index_begin" },
+    { "index_begin", (getter)LineSegment_get_index_begin, NULL, "index_begin" },
     { "num_indices", (getter)LineSegment_get_num_indices, NULL, "num_indices" },
     { NULL },
 };
@@ -8642,10 +8642,10 @@ static PyObject *LineCurve_get_from_tessellated_nurbs(LineCurve *self, void *clo
 }
 
 static PyGetSetDef LineCurve_getset[] = {
-    { "color", (getter)LineCurve_get_from_tessellated_nurbs, NULL, "color" },
-    { "control_points", (getter)LineCurve_get_from_tessellated_nurbs, NULL, "control_points" },
-    { "point_indices", (getter)LineCurve_get_from_tessellated_nurbs, NULL, "point_indices" },
-    { "segments", (getter)LineCurve_get_from_tessellated_nurbs, NULL, "segments" },
+    { "color", (getter)LineCurve_get_color, NULL, "color" },
+    { "control_points", (getter)LineCurve_get_control_points, NULL, "control_points" },
+    { "point_indices", (getter)LineCurve_get_point_indices, NULL, "point_indices" },
+    { "segments", (getter)LineCurve_get_segments, NULL, "segments" },
     { "from_tessellated_nurbs", (getter)LineCurve_get_from_tessellated_nurbs, NULL, "from_tessellated_nurbs" },
     { NULL },
 };
@@ -8764,14 +8764,14 @@ static PyObject *NurbsBasis_get_valid(NurbsBasis *self, void *closure) {
 }
 
 static PyGetSetDef NurbsBasis_getset[] = {
-    { "order", (getter)NurbsBasis_get_valid, NULL, "order" },
-    { "topology", (getter)NurbsBasis_get_valid, NULL, "topology" },
-    { "knot_vector", (getter)NurbsBasis_get_valid, NULL, "knot_vector" },
-    { "t_min", (getter)NurbsBasis_get_valid, NULL, "t_min" },
-    { "t_max", (getter)NurbsBasis_get_valid, NULL, "t_max" },
-    { "spans", (getter)NurbsBasis_get_valid, NULL, "spans" },
-    { "is_2d", (getter)NurbsBasis_get_valid, NULL, "is_2d" },
-    { "num_wrap_control_points", (getter)NurbsBasis_get_valid, NULL, "num_wrap_control_points" },
+    { "order", (getter)NurbsBasis_get_order, NULL, "order" },
+    { "topology", (getter)NurbsBasis_get_topology, NULL, "topology" },
+    { "knot_vector", (getter)NurbsBasis_get_knot_vector, NULL, "knot_vector" },
+    { "t_min", (getter)NurbsBasis_get_t_min, NULL, "t_min" },
+    { "t_max", (getter)NurbsBasis_get_t_max, NULL, "t_max" },
+    { "spans", (getter)NurbsBasis_get_spans, NULL, "spans" },
+    { "is_2d", (getter)NurbsBasis_get_is_2d, NULL, "is_2d" },
+    { "num_wrap_control_points", (getter)NurbsBasis_get_num_wrap_control_points, NULL, "num_wrap_control_points" },
     { "valid", (getter)NurbsBasis_get_valid, NULL, "valid" },
     { NULL },
 };
@@ -8824,7 +8824,7 @@ static PyObject *NurbsCurve_get_control_points(NurbsCurve *self, void *closure) 
 }
 
 static PyGetSetDef NurbsCurve_getset[] = {
-    { "basis", (getter)NurbsCurve_get_control_points, NULL, "basis" },
+    { "basis", (getter)NurbsCurve_get_basis, NULL, "basis" },
     { "control_points", (getter)NurbsCurve_get_control_points, NULL, "control_points" },
     { NULL },
 };
@@ -8948,14 +8948,14 @@ static PyObject *NurbsSurface_get_material(NurbsSurface *self, void *closure) {
 }
 
 static PyGetSetDef NurbsSurface_getset[] = {
-    { "basis_u", (getter)NurbsSurface_get_material, NULL, "basis_u" },
-    { "basis_v", (getter)NurbsSurface_get_material, NULL, "basis_v" },
-    { "num_control_points_u", (getter)NurbsSurface_get_material, NULL, "num_control_points_u" },
-    { "num_control_points_v", (getter)NurbsSurface_get_material, NULL, "num_control_points_v" },
-    { "control_points", (getter)NurbsSurface_get_material, NULL, "control_points" },
-    { "span_subdivision_u", (getter)NurbsSurface_get_material, NULL, "span_subdivision_u" },
-    { "span_subdivision_v", (getter)NurbsSurface_get_material, NULL, "span_subdivision_v" },
-    { "flip_normals", (getter)NurbsSurface_get_material, NULL, "flip_normals" },
+    { "basis_u", (getter)NurbsSurface_get_basis_u, NULL, "basis_u" },
+    { "basis_v", (getter)NurbsSurface_get_basis_v, NULL, "basis_v" },
+    { "num_control_points_u", (getter)NurbsSurface_get_num_control_points_u, NULL, "num_control_points_u" },
+    { "num_control_points_v", (getter)NurbsSurface_get_num_control_points_v, NULL, "num_control_points_v" },
+    { "control_points", (getter)NurbsSurface_get_control_points, NULL, "control_points" },
+    { "span_subdivision_u", (getter)NurbsSurface_get_span_subdivision_u, NULL, "span_subdivision_u" },
+    { "span_subdivision_v", (getter)NurbsSurface_get_span_subdivision_v, NULL, "span_subdivision_v" },
+    { "flip_normals", (getter)NurbsSurface_get_flip_normals, NULL, "flip_normals" },
     { "material", (getter)NurbsSurface_get_material, NULL, "material" },
     { NULL },
 };
@@ -9075,7 +9075,7 @@ static PyObject *StereoCamera_get_right(StereoCamera *self, void *closure) {
 }
 
 static PyGetSetDef StereoCamera_getset[] = {
-    { "left", (getter)StereoCamera_get_right, NULL, "left" },
+    { "left", (getter)StereoCamera_get_left, NULL, "left" },
     { "right", (getter)StereoCamera_get_right, NULL, "right" },
     { NULL },
 };
@@ -9234,11 +9234,11 @@ static PyObject *LodGroup_get_distance_limit_max(LodGroup *self, void *closure) 
 }
 
 static PyGetSetDef LodGroup_getset[] = {
-    { "relative_distances", (getter)LodGroup_get_distance_limit_max, NULL, "relative_distances" },
-    { "lod_levels", (getter)LodGroup_get_distance_limit_max, NULL, "lod_levels" },
-    { "ignore_parent_transform", (getter)LodGroup_get_distance_limit_max, NULL, "ignore_parent_transform" },
-    { "use_distance_limit", (getter)LodGroup_get_distance_limit_max, NULL, "use_distance_limit" },
-    { "distance_limit_min", (getter)LodGroup_get_distance_limit_max, NULL, "distance_limit_min" },
+    { "relative_distances", (getter)LodGroup_get_relative_distances, NULL, "relative_distances" },
+    { "lod_levels", (getter)LodGroup_get_lod_levels, NULL, "lod_levels" },
+    { "ignore_parent_transform", (getter)LodGroup_get_ignore_parent_transform, NULL, "ignore_parent_transform" },
+    { "use_distance_limit", (getter)LodGroup_get_use_distance_limit, NULL, "use_distance_limit" },
+    { "distance_limit_min", (getter)LodGroup_get_distance_limit_min, NULL, "distance_limit_min" },
     { "distance_limit_max", (getter)LodGroup_get_distance_limit_max, NULL, "distance_limit_max" },
     { NULL },
 };
@@ -9352,13 +9352,13 @@ static PyObject *SkinDeformer_get_dq_weights(SkinDeformer *self, void *closure) 
 }
 
 static PyGetSetDef SkinDeformer_getset[] = {
-    { "skinning_method", (getter)SkinDeformer_get_dq_weights, NULL, "skinning_method" },
-    { "clusters", (getter)SkinDeformer_get_dq_weights, NULL, "clusters" },
-    { "vertices", (getter)SkinDeformer_get_dq_weights, NULL, "vertices" },
-    { "weights", (getter)SkinDeformer_get_dq_weights, NULL, "weights" },
-    { "max_weights_per_vertex", (getter)SkinDeformer_get_dq_weights, NULL, "max_weights_per_vertex" },
-    { "num_dq_weights", (getter)SkinDeformer_get_dq_weights, NULL, "num_dq_weights" },
-    { "dq_vertices", (getter)SkinDeformer_get_dq_weights, NULL, "dq_vertices" },
+    { "skinning_method", (getter)SkinDeformer_get_skinning_method, NULL, "skinning_method" },
+    { "clusters", (getter)SkinDeformer_get_clusters, NULL, "clusters" },
+    { "vertices", (getter)SkinDeformer_get_vertices, NULL, "vertices" },
+    { "weights", (getter)SkinDeformer_get_weights, NULL, "weights" },
+    { "max_weights_per_vertex", (getter)SkinDeformer_get_max_weights_per_vertex, NULL, "max_weights_per_vertex" },
+    { "num_dq_weights", (getter)SkinDeformer_get_num_dq_weights, NULL, "num_dq_weights" },
+    { "dq_vertices", (getter)SkinDeformer_get_dq_vertices, NULL, "dq_vertices" },
     { "dq_weights", (getter)SkinDeformer_get_dq_weights, NULL, "dq_weights" },
     { NULL },
 };
@@ -9482,14 +9482,14 @@ static PyObject *SkinCluster_get_weights(SkinCluster *self, void *closure) {
 }
 
 static PyGetSetDef SkinCluster_getset[] = {
-    { "bone_node", (getter)SkinCluster_get_weights, NULL, "bone_node" },
-    { "geometry_to_bone", (getter)SkinCluster_get_weights, NULL, "geometry_to_bone" },
-    { "mesh_node_to_bone", (getter)SkinCluster_get_weights, NULL, "mesh_node_to_bone" },
-    { "bind_to_world", (getter)SkinCluster_get_weights, NULL, "bind_to_world" },
-    { "geometry_to_world", (getter)SkinCluster_get_weights, NULL, "geometry_to_world" },
-    { "geometry_to_world_transform", (getter)SkinCluster_get_weights, NULL, "geometry_to_world_transform" },
-    { "num_weights", (getter)SkinCluster_get_weights, NULL, "num_weights" },
-    { "vertices", (getter)SkinCluster_get_weights, NULL, "vertices" },
+    { "bone_node", (getter)SkinCluster_get_bone_node, NULL, "bone_node" },
+    { "geometry_to_bone", (getter)SkinCluster_get_geometry_to_bone, NULL, "geometry_to_bone" },
+    { "mesh_node_to_bone", (getter)SkinCluster_get_mesh_node_to_bone, NULL, "mesh_node_to_bone" },
+    { "bind_to_world", (getter)SkinCluster_get_bind_to_world, NULL, "bind_to_world" },
+    { "geometry_to_world", (getter)SkinCluster_get_geometry_to_world, NULL, "geometry_to_world" },
+    { "geometry_to_world_transform", (getter)SkinCluster_get_geometry_to_world_transform, NULL, "geometry_to_world_transform" },
+    { "num_weights", (getter)SkinCluster_get_num_weights, NULL, "num_weights" },
+    { "vertices", (getter)SkinCluster_get_vertices, NULL, "vertices" },
     { "weights", (getter)SkinCluster_get_weights, NULL, "weights" },
     { NULL },
 };
@@ -9591,8 +9591,8 @@ static PyObject *BlendKeyframe_get_effective_weight(BlendKeyframe *self, void *c
 }
 
 static PyGetSetDef BlendKeyframe_getset[] = {
-    { "shape", (getter)BlendKeyframe_get_effective_weight, NULL, "shape" },
-    { "target_weight", (getter)BlendKeyframe_get_effective_weight, NULL, "target_weight" },
+    { "shape", (getter)BlendKeyframe_get_shape, NULL, "shape" },
+    { "target_weight", (getter)BlendKeyframe_get_target_weight, NULL, "target_weight" },
     { "effective_weight", (getter)BlendKeyframe_get_effective_weight, NULL, "effective_weight" },
     { NULL },
 };
@@ -9655,8 +9655,8 @@ static PyObject *BlendChannel_get_target_shape(BlendChannel *self, void *closure
 }
 
 static PyGetSetDef BlendChannel_getset[] = {
-    { "weight", (getter)BlendChannel_get_target_shape, NULL, "weight" },
-    { "keyframes", (getter)BlendChannel_get_target_shape, NULL, "keyframes" },
+    { "weight", (getter)BlendChannel_get_weight, NULL, "weight" },
+    { "keyframes", (getter)BlendChannel_get_keyframes, NULL, "keyframes" },
     { "target_shape", (getter)BlendChannel_get_target_shape, NULL, "target_shape" },
     { NULL },
 };
@@ -9740,10 +9740,10 @@ static PyObject *BlendShape_get_offset_weights(BlendShape *self, void *closure) 
 }
 
 static PyGetSetDef BlendShape_getset[] = {
-    { "num_offsets", (getter)BlendShape_get_offset_weights, NULL, "num_offsets" },
-    { "offset_vertices", (getter)BlendShape_get_offset_weights, NULL, "offset_vertices" },
-    { "position_offsets", (getter)BlendShape_get_offset_weights, NULL, "position_offsets" },
-    { "normal_offsets", (getter)BlendShape_get_offset_weights, NULL, "normal_offsets" },
+    { "num_offsets", (getter)BlendShape_get_num_offsets, NULL, "num_offsets" },
+    { "offset_vertices", (getter)BlendShape_get_offset_vertices, NULL, "offset_vertices" },
+    { "position_offsets", (getter)BlendShape_get_position_offsets, NULL, "position_offsets" },
+    { "normal_offsets", (getter)BlendShape_get_normal_offsets, NULL, "normal_offsets" },
     { "offset_weights", (getter)BlendShape_get_offset_weights, NULL, "offset_weights" },
     { NULL },
 };
@@ -9892,17 +9892,17 @@ static PyObject *CacheFrame_get_data_total_bytes(CacheFrame *self, void *closure
 }
 
 static PyGetSetDef CacheFrame_getset[] = {
-    { "channel", (getter)CacheFrame_get_data_total_bytes, NULL, "channel" },
-    { "time", (getter)CacheFrame_get_data_total_bytes, NULL, "time" },
-    { "filename", (getter)CacheFrame_get_data_total_bytes, NULL, "filename" },
-    { "file_format", (getter)CacheFrame_get_data_total_bytes, NULL, "file_format" },
-    { "mirror_axis", (getter)CacheFrame_get_data_total_bytes, NULL, "mirror_axis" },
-    { "scale_factor", (getter)CacheFrame_get_data_total_bytes, NULL, "scale_factor" },
-    { "data_format", (getter)CacheFrame_get_data_total_bytes, NULL, "data_format" },
-    { "data_encoding", (getter)CacheFrame_get_data_total_bytes, NULL, "data_encoding" },
-    { "data_offset", (getter)CacheFrame_get_data_total_bytes, NULL, "data_offset" },
-    { "data_count", (getter)CacheFrame_get_data_total_bytes, NULL, "data_count" },
-    { "data_element_bytes", (getter)CacheFrame_get_data_total_bytes, NULL, "data_element_bytes" },
+    { "channel", (getter)CacheFrame_get_channel, NULL, "channel" },
+    { "time", (getter)CacheFrame_get_time, NULL, "time" },
+    { "filename", (getter)CacheFrame_get_filename, NULL, "filename" },
+    { "file_format", (getter)CacheFrame_get_file_format, NULL, "file_format" },
+    { "mirror_axis", (getter)CacheFrame_get_mirror_axis, NULL, "mirror_axis" },
+    { "scale_factor", (getter)CacheFrame_get_scale_factor, NULL, "scale_factor" },
+    { "data_format", (getter)CacheFrame_get_data_format, NULL, "data_format" },
+    { "data_encoding", (getter)CacheFrame_get_data_encoding, NULL, "data_encoding" },
+    { "data_offset", (getter)CacheFrame_get_data_offset, NULL, "data_offset" },
+    { "data_count", (getter)CacheFrame_get_data_count, NULL, "data_count" },
+    { "data_element_bytes", (getter)CacheFrame_get_data_element_bytes, NULL, "data_element_bytes" },
     { "data_total_bytes", (getter)CacheFrame_get_data_total_bytes, NULL, "data_total_bytes" },
     { NULL },
 };
@@ -9990,11 +9990,11 @@ static PyObject *CacheChannel_get_scale_factor(CacheChannel *self, void *closure
 }
 
 static PyGetSetDef CacheChannel_getset[] = {
-    { "name", (getter)CacheChannel_get_scale_factor, NULL, "name" },
-    { "interpretation", (getter)CacheChannel_get_scale_factor, NULL, "interpretation" },
-    { "interpretation_name", (getter)CacheChannel_get_scale_factor, NULL, "interpretation_name" },
-    { "frames", (getter)CacheChannel_get_scale_factor, NULL, "frames" },
-    { "mirror_axis", (getter)CacheChannel_get_scale_factor, NULL, "mirror_axis" },
+    { "name", (getter)CacheChannel_get_name, NULL, "name" },
+    { "interpretation", (getter)CacheChannel_get_interpretation, NULL, "interpretation" },
+    { "interpretation_name", (getter)CacheChannel_get_interpretation_name, NULL, "interpretation_name" },
+    { "frames", (getter)CacheChannel_get_frames, NULL, "frames" },
+    { "mirror_axis", (getter)CacheChannel_get_mirror_axis, NULL, "mirror_axis" },
     { "scale_factor", (getter)CacheChannel_get_scale_factor, NULL, "scale_factor" },
     { NULL },
 };
@@ -10062,9 +10062,9 @@ static PyObject *GeometryCache_get_extra_info(GeometryCache *self, void *closure
 }
 
 static PyGetSetDef GeometryCache_getset[] = {
-    { "root_filename", (getter)GeometryCache_get_extra_info, NULL, "root_filename" },
-    { "channels", (getter)GeometryCache_get_extra_info, NULL, "channels" },
-    { "frames", (getter)GeometryCache_get_extra_info, NULL, "frames" },
+    { "root_filename", (getter)GeometryCache_get_root_filename, NULL, "root_filename" },
+    { "channels", (getter)GeometryCache_get_channels, NULL, "channels" },
+    { "frames", (getter)GeometryCache_get_frames, NULL, "frames" },
     { "extra_info", (getter)GeometryCache_get_extra_info, NULL, "extra_info" },
     { NULL },
 };
@@ -10137,9 +10137,9 @@ static PyObject *CacheDeformer_get_external_channel(CacheDeformer *self, void *c
 }
 
 static PyGetSetDef CacheDeformer_getset[] = {
-    { "channel", (getter)CacheDeformer_get_external_channel, NULL, "channel" },
-    { "file", (getter)CacheDeformer_get_external_channel, NULL, "file" },
-    { "external_cache", (getter)CacheDeformer_get_external_channel, NULL, "external_cache" },
+    { "channel", (getter)CacheDeformer_get_channel, NULL, "channel" },
+    { "file", (getter)CacheDeformer_get_file, NULL, "file" },
+    { "external_cache", (getter)CacheDeformer_get_external_cache, NULL, "external_cache" },
     { "external_channel", (getter)CacheDeformer_get_external_channel, NULL, "external_channel" },
     { NULL },
 };
@@ -10253,13 +10253,13 @@ static PyObject *CacheFile_get_external_cache(CacheFile *self, void *closure) {
 }
 
 static PyGetSetDef CacheFile_getset[] = {
-    { "filename", (getter)CacheFile_get_external_cache, NULL, "filename" },
-    { "absolute_filename", (getter)CacheFile_get_external_cache, NULL, "absolute_filename" },
-    { "relative_filename", (getter)CacheFile_get_external_cache, NULL, "relative_filename" },
-    { "raw_filename", (getter)CacheFile_get_external_cache, NULL, "raw_filename" },
-    { "raw_absolute_filename", (getter)CacheFile_get_external_cache, NULL, "raw_absolute_filename" },
-    { "raw_relative_filename", (getter)CacheFile_get_external_cache, NULL, "raw_relative_filename" },
-    { "format", (getter)CacheFile_get_external_cache, NULL, "format" },
+    { "filename", (getter)CacheFile_get_filename, NULL, "filename" },
+    { "absolute_filename", (getter)CacheFile_get_absolute_filename, NULL, "absolute_filename" },
+    { "relative_filename", (getter)CacheFile_get_relative_filename, NULL, "relative_filename" },
+    { "raw_filename", (getter)CacheFile_get_raw_filename, NULL, "raw_filename" },
+    { "raw_absolute_filename", (getter)CacheFile_get_raw_absolute_filename, NULL, "raw_absolute_filename" },
+    { "raw_relative_filename", (getter)CacheFile_get_raw_relative_filename, NULL, "raw_relative_filename" },
+    { "format", (getter)CacheFile_get_format, NULL, "format" },
     { "external_cache", (getter)CacheFile_get_external_cache, NULL, "external_cache" },
     { NULL },
 };
@@ -10348,11 +10348,11 @@ static PyObject *MaterialMap_get_value_components(MaterialMap *self, void *closu
 }
 
 static PyGetSetDef MaterialMap_getset[] = {
-    { "value_int", (getter)MaterialMap_get_value_components, NULL, "value_int" },
-    { "texture", (getter)MaterialMap_get_value_components, NULL, "texture" },
-    { "has_value", (getter)MaterialMap_get_value_components, NULL, "has_value" },
-    { "texture_enabled", (getter)MaterialMap_get_value_components, NULL, "texture_enabled" },
-    { "feature_disabled", (getter)MaterialMap_get_value_components, NULL, "feature_disabled" },
+    { "value_int", (getter)MaterialMap_get_value_int, NULL, "value_int" },
+    { "texture", (getter)MaterialMap_get_texture, NULL, "texture" },
+    { "has_value", (getter)MaterialMap_get_has_value, NULL, "has_value" },
+    { "texture_enabled", (getter)MaterialMap_get_texture_enabled, NULL, "texture_enabled" },
+    { "feature_disabled", (getter)MaterialMap_get_feature_disabled, NULL, "feature_disabled" },
     { "value_components", (getter)MaterialMap_get_value_components, NULL, "value_components" },
     { NULL },
 };
@@ -10400,7 +10400,7 @@ static PyObject *MaterialFeatureInfo_get_is_explicit(MaterialFeatureInfo *self, 
 }
 
 static PyGetSetDef MaterialFeatureInfo_getset[] = {
-    { "enabled", (getter)MaterialFeatureInfo_get_is_explicit, NULL, "enabled" },
+    { "enabled", (getter)MaterialFeatureInfo_get_enabled, NULL, "enabled" },
     { "is_explicit", (getter)MaterialFeatureInfo_get_is_explicit, NULL, "is_explicit" },
     { NULL },
 };
@@ -10458,8 +10458,8 @@ static PyObject *MaterialTexture_get_texture(MaterialTexture *self, void *closur
 }
 
 static PyGetSetDef MaterialTexture_getset[] = {
-    { "material_prop", (getter)MaterialTexture_get_texture, NULL, "material_prop" },
-    { "shader_prop", (getter)MaterialTexture_get_texture, NULL, "shader_prop" },
+    { "material_prop", (getter)MaterialTexture_get_material_prop, NULL, "material_prop" },
+    { "shader_prop", (getter)MaterialTexture_get_shader_prop, NULL, "shader_prop" },
     { "texture", (getter)MaterialTexture_get_texture, NULL, "texture" },
     { NULL },
 };
@@ -10620,13 +10620,13 @@ static PyObject *Material_get_textures(Material *self, void *closure) {
 }
 
 static PyGetSetDef Material_getset[] = {
-    { "fbx", (getter)Material_get_textures, NULL, "fbx" },
-    { "pbr", (getter)Material_get_textures, NULL, "pbr" },
-    { "features", (getter)Material_get_textures, NULL, "features" },
-    { "shader_type", (getter)Material_get_textures, NULL, "shader_type" },
-    { "shader", (getter)Material_get_textures, NULL, "shader" },
-    { "shading_model_name", (getter)Material_get_textures, NULL, "shading_model_name" },
-    { "shader_prop_prefix", (getter)Material_get_textures, NULL, "shader_prop_prefix" },
+    { "fbx", (getter)Material_get_fbx, NULL, "fbx" },
+    { "pbr", (getter)Material_get_pbr, NULL, "pbr" },
+    { "features", (getter)Material_get_features, NULL, "features" },
+    { "shader_type", (getter)Material_get_shader_type, NULL, "shader_type" },
+    { "shader", (getter)Material_get_shader, NULL, "shader" },
+    { "shading_model_name", (getter)Material_get_shading_model_name, NULL, "shading_model_name" },
+    { "shader_prop_prefix", (getter)Material_get_shader_prop_prefix, NULL, "shader_prop_prefix" },
     { "textures", (getter)Material_get_textures, NULL, "textures" },
     { NULL },
 };
@@ -10685,8 +10685,8 @@ static PyObject *TextureLayer_get_alpha(TextureLayer *self, void *closure) {
 }
 
 static PyGetSetDef TextureLayer_getset[] = {
-    { "texture", (getter)TextureLayer_get_alpha, NULL, "texture" },
-    { "blend_mode", (getter)TextureLayer_get_alpha, NULL, "blend_mode" },
+    { "texture", (getter)TextureLayer_get_texture, NULL, "texture" },
+    { "blend_mode", (getter)TextureLayer_get_blend_mode, NULL, "blend_mode" },
     { "alpha", (getter)TextureLayer_get_alpha, NULL, "alpha" },
     { NULL },
 };
@@ -10814,15 +10814,15 @@ static PyObject *ShaderTextureInput_get_texture_enabled_prop(ShaderTextureInput 
 }
 
 static PyGetSetDef ShaderTextureInput_getset[] = {
-    { "name", (getter)ShaderTextureInput_get_texture_enabled_prop, NULL, "name" },
-    { "value_int", (getter)ShaderTextureInput_get_texture_enabled_prop, NULL, "value_int" },
-    { "value_str", (getter)ShaderTextureInput_get_texture_enabled_prop, NULL, "value_str" },
-    { "value_blob", (getter)ShaderTextureInput_get_texture_enabled_prop, NULL, "value_blob" },
-    { "texture", (getter)ShaderTextureInput_get_texture_enabled_prop, NULL, "texture" },
-    { "texture_output_index", (getter)ShaderTextureInput_get_texture_enabled_prop, NULL, "texture_output_index" },
-    { "texture_enabled", (getter)ShaderTextureInput_get_texture_enabled_prop, NULL, "texture_enabled" },
-    { "prop", (getter)ShaderTextureInput_get_texture_enabled_prop, NULL, "prop" },
-    { "texture_prop", (getter)ShaderTextureInput_get_texture_enabled_prop, NULL, "texture_prop" },
+    { "name", (getter)ShaderTextureInput_get_name, NULL, "name" },
+    { "value_int", (getter)ShaderTextureInput_get_value_int, NULL, "value_int" },
+    { "value_str", (getter)ShaderTextureInput_get_value_str, NULL, "value_str" },
+    { "value_blob", (getter)ShaderTextureInput_get_value_blob, NULL, "value_blob" },
+    { "texture", (getter)ShaderTextureInput_get_texture, NULL, "texture" },
+    { "texture_output_index", (getter)ShaderTextureInput_get_texture_output_index, NULL, "texture_output_index" },
+    { "texture_enabled", (getter)ShaderTextureInput_get_texture_enabled, NULL, "texture_enabled" },
+    { "prop", (getter)ShaderTextureInput_get_prop, NULL, "prop" },
+    { "texture_prop", (getter)ShaderTextureInput_get_texture_prop, NULL, "texture_prop" },
     { "texture_enabled_prop", (getter)ShaderTextureInput_get_texture_enabled_prop, NULL, "texture_enabled_prop" },
     { NULL },
 };
@@ -10940,14 +10940,14 @@ static PyObject *ShaderTexture_get_prop_prefix(ShaderTexture *self, void *closur
 }
 
 static PyGetSetDef ShaderTexture_getset[] = {
-    { "type", (getter)ShaderTexture_get_prop_prefix, NULL, "type" },
-    { "shader_name", (getter)ShaderTexture_get_prop_prefix, NULL, "shader_name" },
-    { "shader_type_id", (getter)ShaderTexture_get_prop_prefix, NULL, "shader_type_id" },
-    { "inputs", (getter)ShaderTexture_get_prop_prefix, NULL, "inputs" },
-    { "shader_source", (getter)ShaderTexture_get_prop_prefix, NULL, "shader_source" },
-    { "raw_shader_source", (getter)ShaderTexture_get_prop_prefix, NULL, "raw_shader_source" },
-    { "main_texture", (getter)ShaderTexture_get_prop_prefix, NULL, "main_texture" },
-    { "main_texture_output_index", (getter)ShaderTexture_get_prop_prefix, NULL, "main_texture_output_index" },
+    { "type", (getter)ShaderTexture_get_type, NULL, "type" },
+    { "shader_name", (getter)ShaderTexture_get_shader_name, NULL, "shader_name" },
+    { "shader_type_id", (getter)ShaderTexture_get_shader_type_id, NULL, "shader_type_id" },
+    { "inputs", (getter)ShaderTexture_get_inputs, NULL, "inputs" },
+    { "shader_source", (getter)ShaderTexture_get_shader_source, NULL, "shader_source" },
+    { "raw_shader_source", (getter)ShaderTexture_get_raw_shader_source, NULL, "raw_shader_source" },
+    { "main_texture", (getter)ShaderTexture_get_main_texture, NULL, "main_texture" },
+    { "main_texture_output_index", (getter)ShaderTexture_get_main_texture_output_index, NULL, "main_texture_output_index" },
     { "prop_prefix", (getter)ShaderTexture_get_prop_prefix, NULL, "prop_prefix" },
     { NULL },
 };
@@ -11055,13 +11055,13 @@ static PyObject *TextureFile_get_content(TextureFile *self, void *closure) {
 }
 
 static PyGetSetDef TextureFile_getset[] = {
-    { "index", (getter)TextureFile_get_content, NULL, "index" },
-    { "filename", (getter)TextureFile_get_content, NULL, "filename" },
-    { "absolute_filename", (getter)TextureFile_get_content, NULL, "absolute_filename" },
-    { "relative_filename", (getter)TextureFile_get_content, NULL, "relative_filename" },
-    { "raw_filename", (getter)TextureFile_get_content, NULL, "raw_filename" },
-    { "raw_absolute_filename", (getter)TextureFile_get_content, NULL, "raw_absolute_filename" },
-    { "raw_relative_filename", (getter)TextureFile_get_content, NULL, "raw_relative_filename" },
+    { "index", (getter)TextureFile_get_index, NULL, "index" },
+    { "filename", (getter)TextureFile_get_filename, NULL, "filename" },
+    { "absolute_filename", (getter)TextureFile_get_absolute_filename, NULL, "absolute_filename" },
+    { "relative_filename", (getter)TextureFile_get_relative_filename, NULL, "relative_filename" },
+    { "raw_filename", (getter)TextureFile_get_raw_filename, NULL, "raw_filename" },
+    { "raw_absolute_filename", (getter)TextureFile_get_raw_absolute_filename, NULL, "raw_absolute_filename" },
+    { "raw_relative_filename", (getter)TextureFile_get_raw_relative_filename, NULL, "raw_relative_filename" },
     { "content", (getter)TextureFile_get_content, NULL, "content" },
     { NULL },
 };
@@ -11304,26 +11304,26 @@ static PyObject *Texture_get_uv_to_texture(Texture *self, void *closure) {
 }
 
 static PyGetSetDef Texture_getset[] = {
-    { "type", (getter)Texture_get_uv_to_texture, NULL, "type" },
-    { "filename", (getter)Texture_get_uv_to_texture, NULL, "filename" },
-    { "absolute_filename", (getter)Texture_get_uv_to_texture, NULL, "absolute_filename" },
-    { "relative_filename", (getter)Texture_get_uv_to_texture, NULL, "relative_filename" },
-    { "raw_filename", (getter)Texture_get_uv_to_texture, NULL, "raw_filename" },
-    { "raw_absolute_filename", (getter)Texture_get_uv_to_texture, NULL, "raw_absolute_filename" },
-    { "raw_relative_filename", (getter)Texture_get_uv_to_texture, NULL, "raw_relative_filename" },
-    { "content", (getter)Texture_get_uv_to_texture, NULL, "content" },
-    { "video", (getter)Texture_get_uv_to_texture, NULL, "video" },
-    { "file_index", (getter)Texture_get_uv_to_texture, NULL, "file_index" },
-    { "has_file", (getter)Texture_get_uv_to_texture, NULL, "has_file" },
-    { "layers", (getter)Texture_get_uv_to_texture, NULL, "layers" },
-    { "shader", (getter)Texture_get_uv_to_texture, NULL, "shader" },
-    { "file_textures", (getter)Texture_get_uv_to_texture, NULL, "file_textures" },
-    { "uv_set", (getter)Texture_get_uv_to_texture, NULL, "uv_set" },
-    { "wrap_u", (getter)Texture_get_uv_to_texture, NULL, "wrap_u" },
-    { "wrap_v", (getter)Texture_get_uv_to_texture, NULL, "wrap_v" },
-    { "has_uv_transform", (getter)Texture_get_uv_to_texture, NULL, "has_uv_transform" },
-    { "uv_transform", (getter)Texture_get_uv_to_texture, NULL, "uv_transform" },
-    { "texture_to_uv", (getter)Texture_get_uv_to_texture, NULL, "texture_to_uv" },
+    { "type", (getter)Texture_get_type, NULL, "type" },
+    { "filename", (getter)Texture_get_filename, NULL, "filename" },
+    { "absolute_filename", (getter)Texture_get_absolute_filename, NULL, "absolute_filename" },
+    { "relative_filename", (getter)Texture_get_relative_filename, NULL, "relative_filename" },
+    { "raw_filename", (getter)Texture_get_raw_filename, NULL, "raw_filename" },
+    { "raw_absolute_filename", (getter)Texture_get_raw_absolute_filename, NULL, "raw_absolute_filename" },
+    { "raw_relative_filename", (getter)Texture_get_raw_relative_filename, NULL, "raw_relative_filename" },
+    { "content", (getter)Texture_get_content, NULL, "content" },
+    { "video", (getter)Texture_get_video, NULL, "video" },
+    { "file_index", (getter)Texture_get_file_index, NULL, "file_index" },
+    { "has_file", (getter)Texture_get_has_file, NULL, "has_file" },
+    { "layers", (getter)Texture_get_layers, NULL, "layers" },
+    { "shader", (getter)Texture_get_shader, NULL, "shader" },
+    { "file_textures", (getter)Texture_get_file_textures, NULL, "file_textures" },
+    { "uv_set", (getter)Texture_get_uv_set, NULL, "uv_set" },
+    { "wrap_u", (getter)Texture_get_wrap_u, NULL, "wrap_u" },
+    { "wrap_v", (getter)Texture_get_wrap_v, NULL, "wrap_v" },
+    { "has_uv_transform", (getter)Texture_get_has_uv_transform, NULL, "has_uv_transform" },
+    { "uv_transform", (getter)Texture_get_uv_transform, NULL, "uv_transform" },
+    { "texture_to_uv", (getter)Texture_get_texture_to_uv, NULL, "texture_to_uv" },
     { "uv_to_texture", (getter)Texture_get_uv_to_texture, NULL, "uv_to_texture" },
     { NULL },
 };
@@ -11427,12 +11427,12 @@ static PyObject *Video_get_content(Video *self, void *closure) {
 }
 
 static PyGetSetDef Video_getset[] = {
-    { "filename", (getter)Video_get_content, NULL, "filename" },
-    { "absolute_filename", (getter)Video_get_content, NULL, "absolute_filename" },
-    { "relative_filename", (getter)Video_get_content, NULL, "relative_filename" },
-    { "raw_filename", (getter)Video_get_content, NULL, "raw_filename" },
-    { "raw_absolute_filename", (getter)Video_get_content, NULL, "raw_absolute_filename" },
-    { "raw_relative_filename", (getter)Video_get_content, NULL, "raw_relative_filename" },
+    { "filename", (getter)Video_get_filename, NULL, "filename" },
+    { "absolute_filename", (getter)Video_get_absolute_filename, NULL, "absolute_filename" },
+    { "relative_filename", (getter)Video_get_relative_filename, NULL, "relative_filename" },
+    { "raw_filename", (getter)Video_get_raw_filename, NULL, "raw_filename" },
+    { "raw_absolute_filename", (getter)Video_get_raw_absolute_filename, NULL, "raw_absolute_filename" },
+    { "raw_relative_filename", (getter)Video_get_raw_relative_filename, NULL, "raw_relative_filename" },
     { "content", (getter)Video_get_content, NULL, "content" },
     { NULL },
 };
@@ -11486,7 +11486,7 @@ static PyObject *Shader_get_bindings(Shader *self, void *closure) {
 }
 
 static PyGetSetDef Shader_getset[] = {
-    { "type", (getter)Shader_get_bindings, NULL, "type" },
+    { "type", (getter)Shader_get_type, NULL, "type" },
     { "bindings", (getter)Shader_get_bindings, NULL, "bindings" },
     { NULL },
 };
@@ -11535,7 +11535,7 @@ static PyObject *ShaderPropBinding_get_material_prop(ShaderPropBinding *self, vo
 }
 
 static PyGetSetDef ShaderPropBinding_getset[] = {
-    { "shader_prop", (getter)ShaderPropBinding_get_material_prop, NULL, "shader_prop" },
+    { "shader_prop", (getter)ShaderPropBinding_get_shader_prop, NULL, "shader_prop" },
     { "material_prop", (getter)ShaderPropBinding_get_material_prop, NULL, "material_prop" },
     { NULL },
 };
@@ -11656,10 +11656,10 @@ static PyObject *PropOverride_get_value_int(PropOverride *self, void *closure) {
 }
 
 static PyGetSetDef PropOverride_getset[] = {
-    { "element_id", (getter)PropOverride_get_value_int, NULL, "element_id" },
-    { "prop_name", (getter)PropOverride_get_value_int, NULL, "prop_name" },
-    { "value", (getter)PropOverride_get_value_int, NULL, "value" },
-    { "value_str", (getter)PropOverride_get_value_int, NULL, "value_str" },
+    { "element_id", (getter)PropOverride_get_element_id, NULL, "element_id" },
+    { "prop_name", (getter)PropOverride_get_prop_name, NULL, "prop_name" },
+    { "value", (getter)PropOverride_get_value, NULL, "value" },
+    { "value_str", (getter)PropOverride_get_value_str, NULL, "value_str" },
     { "value_int", (getter)PropOverride_get_value_int, NULL, "value_int" },
     { NULL },
 };
@@ -11767,13 +11767,13 @@ static PyObject *Anim_get_custom(Anim *self, void *closure) {
 }
 
 static PyGetSetDef Anim_getset[] = {
-    { "time_begin", (getter)Anim_get_custom, NULL, "time_begin" },
-    { "time_end", (getter)Anim_get_custom, NULL, "time_end" },
-    { "layers", (getter)Anim_get_custom, NULL, "layers" },
-    { "override_layer_weights", (getter)Anim_get_custom, NULL, "override_layer_weights" },
-    { "prop_overrides", (getter)Anim_get_custom, NULL, "prop_overrides" },
-    { "transform_overrides", (getter)Anim_get_custom, NULL, "transform_overrides" },
-    { "ignore_connections", (getter)Anim_get_custom, NULL, "ignore_connections" },
+    { "time_begin", (getter)Anim_get_time_begin, NULL, "time_begin" },
+    { "time_end", (getter)Anim_get_time_end, NULL, "time_end" },
+    { "layers", (getter)Anim_get_layers, NULL, "layers" },
+    { "override_layer_weights", (getter)Anim_get_override_layer_weights, NULL, "override_layer_weights" },
+    { "prop_overrides", (getter)Anim_get_prop_overrides, NULL, "prop_overrides" },
+    { "transform_overrides", (getter)Anim_get_transform_overrides, NULL, "transform_overrides" },
+    { "ignore_connections", (getter)Anim_get_ignore_connections, NULL, "ignore_connections" },
     { "custom", (getter)Anim_get_custom, NULL, "custom" },
     { NULL },
 };
@@ -11846,9 +11846,9 @@ static PyObject *AnimStack_get_anim(AnimStack *self, void *closure) {
 }
 
 static PyGetSetDef AnimStack_getset[] = {
-    { "time_begin", (getter)AnimStack_get_anim, NULL, "time_begin" },
-    { "time_end", (getter)AnimStack_get_anim, NULL, "time_end" },
-    { "layers", (getter)AnimStack_get_anim, NULL, "layers" },
+    { "time_begin", (getter)AnimStack_get_time_begin, NULL, "time_begin" },
+    { "time_end", (getter)AnimStack_get_time_end, NULL, "time_end" },
+    { "layers", (getter)AnimStack_get_layers, NULL, "layers" },
     { "anim", (getter)AnimStack_get_anim, NULL, "anim" },
     { NULL },
 };
@@ -11907,8 +11907,8 @@ static PyObject *AnimProp_get_anim_value(AnimProp *self, void *closure) {
 }
 
 static PyGetSetDef AnimProp_getset[] = {
-    { "element", (getter)AnimProp_get_anim_value, NULL, "element" },
-    { "prop_name", (getter)AnimProp_get_anim_value, NULL, "prop_name" },
+    { "element", (getter)AnimProp_get_element, NULL, "element" },
+    { "prop_name", (getter)AnimProp_get_prop_name, NULL, "prop_name" },
     { "anim_value", (getter)AnimProp_get_anim_value, NULL, "anim_value" },
     { NULL },
 };
@@ -12031,14 +12031,14 @@ static PyObject *AnimLayer_get_anim(AnimLayer *self, void *closure) {
 }
 
 static PyGetSetDef AnimLayer_getset[] = {
-    { "weight", (getter)AnimLayer_get_anim, NULL, "weight" },
-    { "weight_is_animated", (getter)AnimLayer_get_anim, NULL, "weight_is_animated" },
-    { "blended", (getter)AnimLayer_get_anim, NULL, "blended" },
-    { "additive", (getter)AnimLayer_get_anim, NULL, "additive" },
-    { "compose_rotation", (getter)AnimLayer_get_anim, NULL, "compose_rotation" },
-    { "compose_scale", (getter)AnimLayer_get_anim, NULL, "compose_scale" },
-    { "anim_values", (getter)AnimLayer_get_anim, NULL, "anim_values" },
-    { "anim_props", (getter)AnimLayer_get_anim, NULL, "anim_props" },
+    { "weight", (getter)AnimLayer_get_weight, NULL, "weight" },
+    { "weight_is_animated", (getter)AnimLayer_get_weight_is_animated, NULL, "weight_is_animated" },
+    { "blended", (getter)AnimLayer_get_blended, NULL, "blended" },
+    { "additive", (getter)AnimLayer_get_additive, NULL, "additive" },
+    { "compose_rotation", (getter)AnimLayer_get_compose_rotation, NULL, "compose_rotation" },
+    { "compose_scale", (getter)AnimLayer_get_compose_scale, NULL, "compose_scale" },
+    { "anim_values", (getter)AnimLayer_get_anim_values, NULL, "anim_values" },
+    { "anim_props", (getter)AnimLayer_get_anim_props, NULL, "anim_props" },
     { "anim", (getter)AnimLayer_get_anim, NULL, "anim" },
     { NULL },
 };
@@ -12092,7 +12092,7 @@ static PyObject *AnimValue_get_curves(AnimValue *self, void *closure) {
 }
 
 static PyGetSetDef AnimValue_getset[] = {
-    { "default_value", (getter)AnimValue_get_curves, NULL, "default_value" },
+    { "default_value", (getter)AnimValue_get_default_value, NULL, "default_value" },
     { "curves", (getter)AnimValue_get_curves, NULL, "curves" },
     { NULL },
 };
@@ -12141,7 +12141,7 @@ static PyObject *Extrapolation_get_repeat_count(Extrapolation *self, void *closu
 }
 
 static PyGetSetDef Extrapolation_getset[] = {
-    { "mode", (getter)Extrapolation_get_repeat_count, NULL, "mode" },
+    { "mode", (getter)Extrapolation_get_mode, NULL, "mode" },
     { "repeat_count", (getter)Extrapolation_get_repeat_count, NULL, "repeat_count" },
     { NULL },
 };
@@ -12244,12 +12244,12 @@ static PyObject *AnimCurve_get_max_time(AnimCurve *self, void *closure) {
 }
 
 static PyGetSetDef AnimCurve_getset[] = {
-    { "keyframes", (getter)AnimCurve_get_max_time, NULL, "keyframes" },
-    { "pre_extrapolation", (getter)AnimCurve_get_max_time, NULL, "pre_extrapolation" },
-    { "post_extrapolation", (getter)AnimCurve_get_max_time, NULL, "post_extrapolation" },
-    { "min_value", (getter)AnimCurve_get_max_time, NULL, "min_value" },
-    { "max_value", (getter)AnimCurve_get_max_time, NULL, "max_value" },
-    { "min_time", (getter)AnimCurve_get_max_time, NULL, "min_time" },
+    { "keyframes", (getter)AnimCurve_get_keyframes, NULL, "keyframes" },
+    { "pre_extrapolation", (getter)AnimCurve_get_pre_extrapolation, NULL, "pre_extrapolation" },
+    { "post_extrapolation", (getter)AnimCurve_get_post_extrapolation, NULL, "post_extrapolation" },
+    { "min_value", (getter)AnimCurve_get_min_value, NULL, "min_value" },
+    { "max_value", (getter)AnimCurve_get_max_value, NULL, "max_value" },
+    { "min_time", (getter)AnimCurve_get_min_time, NULL, "min_time" },
     { "max_time", (getter)AnimCurve_get_max_time, NULL, "max_time" },
     { NULL },
 };
@@ -12323,9 +12323,9 @@ static PyObject *DisplayLayer_get_ui_color(DisplayLayer *self, void *closure) {
 }
 
 static PyGetSetDef DisplayLayer_getset[] = {
-    { "nodes", (getter)DisplayLayer_get_ui_color, NULL, "nodes" },
-    { "visible", (getter)DisplayLayer_get_ui_color, NULL, "visible" },
-    { "frozen", (getter)DisplayLayer_get_ui_color, NULL, "frozen" },
+    { "nodes", (getter)DisplayLayer_get_nodes, NULL, "nodes" },
+    { "visible", (getter)DisplayLayer_get_visible, NULL, "visible" },
+    { "frozen", (getter)DisplayLayer_get_frozen, NULL, "frozen" },
     { "ui_color", (getter)DisplayLayer_get_ui_color, NULL, "ui_color" },
     { NULL },
 };
@@ -12462,11 +12462,11 @@ static PyObject *SelectionNode_get_faces(SelectionNode *self, void *closure) {
 }
 
 static PyGetSetDef SelectionNode_getset[] = {
-    { "target_node", (getter)SelectionNode_get_faces, NULL, "target_node" },
-    { "target_mesh", (getter)SelectionNode_get_faces, NULL, "target_mesh" },
-    { "include_node", (getter)SelectionNode_get_faces, NULL, "include_node" },
-    { "vertices", (getter)SelectionNode_get_faces, NULL, "vertices" },
-    { "edges", (getter)SelectionNode_get_faces, NULL, "edges" },
+    { "target_node", (getter)SelectionNode_get_target_node, NULL, "target_node" },
+    { "target_mesh", (getter)SelectionNode_get_target_mesh, NULL, "target_mesh" },
+    { "include_node", (getter)SelectionNode_get_include_node, NULL, "include_node" },
+    { "vertices", (getter)SelectionNode_get_vertices, NULL, "vertices" },
+    { "edges", (getter)SelectionNode_get_edges, NULL, "edges" },
     { "faces", (getter)SelectionNode_get_faces, NULL, "faces" },
     { NULL },
 };
@@ -12547,8 +12547,8 @@ static PyObject *ConstraintTarget_get_transform(ConstraintTarget *self, void *cl
 }
 
 static PyGetSetDef ConstraintTarget_getset[] = {
-    { "node", (getter)ConstraintTarget_get_transform, NULL, "node" },
-    { "weight", (getter)ConstraintTarget_get_transform, NULL, "weight" },
+    { "node", (getter)ConstraintTarget_get_node, NULL, "node" },
+    { "weight", (getter)ConstraintTarget_get_weight, NULL, "weight" },
     { "transform", (getter)ConstraintTarget_get_transform, NULL, "transform" },
     { NULL },
 };
@@ -12751,22 +12751,22 @@ static PyObject *Constraint_get_ik_pole_vector(Constraint *self, void *closure) 
 }
 
 static PyGetSetDef Constraint_getset[] = {
-    { "type", (getter)Constraint_get_ik_pole_vector, NULL, "type" },
-    { "type_name", (getter)Constraint_get_ik_pole_vector, NULL, "type_name" },
-    { "node", (getter)Constraint_get_ik_pole_vector, NULL, "node" },
-    { "targets", (getter)Constraint_get_ik_pole_vector, NULL, "targets" },
-    { "weight", (getter)Constraint_get_ik_pole_vector, NULL, "weight" },
-    { "active", (getter)Constraint_get_ik_pole_vector, NULL, "active" },
-    { "constrain_translation", (getter)Constraint_get_ik_pole_vector, NULL, "constrain_translation" },
-    { "constrain_rotation", (getter)Constraint_get_ik_pole_vector, NULL, "constrain_rotation" },
-    { "constrain_scale", (getter)Constraint_get_ik_pole_vector, NULL, "constrain_scale" },
-    { "transform_offset", (getter)Constraint_get_ik_pole_vector, NULL, "transform_offset" },
-    { "aim_vector", (getter)Constraint_get_ik_pole_vector, NULL, "aim_vector" },
-    { "aim_up_type", (getter)Constraint_get_ik_pole_vector, NULL, "aim_up_type" },
-    { "aim_up_node", (getter)Constraint_get_ik_pole_vector, NULL, "aim_up_node" },
-    { "aim_up_vector", (getter)Constraint_get_ik_pole_vector, NULL, "aim_up_vector" },
-    { "ik_effector", (getter)Constraint_get_ik_pole_vector, NULL, "ik_effector" },
-    { "ik_end_node", (getter)Constraint_get_ik_pole_vector, NULL, "ik_end_node" },
+    { "type", (getter)Constraint_get_type, NULL, "type" },
+    { "type_name", (getter)Constraint_get_type_name, NULL, "type_name" },
+    { "node", (getter)Constraint_get_node, NULL, "node" },
+    { "targets", (getter)Constraint_get_targets, NULL, "targets" },
+    { "weight", (getter)Constraint_get_weight, NULL, "weight" },
+    { "active", (getter)Constraint_get_active, NULL, "active" },
+    { "constrain_translation", (getter)Constraint_get_constrain_translation, NULL, "constrain_translation" },
+    { "constrain_rotation", (getter)Constraint_get_constrain_rotation, NULL, "constrain_rotation" },
+    { "constrain_scale", (getter)Constraint_get_constrain_scale, NULL, "constrain_scale" },
+    { "transform_offset", (getter)Constraint_get_transform_offset, NULL, "transform_offset" },
+    { "aim_vector", (getter)Constraint_get_aim_vector, NULL, "aim_vector" },
+    { "aim_up_type", (getter)Constraint_get_aim_up_type, NULL, "aim_up_type" },
+    { "aim_up_node", (getter)Constraint_get_aim_up_node, NULL, "aim_up_node" },
+    { "aim_up_vector", (getter)Constraint_get_aim_up_vector, NULL, "aim_up_vector" },
+    { "ik_effector", (getter)Constraint_get_ik_effector, NULL, "ik_effector" },
+    { "ik_end_node", (getter)Constraint_get_ik_end_node, NULL, "ik_end_node" },
     { "ik_pole_vector", (getter)Constraint_get_ik_pole_vector, NULL, "ik_pole_vector" },
     { NULL },
 };
@@ -12913,12 +12913,12 @@ static PyObject *AudioClip_get_content(AudioClip *self, void *closure) {
 }
 
 static PyGetSetDef AudioClip_getset[] = {
-    { "filename", (getter)AudioClip_get_content, NULL, "filename" },
-    { "absolute_filename", (getter)AudioClip_get_content, NULL, "absolute_filename" },
-    { "relative_filename", (getter)AudioClip_get_content, NULL, "relative_filename" },
-    { "raw_filename", (getter)AudioClip_get_content, NULL, "raw_filename" },
-    { "raw_absolute_filename", (getter)AudioClip_get_content, NULL, "raw_absolute_filename" },
-    { "raw_relative_filename", (getter)AudioClip_get_content, NULL, "raw_relative_filename" },
+    { "filename", (getter)AudioClip_get_filename, NULL, "filename" },
+    { "absolute_filename", (getter)AudioClip_get_absolute_filename, NULL, "absolute_filename" },
+    { "relative_filename", (getter)AudioClip_get_relative_filename, NULL, "relative_filename" },
+    { "raw_filename", (getter)AudioClip_get_raw_filename, NULL, "raw_filename" },
+    { "raw_absolute_filename", (getter)AudioClip_get_raw_absolute_filename, NULL, "raw_absolute_filename" },
+    { "raw_relative_filename", (getter)AudioClip_get_raw_relative_filename, NULL, "raw_relative_filename" },
     { "content", (getter)AudioClip_get_content, NULL, "content" },
     { NULL },
 };
@@ -12977,8 +12977,8 @@ static PyObject *BonePose_get_bone_to_parent(BonePose *self, void *closure) {
 }
 
 static PyGetSetDef BonePose_getset[] = {
-    { "bone_node", (getter)BonePose_get_bone_to_parent, NULL, "bone_node" },
-    { "bone_to_world", (getter)BonePose_get_bone_to_parent, NULL, "bone_to_world" },
+    { "bone_node", (getter)BonePose_get_bone_node, NULL, "bone_node" },
+    { "bone_to_world", (getter)BonePose_get_bone_to_world, NULL, "bone_to_world" },
     { "bone_to_parent", (getter)BonePose_get_bone_to_parent, NULL, "bone_to_parent" },
     { NULL },
 };
@@ -13031,7 +13031,7 @@ static PyObject *Pose_get_bone_poses(Pose *self, void *closure) {
 }
 
 static PyGetSetDef Pose_getset[] = {
-    { "is_bind_pose", (getter)Pose_get_bone_poses, NULL, "is_bind_pose" },
+    { "is_bind_pose", (getter)Pose_get_is_bind_pose, NULL, "is_bind_pose" },
     { "bone_poses", (getter)Pose_get_bone_poses, NULL, "bone_poses" },
     { NULL },
 };
@@ -13112,8 +13112,8 @@ static PyObject *NameElement_get_element(NameElement *self, void *closure) {
 }
 
 static PyGetSetDef NameElement_getset[] = {
-    { "name", (getter)NameElement_get_element, NULL, "name" },
-    { "type", (getter)NameElement_get_element, NULL, "type" },
+    { "name", (getter)NameElement_get_name, NULL, "name" },
+    { "type", (getter)NameElement_get_type, NULL, "type" },
     { "element", (getter)NameElement_get_element, NULL, "element" },
     { NULL },
 };
@@ -13171,8 +13171,8 @@ static PyObject *Application_get_version(Application *self, void *closure) {
 }
 
 static PyGetSetDef Application_getset[] = {
-    { "vendor", (getter)Application_get_version, NULL, "vendor" },
-    { "name", (getter)Application_get_version, NULL, "name" },
+    { "vendor", (getter)Application_get_vendor, NULL, "vendor" },
+    { "name", (getter)Application_get_name, NULL, "name" },
     { "version", (getter)Application_get_version, NULL, "version" },
     { NULL },
 };
@@ -13240,9 +13240,9 @@ static PyObject *Warning_get_count(Warning *self, void *closure) {
 }
 
 static PyGetSetDef Warning_getset[] = {
-    { "type", (getter)Warning_get_count, NULL, "type" },
-    { "description", (getter)Warning_get_count, NULL, "description" },
-    { "element_id", (getter)Warning_get_count, NULL, "element_id" },
+    { "type", (getter)Warning_get_type, NULL, "type" },
+    { "description", (getter)Warning_get_description, NULL, "description" },
+    { "element_id", (getter)Warning_get_element_id, NULL, "element_id" },
     { "count", (getter)Warning_get_count, NULL, "count" },
     { NULL },
 };
@@ -13320,10 +13320,10 @@ static PyObject *Thumbnail_get_data(Thumbnail *self, void *closure) {
 }
 
 static PyGetSetDef Thumbnail_getset[] = {
-    { "props", (getter)Thumbnail_get_data, NULL, "props" },
-    { "width", (getter)Thumbnail_get_data, NULL, "width" },
-    { "height", (getter)Thumbnail_get_data, NULL, "height" },
-    { "format", (getter)Thumbnail_get_data, NULL, "format" },
+    { "props", (getter)Thumbnail_get_props, NULL, "props" },
+    { "width", (getter)Thumbnail_get_width, NULL, "width" },
+    { "height", (getter)Thumbnail_get_height, NULL, "height" },
+    { "format", (getter)Thumbnail_get_format, NULL, "format" },
     { "data", (getter)Thumbnail_get_data, NULL, "data" },
     { NULL },
 };
@@ -13811,51 +13811,51 @@ static PyObject *Metadata_get_geometry_scale(Metadata *self, void *closure) {
 }
 
 static PyGetSetDef Metadata_getset[] = {
-    { "warnings", (getter)Metadata_get_geometry_scale, NULL, "warnings" },
-    { "ascii", (getter)Metadata_get_geometry_scale, NULL, "ascii" },
-    { "version", (getter)Metadata_get_geometry_scale, NULL, "version" },
-    { "file_format", (getter)Metadata_get_geometry_scale, NULL, "file_format" },
-    { "may_contain_no_index", (getter)Metadata_get_geometry_scale, NULL, "may_contain_no_index" },
-    { "may_contain_missing_vertex_position", (getter)Metadata_get_geometry_scale, NULL, "may_contain_missing_vertex_position" },
-    { "may_contain_broken_elements", (getter)Metadata_get_geometry_scale, NULL, "may_contain_broken_elements" },
-    { "is_unsafe", (getter)Metadata_get_geometry_scale, NULL, "is_unsafe" },
-    { "has_warning", (getter)Metadata_get_geometry_scale, NULL, "has_warning" },
-    { "creator", (getter)Metadata_get_geometry_scale, NULL, "creator" },
-    { "big_endian", (getter)Metadata_get_geometry_scale, NULL, "big_endian" },
-    { "filename", (getter)Metadata_get_geometry_scale, NULL, "filename" },
-    { "relative_root", (getter)Metadata_get_geometry_scale, NULL, "relative_root" },
-    { "raw_filename", (getter)Metadata_get_geometry_scale, NULL, "raw_filename" },
-    { "raw_relative_root", (getter)Metadata_get_geometry_scale, NULL, "raw_relative_root" },
-    { "exporter", (getter)Metadata_get_geometry_scale, NULL, "exporter" },
-    { "exporter_version", (getter)Metadata_get_geometry_scale, NULL, "exporter_version" },
-    { "scene_props", (getter)Metadata_get_geometry_scale, NULL, "scene_props" },
-    { "original_application", (getter)Metadata_get_geometry_scale, NULL, "original_application" },
-    { "latest_application", (getter)Metadata_get_geometry_scale, NULL, "latest_application" },
-    { "thumbnail", (getter)Metadata_get_geometry_scale, NULL, "thumbnail" },
-    { "geometry_ignored", (getter)Metadata_get_geometry_scale, NULL, "geometry_ignored" },
-    { "animation_ignored", (getter)Metadata_get_geometry_scale, NULL, "animation_ignored" },
-    { "embedded_ignored", (getter)Metadata_get_geometry_scale, NULL, "embedded_ignored" },
-    { "max_face_triangles", (getter)Metadata_get_geometry_scale, NULL, "max_face_triangles" },
-    { "result_memory_used", (getter)Metadata_get_geometry_scale, NULL, "result_memory_used" },
-    { "temp_memory_used", (getter)Metadata_get_geometry_scale, NULL, "temp_memory_used" },
-    { "result_allocs", (getter)Metadata_get_geometry_scale, NULL, "result_allocs" },
-    { "temp_allocs", (getter)Metadata_get_geometry_scale, NULL, "temp_allocs" },
-    { "element_buffer_size", (getter)Metadata_get_geometry_scale, NULL, "element_buffer_size" },
-    { "num_shader_textures", (getter)Metadata_get_geometry_scale, NULL, "num_shader_textures" },
-    { "bone_prop_size_unit", (getter)Metadata_get_geometry_scale, NULL, "bone_prop_size_unit" },
-    { "bone_prop_limb_length_relative", (getter)Metadata_get_geometry_scale, NULL, "bone_prop_limb_length_relative" },
-    { "ortho_size_unit", (getter)Metadata_get_geometry_scale, NULL, "ortho_size_unit" },
-    { "ktime_second", (getter)Metadata_get_geometry_scale, NULL, "ktime_second" },
-    { "original_file_path", (getter)Metadata_get_geometry_scale, NULL, "original_file_path" },
-    { "raw_original_file_path", (getter)Metadata_get_geometry_scale, NULL, "raw_original_file_path" },
-    { "space_conversion", (getter)Metadata_get_geometry_scale, NULL, "space_conversion" },
-    { "geometry_transform_handling", (getter)Metadata_get_geometry_scale, NULL, "geometry_transform_handling" },
-    { "inherit_mode_handling", (getter)Metadata_get_geometry_scale, NULL, "inherit_mode_handling" },
-    { "pivot_handling", (getter)Metadata_get_geometry_scale, NULL, "pivot_handling" },
-    { "handedness_conversion_axis", (getter)Metadata_get_geometry_scale, NULL, "handedness_conversion_axis" },
-    { "root_rotation", (getter)Metadata_get_geometry_scale, NULL, "root_rotation" },
-    { "root_scale", (getter)Metadata_get_geometry_scale, NULL, "root_scale" },
-    { "mirror_axis", (getter)Metadata_get_geometry_scale, NULL, "mirror_axis" },
+    { "warnings", (getter)Metadata_get_warnings, NULL, "warnings" },
+    { "ascii", (getter)Metadata_get_ascii, NULL, "ascii" },
+    { "version", (getter)Metadata_get_version, NULL, "version" },
+    { "file_format", (getter)Metadata_get_file_format, NULL, "file_format" },
+    { "may_contain_no_index", (getter)Metadata_get_may_contain_no_index, NULL, "may_contain_no_index" },
+    { "may_contain_missing_vertex_position", (getter)Metadata_get_may_contain_missing_vertex_position, NULL, "may_contain_missing_vertex_position" },
+    { "may_contain_broken_elements", (getter)Metadata_get_may_contain_broken_elements, NULL, "may_contain_broken_elements" },
+    { "is_unsafe", (getter)Metadata_get_is_unsafe, NULL, "is_unsafe" },
+    { "has_warning", (getter)Metadata_get_has_warning, NULL, "has_warning" },
+    { "creator", (getter)Metadata_get_creator, NULL, "creator" },
+    { "big_endian", (getter)Metadata_get_big_endian, NULL, "big_endian" },
+    { "filename", (getter)Metadata_get_filename, NULL, "filename" },
+    { "relative_root", (getter)Metadata_get_relative_root, NULL, "relative_root" },
+    { "raw_filename", (getter)Metadata_get_raw_filename, NULL, "raw_filename" },
+    { "raw_relative_root", (getter)Metadata_get_raw_relative_root, NULL, "raw_relative_root" },
+    { "exporter", (getter)Metadata_get_exporter, NULL, "exporter" },
+    { "exporter_version", (getter)Metadata_get_exporter_version, NULL, "exporter_version" },
+    { "scene_props", (getter)Metadata_get_scene_props, NULL, "scene_props" },
+    { "original_application", (getter)Metadata_get_original_application, NULL, "original_application" },
+    { "latest_application", (getter)Metadata_get_latest_application, NULL, "latest_application" },
+    { "thumbnail", (getter)Metadata_get_thumbnail, NULL, "thumbnail" },
+    { "geometry_ignored", (getter)Metadata_get_geometry_ignored, NULL, "geometry_ignored" },
+    { "animation_ignored", (getter)Metadata_get_animation_ignored, NULL, "animation_ignored" },
+    { "embedded_ignored", (getter)Metadata_get_embedded_ignored, NULL, "embedded_ignored" },
+    { "max_face_triangles", (getter)Metadata_get_max_face_triangles, NULL, "max_face_triangles" },
+    { "result_memory_used", (getter)Metadata_get_result_memory_used, NULL, "result_memory_used" },
+    { "temp_memory_used", (getter)Metadata_get_temp_memory_used, NULL, "temp_memory_used" },
+    { "result_allocs", (getter)Metadata_get_result_allocs, NULL, "result_allocs" },
+    { "temp_allocs", (getter)Metadata_get_temp_allocs, NULL, "temp_allocs" },
+    { "element_buffer_size", (getter)Metadata_get_element_buffer_size, NULL, "element_buffer_size" },
+    { "num_shader_textures", (getter)Metadata_get_num_shader_textures, NULL, "num_shader_textures" },
+    { "bone_prop_size_unit", (getter)Metadata_get_bone_prop_size_unit, NULL, "bone_prop_size_unit" },
+    { "bone_prop_limb_length_relative", (getter)Metadata_get_bone_prop_limb_length_relative, NULL, "bone_prop_limb_length_relative" },
+    { "ortho_size_unit", (getter)Metadata_get_ortho_size_unit, NULL, "ortho_size_unit" },
+    { "ktime_second", (getter)Metadata_get_ktime_second, NULL, "ktime_second" },
+    { "original_file_path", (getter)Metadata_get_original_file_path, NULL, "original_file_path" },
+    { "raw_original_file_path", (getter)Metadata_get_raw_original_file_path, NULL, "raw_original_file_path" },
+    { "space_conversion", (getter)Metadata_get_space_conversion, NULL, "space_conversion" },
+    { "geometry_transform_handling", (getter)Metadata_get_geometry_transform_handling, NULL, "geometry_transform_handling" },
+    { "inherit_mode_handling", (getter)Metadata_get_inherit_mode_handling, NULL, "inherit_mode_handling" },
+    { "pivot_handling", (getter)Metadata_get_pivot_handling, NULL, "pivot_handling" },
+    { "handedness_conversion_axis", (getter)Metadata_get_handedness_conversion_axis, NULL, "handedness_conversion_axis" },
+    { "root_rotation", (getter)Metadata_get_root_rotation, NULL, "root_rotation" },
+    { "root_scale", (getter)Metadata_get_root_scale, NULL, "root_scale" },
+    { "mirror_axis", (getter)Metadata_get_mirror_axis, NULL, "mirror_axis" },
     { "geometry_scale", (getter)Metadata_get_geometry_scale, NULL, "geometry_scale" },
     { NULL },
 };
@@ -13993,16 +13993,16 @@ static PyObject *SceneSettings_get_original_unit_meters(SceneSettings *self, voi
 }
 
 static PyGetSetDef SceneSettings_getset[] = {
-    { "props", (getter)SceneSettings_get_original_unit_meters, NULL, "props" },
-    { "axes", (getter)SceneSettings_get_original_unit_meters, NULL, "axes" },
-    { "unit_meters", (getter)SceneSettings_get_original_unit_meters, NULL, "unit_meters" },
-    { "frames_per_second", (getter)SceneSettings_get_original_unit_meters, NULL, "frames_per_second" },
-    { "ambient_color", (getter)SceneSettings_get_original_unit_meters, NULL, "ambient_color" },
-    { "default_camera", (getter)SceneSettings_get_original_unit_meters, NULL, "default_camera" },
-    { "time_mode", (getter)SceneSettings_get_original_unit_meters, NULL, "time_mode" },
-    { "time_protocol", (getter)SceneSettings_get_original_unit_meters, NULL, "time_protocol" },
-    { "snap_mode", (getter)SceneSettings_get_original_unit_meters, NULL, "snap_mode" },
-    { "original_axis_up", (getter)SceneSettings_get_original_unit_meters, NULL, "original_axis_up" },
+    { "props", (getter)SceneSettings_get_props, NULL, "props" },
+    { "axes", (getter)SceneSettings_get_axes, NULL, "axes" },
+    { "unit_meters", (getter)SceneSettings_get_unit_meters, NULL, "unit_meters" },
+    { "frames_per_second", (getter)SceneSettings_get_frames_per_second, NULL, "frames_per_second" },
+    { "ambient_color", (getter)SceneSettings_get_ambient_color, NULL, "ambient_color" },
+    { "default_camera", (getter)SceneSettings_get_default_camera, NULL, "default_camera" },
+    { "time_mode", (getter)SceneSettings_get_time_mode, NULL, "time_mode" },
+    { "time_protocol", (getter)SceneSettings_get_time_protocol, NULL, "time_protocol" },
+    { "snap_mode", (getter)SceneSettings_get_snap_mode, NULL, "snap_mode" },
+    { "original_axis_up", (getter)SceneSettings_get_original_axis_up, NULL, "original_axis_up" },
     { "original_unit_meters", (getter)SceneSettings_get_original_unit_meters, NULL, "original_unit_meters" },
     { NULL },
 };
@@ -14130,15 +14130,15 @@ static PyObject *Scene_get_dom_root(Scene *self, void *closure) {
 }
 
 static PyGetSetDef Scene_getset[] = {
-    { "metadata", (getter)Scene_get_dom_root, NULL, "metadata" },
-    { "settings", (getter)Scene_get_dom_root, NULL, "settings" },
-    { "root_node", (getter)Scene_get_dom_root, NULL, "root_node" },
-    { "anim", (getter)Scene_get_dom_root, NULL, "anim" },
-    { "texture_files", (getter)Scene_get_dom_root, NULL, "texture_files" },
-    { "elements", (getter)Scene_get_dom_root, NULL, "elements" },
-    { "connections_src", (getter)Scene_get_dom_root, NULL, "connections_src" },
-    { "connections_dst", (getter)Scene_get_dom_root, NULL, "connections_dst" },
-    { "elements_by_name", (getter)Scene_get_dom_root, NULL, "elements_by_name" },
+    { "metadata", (getter)Scene_get_metadata, NULL, "metadata" },
+    { "settings", (getter)Scene_get_settings, NULL, "settings" },
+    { "root_node", (getter)Scene_get_root_node, NULL, "root_node" },
+    { "anim", (getter)Scene_get_anim, NULL, "anim" },
+    { "texture_files", (getter)Scene_get_texture_files, NULL, "texture_files" },
+    { "elements", (getter)Scene_get_elements, NULL, "elements" },
+    { "connections_src", (getter)Scene_get_connections_src, NULL, "connections_src" },
+    { "connections_dst", (getter)Scene_get_connections_dst, NULL, "connections_dst" },
+    { "elements_by_name", (getter)Scene_get_elements_by_name, NULL, "elements_by_name" },
     { "dom_root", (getter)Scene_get_dom_root, NULL, "dom_root" },
     { NULL },
 };
@@ -14196,8 +14196,8 @@ static PyObject *VertexStream_get_vertex_size(VertexStream *self, void *closure)
 }
 
 static PyGetSetDef VertexStream_getset[] = {
-    { "data", (getter)VertexStream_get_vertex_size, NULL, "data" },
-    { "vertex_count", (getter)VertexStream_get_vertex_size, NULL, "vertex_count" },
+    { "data", (getter)VertexStream_get_data, NULL, "data" },
+    { "vertex_count", (getter)VertexStream_get_vertex_count, NULL, "vertex_count" },
     { "vertex_size", (getter)VertexStream_get_vertex_size, NULL, "vertex_size" },
     { NULL },
 };
@@ -14255,8 +14255,8 @@ static PyObject *OpenFileInfo_get_original_filename(OpenFileInfo *self, void *cl
 }
 
 static PyGetSetDef OpenFileInfo_getset[] = {
-    { "context", (getter)OpenFileInfo_get_original_filename, NULL, "context" },
-    { "type", (getter)OpenFileInfo_get_original_filename, NULL, "type" },
+    { "context", (getter)OpenFileInfo_get_context, NULL, "context" },
+    { "type", (getter)OpenFileInfo_get_type, NULL, "type" },
     { "original_filename", (getter)OpenFileInfo_get_original_filename, NULL, "original_filename" },
     { NULL },
 };
@@ -14304,7 +14304,7 @@ static PyObject *OpenFileOpts_get_filename_null_terminated(OpenFileOpts *self, v
 }
 
 static PyGetSetDef OpenFileOpts_getset[] = {
-    { "allocator", (getter)OpenFileOpts_get_filename_null_terminated, NULL, "allocator" },
+    { "allocator", (getter)OpenFileOpts_get_allocator, NULL, "allocator" },
     { "filename_null_terminated", (getter)OpenFileOpts_get_filename_null_terminated, NULL, "filename_null_terminated" },
     { NULL },
 };
@@ -14362,8 +14362,8 @@ static PyObject *ErrorFrame_get_description(ErrorFrame *self, void *closure) {
 }
 
 static PyGetSetDef ErrorFrame_getset[] = {
-    { "source_line", (getter)ErrorFrame_get_description, NULL, "source_line" },
-    { "function", (getter)ErrorFrame_get_description, NULL, "function" },
+    { "source_line", (getter)ErrorFrame_get_source_line, NULL, "source_line" },
+    { "function", (getter)ErrorFrame_get_function, NULL, "function" },
     { "description", (getter)ErrorFrame_get_description, NULL, "description" },
     { NULL },
 };
@@ -14451,11 +14451,11 @@ static PyObject *Error_get_info(Error *self, void *closure) {
 }
 
 static PyGetSetDef Error_getset[] = {
-    { "type", (getter)Error_get_info, NULL, "type" },
-    { "description", (getter)Error_get_info, NULL, "description" },
-    { "stack_size", (getter)Error_get_info, NULL, "stack_size" },
-    { "stack", (getter)Error_get_info, NULL, "stack" },
-    { "info_length", (getter)Error_get_info, NULL, "info_length" },
+    { "type", (getter)Error_get_type, NULL, "type" },
+    { "description", (getter)Error_get_description, NULL, "description" },
+    { "stack_size", (getter)Error_get_stack_size, NULL, "stack_size" },
+    { "stack", (getter)Error_get_stack, NULL, "stack" },
+    { "info_length", (getter)Error_get_info_length, NULL, "info_length" },
     { "info", (getter)Error_get_info, NULL, "info" },
     { NULL },
 };
@@ -14503,7 +14503,7 @@ static PyObject *Progress_get_bytes_total(Progress *self, void *closure) {
 }
 
 static PyGetSetDef Progress_getset[] = {
-    { "bytes_read", (getter)Progress_get_bytes_total, NULL, "bytes_read" },
+    { "bytes_read", (getter)Progress_get_bytes_read, NULL, "bytes_read" },
     { "bytes_total", (getter)Progress_get_bytes_total, NULL, "bytes_total" },
     { NULL },
 };
@@ -14671,19 +14671,19 @@ static PyObject *InflateInput_get_internal_fast_bits(InflateInput *self, void *c
 }
 
 static PyGetSetDef InflateInput_getset[] = {
-    { "total_size", (getter)InflateInput_get_internal_fast_bits, NULL, "total_size" },
-    { "data", (getter)InflateInput_get_internal_fast_bits, NULL, "data" },
-    { "data_size", (getter)InflateInput_get_internal_fast_bits, NULL, "data_size" },
-    { "buffer", (getter)InflateInput_get_internal_fast_bits, NULL, "buffer" },
-    { "buffer_size", (getter)InflateInput_get_internal_fast_bits, NULL, "buffer_size" },
-    { "read_fn", (getter)InflateInput_get_internal_fast_bits, NULL, "read_fn" },
-    { "read_user", (getter)InflateInput_get_internal_fast_bits, NULL, "read_user" },
-    { "progress_cb", (getter)InflateInput_get_internal_fast_bits, NULL, "progress_cb" },
-    { "progress_interval_hint", (getter)InflateInput_get_internal_fast_bits, NULL, "progress_interval_hint" },
-    { "progress_size_before", (getter)InflateInput_get_internal_fast_bits, NULL, "progress_size_before" },
-    { "progress_size_after", (getter)InflateInput_get_internal_fast_bits, NULL, "progress_size_after" },
-    { "no_header", (getter)InflateInput_get_internal_fast_bits, NULL, "no_header" },
-    { "no_checksum", (getter)InflateInput_get_internal_fast_bits, NULL, "no_checksum" },
+    { "total_size", (getter)InflateInput_get_total_size, NULL, "total_size" },
+    { "data", (getter)InflateInput_get_data, NULL, "data" },
+    { "data_size", (getter)InflateInput_get_data_size, NULL, "data_size" },
+    { "buffer", (getter)InflateInput_get_buffer, NULL, "buffer" },
+    { "buffer_size", (getter)InflateInput_get_buffer_size, NULL, "buffer_size" },
+    { "read_fn", (getter)InflateInput_get_read_fn, NULL, "read_fn" },
+    { "read_user", (getter)InflateInput_get_read_user, NULL, "read_user" },
+    { "progress_cb", (getter)InflateInput_get_progress_cb, NULL, "progress_cb" },
+    { "progress_interval_hint", (getter)InflateInput_get_progress_interval_hint, NULL, "progress_interval_hint" },
+    { "progress_size_before", (getter)InflateInput_get_progress_size_before, NULL, "progress_size_before" },
+    { "progress_size_after", (getter)InflateInput_get_progress_size_after, NULL, "progress_size_after" },
+    { "no_header", (getter)InflateInput_get_no_header, NULL, "no_header" },
+    { "no_checksum", (getter)InflateInput_get_no_checksum, NULL, "no_checksum" },
     { "internal_fast_bits", (getter)InflateInput_get_internal_fast_bits, NULL, "internal_fast_bits" },
     { NULL },
 };
@@ -14731,7 +14731,7 @@ static PyObject *InflateRetain_get_data(InflateRetain *self, void *closure) {
 }
 
 static PyGetSetDef InflateRetain_getset[] = {
-    { "initialized", (getter)InflateRetain_get_data, NULL, "initialized" },
+    { "initialized", (getter)InflateRetain_get_initialized, NULL, "initialized" },
     { "data", (getter)InflateRetain_get_data, NULL, "data" },
     { NULL },
 };
@@ -14789,8 +14789,8 @@ static PyObject *BakedVec3_get_flags(BakedVec3 *self, void *closure) {
 }
 
 static PyGetSetDef BakedVec3_getset[] = {
-    { "time", (getter)BakedVec3_get_flags, NULL, "time" },
-    { "value", (getter)BakedVec3_get_flags, NULL, "value" },
+    { "time", (getter)BakedVec3_get_time, NULL, "time" },
+    { "value", (getter)BakedVec3_get_value, NULL, "value" },
     { "flags", (getter)BakedVec3_get_flags, NULL, "flags" },
     { NULL },
 };
@@ -14848,8 +14848,8 @@ static PyObject *BakedQuat_get_flags(BakedQuat *self, void *closure) {
 }
 
 static PyGetSetDef BakedQuat_getset[] = {
-    { "time", (getter)BakedQuat_get_flags, NULL, "time" },
-    { "value", (getter)BakedQuat_get_flags, NULL, "value" },
+    { "time", (getter)BakedQuat_get_time, NULL, "time" },
+    { "value", (getter)BakedQuat_get_value, NULL, "value" },
     { "flags", (getter)BakedQuat_get_flags, NULL, "flags" },
     { NULL },
 };
@@ -14957,13 +14957,13 @@ static PyObject *BakedNode_get_scale_keys(BakedNode *self, void *closure) {
 }
 
 static PyGetSetDef BakedNode_getset[] = {
-    { "typed_id", (getter)BakedNode_get_scale_keys, NULL, "typed_id" },
-    { "element_id", (getter)BakedNode_get_scale_keys, NULL, "element_id" },
-    { "constant_translation", (getter)BakedNode_get_scale_keys, NULL, "constant_translation" },
-    { "constant_rotation", (getter)BakedNode_get_scale_keys, NULL, "constant_rotation" },
-    { "constant_scale", (getter)BakedNode_get_scale_keys, NULL, "constant_scale" },
-    { "translation_keys", (getter)BakedNode_get_scale_keys, NULL, "translation_keys" },
-    { "rotation_keys", (getter)BakedNode_get_scale_keys, NULL, "rotation_keys" },
+    { "typed_id", (getter)BakedNode_get_typed_id, NULL, "typed_id" },
+    { "element_id", (getter)BakedNode_get_element_id, NULL, "element_id" },
+    { "constant_translation", (getter)BakedNode_get_constant_translation, NULL, "constant_translation" },
+    { "constant_rotation", (getter)BakedNode_get_constant_rotation, NULL, "constant_rotation" },
+    { "constant_scale", (getter)BakedNode_get_constant_scale, NULL, "constant_scale" },
+    { "translation_keys", (getter)BakedNode_get_translation_keys, NULL, "translation_keys" },
+    { "rotation_keys", (getter)BakedNode_get_rotation_keys, NULL, "rotation_keys" },
     { "scale_keys", (getter)BakedNode_get_scale_keys, NULL, "scale_keys" },
     { NULL },
 };
@@ -15021,8 +15021,8 @@ static PyObject *BakedProp_get_keys(BakedProp *self, void *closure) {
 }
 
 static PyGetSetDef BakedProp_getset[] = {
-    { "name", (getter)BakedProp_get_keys, NULL, "name" },
-    { "constant_value", (getter)BakedProp_get_keys, NULL, "constant_value" },
+    { "name", (getter)BakedProp_get_name, NULL, "name" },
+    { "constant_value", (getter)BakedProp_get_constant_value, NULL, "constant_value" },
     { "keys", (getter)BakedProp_get_keys, NULL, "keys" },
     { NULL },
 };
@@ -15070,7 +15070,7 @@ static PyObject *BakedElement_get_props(BakedElement *self, void *closure) {
 }
 
 static PyGetSetDef BakedElement_getset[] = {
-    { "element_id", (getter)BakedElement_get_props, NULL, "element_id" },
+    { "element_id", (getter)BakedElement_get_element_id, NULL, "element_id" },
     { "props", (getter)BakedElement_get_props, NULL, "props" },
     { NULL },
 };
@@ -15138,9 +15138,9 @@ static PyObject *BakedAnimMetadata_get_temp_allocs(BakedAnimMetadata *self, void
 }
 
 static PyGetSetDef BakedAnimMetadata_getset[] = {
-    { "result_memory_used", (getter)BakedAnimMetadata_get_temp_allocs, NULL, "result_memory_used" },
-    { "temp_memory_used", (getter)BakedAnimMetadata_get_temp_allocs, NULL, "temp_memory_used" },
-    { "result_allocs", (getter)BakedAnimMetadata_get_temp_allocs, NULL, "result_allocs" },
+    { "result_memory_used", (getter)BakedAnimMetadata_get_result_memory_used, NULL, "result_memory_used" },
+    { "temp_memory_used", (getter)BakedAnimMetadata_get_temp_memory_used, NULL, "temp_memory_used" },
+    { "result_allocs", (getter)BakedAnimMetadata_get_result_allocs, NULL, "result_allocs" },
     { "temp_allocs", (getter)BakedAnimMetadata_get_temp_allocs, NULL, "temp_allocs" },
     { NULL },
 };
@@ -15248,13 +15248,13 @@ static PyObject *BakedAnim_get_metadata(BakedAnim *self, void *closure) {
 }
 
 static PyGetSetDef BakedAnim_getset[] = {
-    { "nodes", (getter)BakedAnim_get_metadata, NULL, "nodes" },
-    { "elements", (getter)BakedAnim_get_metadata, NULL, "elements" },
-    { "playback_time_begin", (getter)BakedAnim_get_metadata, NULL, "playback_time_begin" },
-    { "playback_time_end", (getter)BakedAnim_get_metadata, NULL, "playback_time_end" },
-    { "playback_duration", (getter)BakedAnim_get_metadata, NULL, "playback_duration" },
-    { "key_time_min", (getter)BakedAnim_get_metadata, NULL, "key_time_min" },
-    { "key_time_max", (getter)BakedAnim_get_metadata, NULL, "key_time_max" },
+    { "nodes", (getter)BakedAnim_get_nodes, NULL, "nodes" },
+    { "elements", (getter)BakedAnim_get_elements, NULL, "elements" },
+    { "playback_time_begin", (getter)BakedAnim_get_playback_time_begin, NULL, "playback_time_begin" },
+    { "playback_time_end", (getter)BakedAnim_get_playback_time_end, NULL, "playback_time_end" },
+    { "playback_duration", (getter)BakedAnim_get_playback_duration, NULL, "playback_duration" },
+    { "key_time_min", (getter)BakedAnim_get_key_time_min, NULL, "key_time_min" },
+    { "key_time_max", (getter)BakedAnim_get_key_time_max, NULL, "key_time_max" },
     { "metadata", (getter)BakedAnim_get_metadata, NULL, "metadata" },
     { NULL },
 };
@@ -15349,8 +15349,8 @@ static PyObject *Panic_get_message(Panic *self, void *closure) {
 }
 
 static PyGetSetDef Panic_getset[] = {
-    { "did_panic", (getter)Panic_get_message, NULL, "did_panic" },
-    { "message_length", (getter)Panic_get_message, NULL, "message_length" },
+    { "did_panic", (getter)Panic_get_did_panic, NULL, "did_panic" },
+    { "message_length", (getter)Panic_get_message_length, NULL, "message_length" },
     { "message", (getter)Panic_get_message, NULL, "message" },
     { NULL },
 };

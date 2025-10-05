@@ -11,7 +11,7 @@
             "branch": "integration",
             "files": [
                 {
-                    "root": "src/ufbx/native",
+                    "root": "ufbx",
                     "files": ["ufbx.h", "ufbx.c"]
                 },
                 {
