@@ -31,6 +31,7 @@ class PyhtonArg:
     ctx: Optional[str] = None
     post: Optional[str] = None
     input_type: Optional[str] = None
+    input_name: Optional[str] = None
 
 def emit(line=""):
     global g_indent
@@ -231,6 +232,7 @@ class PythonFunc:
         self.is_emitted = do_emit
 
         input_type = None
+        input_name = None
 
         args = []
         try:
@@ -245,7 +247,9 @@ class PythonFunc:
             if arg.input_type:
                 assert not input_type
                 input_type = arg.input_type
+                input_name = arg.input_name
         self.input_type = input_type
+        self.input_name = input_name
 
 manual_types = { "ufbx_string", "ufbx_blob" }
 
@@ -267,6 +271,24 @@ pyobject_primtive = {
     "ufbx_real": lambda v: f"PyFloat_FromDouble({v})",
 }
 
+# TODO: Bounds checking
+pyobject_primtive_from = {
+    "char": lambda v: f"(char)PyLong_AsUnsignedLong({v})",
+    "int8_t": lambda v: f"(int8_t)PyLong_AsLong({v})",
+    "uint8_t": lambda v: f"(uint8_t)PyLong_AsUnsignedLong({v})",
+    "int32_t": lambda v: f"(int32_t)PyLong_AsLong({v})",
+    "uint32_t": lambda v: f"(uint32_t)PyLong_AsUnsignedLong({v})",
+    "int64_t": lambda v: f"(int64_t)PyLong_AsLongLong({v})",
+    "uint64_t": lambda v: f"(uint64_t)PyLong_AsUnsignedLongLong({v})",
+    "float": lambda v: f"(float)PyFloat_AsDouble({v})",
+    "double": lambda v: f"PyFloat_AsDouble({v})",
+    "size_t": lambda v: f"PyLong_AsSize_t({v})",
+    "uintptr_t": lambda v: f"(uintptr_t)PyLong_AsSize_t({v})",
+    "ptrdiff_t": lambda v: f"(ptrdiff_t)PyLong_AsSsize_t({v})",
+    "bool": lambda v: f"PyObject_IsTrue({v})",
+    "ufbx_real": lambda v: f"(ufbx_real)PyFloat_AsDouble({v})",
+}
+
 pyobject_manual = {
     "ufbx_vec2": lambda v: f"Vec2_from(&{v})",
     "ufbx_vec3": lambda v: f"Vec3_from(&{v})",
@@ -284,6 +306,9 @@ return_manual = {
 
 unsupported_funcs = {
     "ufbx_inflate",
+    "ufbx_tessellate_nurbs_curve",
+    "ufbx_tessellate_nurbs_surface",
+    "ufbx_subdivide_mesh",
 }
 
 def cbool(b):
@@ -318,6 +343,13 @@ def to_pyobject(irt: ir.Type, expr: str, ctx: str):
         return f"PyObject_CallFunction({pe.name}_Enum, \"i\", (int){expr})"
 
     return f"to_pyobject_todo(\"{irt.key}\")"
+
+def from_pyobject(irt: ir.Type, expr: str):
+    prim = pyobject_primtive_from.get(irt.key)
+    if prim:
+        return prim(expr)
+
+    return None
 
 def emit_error_forward():
     err_enum = g_file.enums["ufbx_error_type"]
@@ -609,6 +641,32 @@ def emit_struct(ps: PythonStruct):
         }}
         """)
 
+def emit_input_struct(ps: PythonStruct):
+    if not ps.ir.is_input:
+        return
+
+    emit()
+    emit(f"static int to_{ps.ir.short_name}({ps.ir.name} *dst, PyObject *src) {{")
+    indent()
+    emit("PyObject *value;")
+
+    for field in ps.fields:
+        irt = g_file.types[field.ir.type]
+        to_dst = from_pyobject(irt, "value")
+
+        if to_dst:
+            emit_lines(f"""
+                value = PyDict_GetItemString(src, \"{field.name}\");
+                if (value) {{
+                    dst->{field.name} = {to_dst};
+                    if (PyErr_Occurred()) return -1;
+                }}
+            """)
+
+    emit("return 0;")
+    unindent()
+    emit("}")
+
 def emit_element():
     emit()
     emit(f"static PyTypeObject *Element_typeof(ufbx_element_type type) {{")
@@ -692,7 +750,7 @@ def func_arg(arg: ir.Argument) -> Optional[PyhtonArg]:
                 elif ps.ir.is_input:
                     return PyhtonArg("", "", "", "", f"&{name}", f"""
                             {ps.ir.name} {name} = {{ 0 }};
-                        """, input_type=ps.ir.name)
+                        """, input_type=ps.ir.name, input_name=name)
 
         raise FunctionArgNotImplemented()
 
@@ -743,6 +801,14 @@ def emit_func(pf: PythonFunc):
         emit_lines(f"""
             if (!{ctx}->ok) {{
                 return Context_error({ctx});
+            }}
+        """)
+
+    if pf.input_type:
+        input_ps = py_structs[pf.input_type]
+        emit_lines(f"""
+            if (to_{input_ps.ir.short_name}(&{pf.input_name}, kwargs) < 0) {{
+                return NULL;
             }}
         """)
 
@@ -1036,6 +1102,9 @@ def main():
 
         for ps in py_structs.values():
             emit_struct(ps)
+
+        for ps in py_structs.values():
+            emit_input_struct(ps)
 
         for pf in py_funcs.values():
             emit_func(pf)

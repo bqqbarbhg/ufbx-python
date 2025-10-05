@@ -18366,6 +18366,531 @@ static PyObject *Panic_from(ufbx_panic *data, Context *ctx) {
     return (PyObject*)obj;
 }
 
+static int to_allocator_opts(ufbx_allocator_opts *dst, PyObject *src) {
+    PyObject *value;
+    value = PyDict_GetItemString(src, "memory_limit");
+    if (value) {
+        dst->memory_limit = PyLong_AsSize_t(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "allocation_limit");
+    if (value) {
+        dst->allocation_limit = PyLong_AsSize_t(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "huge_threshold");
+    if (value) {
+        dst->huge_threshold = PyLong_AsSize_t(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "max_chunk_size");
+    if (value) {
+        dst->max_chunk_size = PyLong_AsSize_t(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    return 0;
+}
+
+static int to_open_memory_opts(ufbx_open_memory_opts *dst, PyObject *src) {
+    PyObject *value;
+    return 0;
+}
+
+static int to_thread_opts(ufbx_thread_opts *dst, PyObject *src) {
+    PyObject *value;
+    value = PyDict_GetItemString(src, "num_tasks");
+    if (value) {
+        dst->num_tasks = PyLong_AsSize_t(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "memory_limit");
+    if (value) {
+        dst->memory_limit = PyLong_AsSize_t(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    return 0;
+}
+
+static int to_load_opts(ufbx_load_opts *dst, PyObject *src) {
+    PyObject *value;
+    value = PyDict_GetItemString(src, "ignore_geometry");
+    if (value) {
+        dst->ignore_geometry = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "ignore_animation");
+    if (value) {
+        dst->ignore_animation = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "ignore_embedded");
+    if (value) {
+        dst->ignore_embedded = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "ignore_all_content");
+    if (value) {
+        dst->ignore_all_content = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "evaluate_skinning");
+    if (value) {
+        dst->evaluate_skinning = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "evaluate_caches");
+    if (value) {
+        dst->evaluate_caches = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "load_external_files");
+    if (value) {
+        dst->load_external_files = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "ignore_missing_external_files");
+    if (value) {
+        dst->ignore_missing_external_files = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "skip_skin_vertices");
+    if (value) {
+        dst->skip_skin_vertices = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "skip_mesh_parts");
+    if (value) {
+        dst->skip_mesh_parts = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "clean_skin_weights");
+    if (value) {
+        dst->clean_skin_weights = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "use_blender_pbr_material");
+    if (value) {
+        dst->use_blender_pbr_material = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "disable_quirks");
+    if (value) {
+        dst->disable_quirks = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "strict");
+    if (value) {
+        dst->strict = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "force_single_thread_ascii_parsing");
+    if (value) {
+        dst->force_single_thread_ascii_parsing = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "connect_broken_elements");
+    if (value) {
+        dst->connect_broken_elements = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "allow_nodes_out_of_root");
+    if (value) {
+        dst->allow_nodes_out_of_root = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "allow_missing_vertex_position");
+    if (value) {
+        dst->allow_missing_vertex_position = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "allow_empty_faces");
+    if (value) {
+        dst->allow_empty_faces = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "generate_missing_normals");
+    if (value) {
+        dst->generate_missing_normals = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "open_main_file_with_default");
+    if (value) {
+        dst->open_main_file_with_default = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "path_separator");
+    if (value) {
+        dst->path_separator = (char)PyLong_AsUnsignedLong(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "node_depth_limit");
+    if (value) {
+        dst->node_depth_limit = (uint32_t)PyLong_AsUnsignedLong(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "file_size_estimate");
+    if (value) {
+        dst->file_size_estimate = (uint64_t)PyLong_AsUnsignedLongLong(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "read_buffer_size");
+    if (value) {
+        dst->read_buffer_size = PyLong_AsSize_t(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "progress_interval_hint");
+    if (value) {
+        dst->progress_interval_hint = (uint64_t)PyLong_AsUnsignedLongLong(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "pivot_handling_retain_empties");
+    if (value) {
+        dst->pivot_handling_retain_empties = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "handedness_conversion_retain_winding");
+    if (value) {
+        dst->handedness_conversion_retain_winding = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "reverse_winding");
+    if (value) {
+        dst->reverse_winding = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "target_unit_meters");
+    if (value) {
+        dst->target_unit_meters = (ufbx_real)PyFloat_AsDouble(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "normalize_normals");
+    if (value) {
+        dst->normalize_normals = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "normalize_tangents");
+    if (value) {
+        dst->normalize_tangents = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "use_root_transform");
+    if (value) {
+        dst->use_root_transform = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "key_clamp_threshold");
+    if (value) {
+        dst->key_clamp_threshold = PyFloat_AsDouble(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "retain_vertex_attrib_w");
+    if (value) {
+        dst->retain_vertex_attrib_w = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "retain_dom");
+    if (value) {
+        dst->retain_dom = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "file_format_lookahead");
+    if (value) {
+        dst->file_format_lookahead = PyLong_AsSize_t(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "no_format_from_content");
+    if (value) {
+        dst->no_format_from_content = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "no_format_from_extension");
+    if (value) {
+        dst->no_format_from_extension = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "obj_search_mtl_by_filename");
+    if (value) {
+        dst->obj_search_mtl_by_filename = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "obj_merge_objects");
+    if (value) {
+        dst->obj_merge_objects = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "obj_merge_groups");
+    if (value) {
+        dst->obj_merge_groups = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "obj_split_groups");
+    if (value) {
+        dst->obj_split_groups = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "obj_unit_meters");
+    if (value) {
+        dst->obj_unit_meters = (ufbx_real)PyFloat_AsDouble(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    return 0;
+}
+
+static int to_evaluate_opts(ufbx_evaluate_opts *dst, PyObject *src) {
+    PyObject *value;
+    value = PyDict_GetItemString(src, "evaluate_skinning");
+    if (value) {
+        dst->evaluate_skinning = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "evaluate_caches");
+    if (value) {
+        dst->evaluate_caches = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "evaluate_flags");
+    if (value) {
+        dst->evaluate_flags = (uint32_t)PyLong_AsUnsignedLong(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "load_external_files");
+    if (value) {
+        dst->load_external_files = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    return 0;
+}
+
+static int to_prop_override_desc(ufbx_prop_override_desc *dst, PyObject *src) {
+    PyObject *value;
+    value = PyDict_GetItemString(src, "element_id");
+    if (value) {
+        dst->element_id = (uint32_t)PyLong_AsUnsignedLong(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "value_int");
+    if (value) {
+        dst->value_int = (int64_t)PyLong_AsLongLong(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    return 0;
+}
+
+static int to_anim_opts(ufbx_anim_opts *dst, PyObject *src) {
+    PyObject *value;
+    value = PyDict_GetItemString(src, "ignore_connections");
+    if (value) {
+        dst->ignore_connections = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    return 0;
+}
+
+static int to_bake_opts(ufbx_bake_opts *dst, PyObject *src) {
+    PyObject *value;
+    value = PyDict_GetItemString(src, "trim_start_time");
+    if (value) {
+        dst->trim_start_time = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "resample_rate");
+    if (value) {
+        dst->resample_rate = PyFloat_AsDouble(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "minimum_sample_rate");
+    if (value) {
+        dst->minimum_sample_rate = PyFloat_AsDouble(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "maximum_sample_rate");
+    if (value) {
+        dst->maximum_sample_rate = PyFloat_AsDouble(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "bake_transform_props");
+    if (value) {
+        dst->bake_transform_props = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "skip_node_transforms");
+    if (value) {
+        dst->skip_node_transforms = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "no_resample_rotation");
+    if (value) {
+        dst->no_resample_rotation = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "ignore_layer_weight_animation");
+    if (value) {
+        dst->ignore_layer_weight_animation = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "max_keyframe_segments");
+    if (value) {
+        dst->max_keyframe_segments = PyLong_AsSize_t(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "step_custom_duration");
+    if (value) {
+        dst->step_custom_duration = PyFloat_AsDouble(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "step_custom_epsilon");
+    if (value) {
+        dst->step_custom_epsilon = PyFloat_AsDouble(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "evaluate_flags");
+    if (value) {
+        dst->evaluate_flags = (uint32_t)PyLong_AsUnsignedLong(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "key_reduction_enabled");
+    if (value) {
+        dst->key_reduction_enabled = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "key_reduction_rotation");
+    if (value) {
+        dst->key_reduction_rotation = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "key_reduction_threshold");
+    if (value) {
+        dst->key_reduction_threshold = PyFloat_AsDouble(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "key_reduction_passes");
+    if (value) {
+        dst->key_reduction_passes = PyLong_AsSize_t(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    return 0;
+}
+
+static int to_tessellate_curve_opts(ufbx_tessellate_curve_opts *dst, PyObject *src) {
+    PyObject *value;
+    value = PyDict_GetItemString(src, "span_subdivision");
+    if (value) {
+        dst->span_subdivision = PyLong_AsSize_t(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    return 0;
+}
+
+static int to_tessellate_surface_opts(ufbx_tessellate_surface_opts *dst, PyObject *src) {
+    PyObject *value;
+    value = PyDict_GetItemString(src, "span_subdivision_u");
+    if (value) {
+        dst->span_subdivision_u = PyLong_AsSize_t(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "span_subdivision_v");
+    if (value) {
+        dst->span_subdivision_v = PyLong_AsSize_t(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "skip_mesh_parts");
+    if (value) {
+        dst->skip_mesh_parts = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    return 0;
+}
+
+static int to_subdivide_opts(ufbx_subdivide_opts *dst, PyObject *src) {
+    PyObject *value;
+    value = PyDict_GetItemString(src, "ignore_normals");
+    if (value) {
+        dst->ignore_normals = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "interpolate_normals");
+    if (value) {
+        dst->interpolate_normals = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "interpolate_tangents");
+    if (value) {
+        dst->interpolate_tangents = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "evaluate_source_vertices");
+    if (value) {
+        dst->evaluate_source_vertices = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "max_source_vertices");
+    if (value) {
+        dst->max_source_vertices = PyLong_AsSize_t(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "evaluate_skin_weights");
+    if (value) {
+        dst->evaluate_skin_weights = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "max_skin_weights");
+    if (value) {
+        dst->max_skin_weights = PyLong_AsSize_t(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "skin_deformer_index");
+    if (value) {
+        dst->skin_deformer_index = PyLong_AsSize_t(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    return 0;
+}
+
+static int to_geometry_cache_opts(ufbx_geometry_cache_opts *dst, PyObject *src) {
+    PyObject *value;
+    value = PyDict_GetItemString(src, "frames_per_second");
+    if (value) {
+        dst->frames_per_second = PyFloat_AsDouble(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "use_scale_factor");
+    if (value) {
+        dst->use_scale_factor = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "scale_factor");
+    if (value) {
+        dst->scale_factor = (ufbx_real)PyFloat_AsDouble(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    return 0;
+}
+
+static int to_geometry_cache_data_opts(ufbx_geometry_cache_data_opts *dst, PyObject *src) {
+    PyObject *value;
+    value = PyDict_GetItemString(src, "additive");
+    if (value) {
+        dst->additive = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "use_weight");
+    if (value) {
+        dst->use_weight = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "weight");
+    if (value) {
+        dst->weight = (ufbx_real)PyFloat_AsDouble(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "ignore_transform");
+    if (value) {
+        dst->ignore_transform = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    return 0;
+}
+
 static PyObject *mod_is_thread_safe(PyObject *self, PyObject *args) {
     if (!PyArg_ParseTuple(args, "")) {
         return NULL;
@@ -18382,6 +18907,9 @@ static PyObject *mod_load_memory(PyObject *self, PyObject *args, PyObject *kwarg
     if (!PyArg_ParseTuple(args, "z#", &data, &data_len)) {
         return NULL;
     }
+    if (to_load_opts(&opts, kwargs) < 0) {
+        return NULL;
+    }
     ufbx_scene* ret = ufbx_load_memory(data, (size_t)data_len, &opts, &error);
     if (error.type != UFBX_ERROR_NONE) {
         return UfbxError_raise(&error);
@@ -18395,6 +18923,9 @@ static PyObject *mod_load_file(PyObject *self, PyObject *args, PyObject *kwargs)
     ufbx_load_opts opts = { 0 };
     ufbx_error error;
     if (!PyArg_ParseTuple(args, "s#", &filename, &filename_len)) {
+        return NULL;
+    }
+    if (to_load_opts(&opts, kwargs) < 0) {
         return NULL;
     }
     ufbx_scene* ret = ufbx_load_file_len(filename, (size_t)filename_len, &opts, &error);
@@ -18525,6 +19056,9 @@ static PyObject *mod_create_anim(PyObject *self, PyObject *args, PyObject *kwarg
     if (!scene->ctx->ok) {
         return Context_error(scene->ctx);
     }
+    if (to_anim_opts(&opts, kwargs) < 0) {
+        return NULL;
+    }
     ufbx_anim* ret = ufbx_create_anim(scene->data, &opts, &error);
     if (error.type != UFBX_ERROR_NONE) {
         return UfbxError_raise(&error);
@@ -18542,6 +19076,9 @@ static PyObject *mod_bake_anim(PyObject *self, PyObject *args, PyObject *kwargs)
     }
     if (!scene->ctx->ok) {
         return Context_error(scene->ctx);
+    }
+    if (to_bake_opts(&opts, kwargs) < 0) {
+        return NULL;
     }
     ufbx_baked_anim* ret = ufbx_bake_anim(scene->data, anim->data, &opts, &error);
     if (error.type != UFBX_ERROR_NONE) {
@@ -18660,46 +19197,15 @@ static PyObject *mod_find_shader_texture_input(PyObject *self, PyObject *args) {
     return to_pyobject_todo("ufbx_shader_texture_input*");
 }
 
-static PyObject *mod_tessellate_nurbs_curve(PyObject *self, PyObject *args, PyObject *kwargs) {
-    NurbsCurve *curve;
-    ufbx_tessellate_curve_opts opts = { 0 };
-    ufbx_error error;
-    if (!PyArg_ParseTuple(args, "O!", &NurbsCurve_Type, &curve)) {
-        return NULL;
-    }
-    if (!curve->ctx->ok) {
-        return Context_error(curve->ctx);
-    }
-    ufbx_line_curve* ret = ufbx_tessellate_nurbs_curve(curve->data, &opts, &error);
-    if (error.type != UFBX_ERROR_NONE) {
-        return UfbxError_raise(&error);
-    }
-    return Element_from(ret, curve->ctx);
-}
-
-static PyObject *mod_tessellate_nurbs_surface(PyObject *self, PyObject *args, PyObject *kwargs) {
-    NurbsSurface *surface;
-    ufbx_tessellate_surface_opts opts = { 0 };
-    ufbx_error error;
-    if (!PyArg_ParseTuple(args, "O!", &NurbsSurface_Type, &surface)) {
-        return NULL;
-    }
-    if (!surface->ctx->ok) {
-        return Context_error(surface->ctx);
-    }
-    ufbx_mesh* ret = ufbx_tessellate_nurbs_surface(surface->data, &opts, &error);
-    if (error.type != UFBX_ERROR_NONE) {
-        return UfbxError_raise(&error);
-    }
-    return Element_from(ret, surface->ctx);
-}
-
 static PyObject *mod_load_geometry_cache(PyObject *self, PyObject *args, PyObject *kwargs) {
     const char *filename;
     Py_ssize_t filename_len;
     ufbx_geometry_cache_opts opts = { 0 };
     ufbx_error error;
     if (!PyArg_ParseTuple(args, "s#", &filename, &filename_len)) {
+        return NULL;
+    }
+    if (to_geometry_cache_opts(&opts, kwargs) < 0) {
         return NULL;
     }
     ufbx_geometry_cache* ret = ufbx_load_geometry_cache_len(filename, (size_t)filename_len, &opts, &error);
@@ -19824,8 +20330,6 @@ static PyMethodDef mod_methods[] = {
     { "find_shader_prop", &mod_find_shader_prop, METH_VARARGS, NULL },
     { "find_shader_prop_bindings", &mod_find_shader_prop_bindings, METH_VARARGS, NULL },
     { "find_shader_texture_input", &mod_find_shader_texture_input, METH_VARARGS, NULL },
-    { "tessellate_nurbs_curve", (PyCFunction)&mod_tessellate_nurbs_curve, METH_VARARGS|METH_KEYWORDS, NULL },
-    { "tessellate_nurbs_surface", (PyCFunction)&mod_tessellate_nurbs_surface, METH_VARARGS|METH_KEYWORDS, NULL },
     { "load_geometry_cache", (PyCFunction)&mod_load_geometry_cache, METH_VARARGS|METH_KEYWORDS, NULL },
     { "dom_find", &mod_dom_find, METH_VARARGS, NULL },
     { "as_unknown", &mod_as_unknown, METH_VARARGS, NULL },
