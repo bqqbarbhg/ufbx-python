@@ -7,3 +7,4 @@ dist/
 *.egg-info/
 *.pyd
 *.pdb
+.pytest_cache/
