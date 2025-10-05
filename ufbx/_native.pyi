@@ -1,4 +1,5 @@
 from typing import Any, Union, Iterator, Tuple, NamedTuple, Optional, TypedDict
+from typing_extensions import Unpack
 from enum import IntEnum, IntFlag
 
 class Vec2(NamedTuple):
@@ -3543,10 +3544,10 @@ class GeometryCacheDataOpts(TypedDict, total=False):
 def is_thread_safe() -> bool:
     ...
 
-def load_memory(data: bytes, **kwargs: LoadOpts) -> Scene:
+def load_memory(data: bytes, **kwargs: Unpack[LoadOpts]) -> Scene:
     ...
 
-def load_file(filename: str, **kwargs: LoadOpts) -> Scene:
+def load_file(filename: str, **kwargs: Unpack[LoadOpts]) -> Scene:
     ...
 
 def find_prop(props: Props, name: str) -> Optional[Prop]:
@@ -3615,13 +3616,13 @@ def evaluate_blend_weight(anim: Anim, channel: BlendChannel, time: float) -> flo
 def evaluate_blend_weight_flags(anim: Anim, channel: BlendChannel, time: float, flags: int) -> float:
     ...
 
-def evaluate_scene(scene: Scene, anim: Anim, time: float, **kwargs: EvaluateOpts) -> Scene:
+def evaluate_scene(scene: Scene, anim: Anim, time: float, **kwargs: Unpack[EvaluateOpts]) -> Scene:
     ...
 
-def create_anim(scene: Scene, **kwargs: AnimOpts) -> Anim:
+def create_anim(scene: Scene, **kwargs: Unpack[AnimOpts]) -> Anim:
     ...
 
-def bake_anim(scene: Scene, anim: Anim, **kwargs: BakeOpts) -> BakedAnim:
+def bake_anim(scene: Scene, anim: Anim, **kwargs: Unpack[BakeOpts]) -> BakedAnim:
     ...
 
 def find_baked_node_by_typed_id(bake: BakedAnim, typed_id: int) -> Optional[BakedNode]:

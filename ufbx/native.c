@@ -68,6 +68,8 @@ int register_errors(PyObject *m)
 {
     for (size_t i = 0; i < array_count(error_types); i++) {
         ErrorType et = error_types[i];
+        if (!et.name) continue;
+
         PyObject *obj = PyErr_NewException(et.mod_name, UfbxError, NULL);
         if (PyModule_AddObject(m, et.name, Py_NewRef(obj)) < 0) {
             return -1;

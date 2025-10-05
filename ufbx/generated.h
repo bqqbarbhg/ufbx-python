@@ -829,12 +829,11 @@ static PyObject *error_type_objs[24];
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_bool_list data;
 } BoolList;
 
-static PyObject *BoolList_len(BoolList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t BoolList_len(BoolList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *BoolList_item(BoolList *self, Py_ssize_t index) {
@@ -845,6 +844,22 @@ static PyObject *BoolList_item(BoolList *self, Py_ssize_t index) {
         return NULL;
     }
     return Py_NewRef(self->data.data[index] ? Py_True : Py_False);
+}
+
+static int BoolList_traverse(BoolList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int BoolList_clear(BoolList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void BoolList_dealloc(BoolList *self) {
+    PyObject_GC_UnTrack(self);
+    BoolList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods BoolList_Sequence = {
@@ -858,16 +873,18 @@ static PyTypeObject BoolList_Type = {
     .tp_doc = PyDoc_STR("BoolList"),
     .tp_basicsize = sizeof(BoolList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &BoolList_Sequence,
+    .tp_dealloc = (destructor)&BoolList_dealloc,
+    .tp_traverse = (traverseproc)&BoolList_traverse,
+    .tp_clear = (inquiry)&BoolList_clear,
 };
 
 static PyObject *BoolList_from(ufbx_bool_list list, Context *ctx) {
     BoolList *obj = (BoolList*)PyObject_CallObject((PyObject*)&BoolList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -875,12 +892,11 @@ static PyObject *BoolList_from(ufbx_bool_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_uint32_list data;
 } Uint32List;
 
-static PyObject *Uint32List_len(Uint32List *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t Uint32List_len(Uint32List *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *Uint32List_item(Uint32List *self, Py_ssize_t index) {
@@ -891,6 +907,22 @@ static PyObject *Uint32List_item(Uint32List *self, Py_ssize_t index) {
         return NULL;
     }
     return PyLong_FromUnsignedLong((unsigned long)self->data.data[index]);
+}
+
+static int Uint32List_traverse(Uint32List *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int Uint32List_clear(Uint32List *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void Uint32List_dealloc(Uint32List *self) {
+    PyObject_GC_UnTrack(self);
+    Uint32List_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods Uint32List_Sequence = {
@@ -904,16 +936,18 @@ static PyTypeObject Uint32List_Type = {
     .tp_doc = PyDoc_STR("Uint32List"),
     .tp_basicsize = sizeof(Uint32List),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &Uint32List_Sequence,
+    .tp_dealloc = (destructor)&Uint32List_dealloc,
+    .tp_traverse = (traverseproc)&Uint32List_traverse,
+    .tp_clear = (inquiry)&Uint32List_clear,
 };
 
 static PyObject *Uint32List_from(ufbx_uint32_list list, Context *ctx) {
     Uint32List *obj = (Uint32List*)PyObject_CallObject((PyObject*)&Uint32List_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -921,12 +955,11 @@ static PyObject *Uint32List_from(ufbx_uint32_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_real_list data;
 } RealList;
 
-static PyObject *RealList_len(RealList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t RealList_len(RealList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *RealList_item(RealList *self, Py_ssize_t index) {
@@ -937,6 +970,22 @@ static PyObject *RealList_item(RealList *self, Py_ssize_t index) {
         return NULL;
     }
     return PyFloat_FromDouble(self->data.data[index]);
+}
+
+static int RealList_traverse(RealList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int RealList_clear(RealList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void RealList_dealloc(RealList *self) {
+    PyObject_GC_UnTrack(self);
+    RealList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods RealList_Sequence = {
@@ -950,16 +999,18 @@ static PyTypeObject RealList_Type = {
     .tp_doc = PyDoc_STR("RealList"),
     .tp_basicsize = sizeof(RealList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &RealList_Sequence,
+    .tp_dealloc = (destructor)&RealList_dealloc,
+    .tp_traverse = (traverseproc)&RealList_traverse,
+    .tp_clear = (inquiry)&RealList_clear,
 };
 
 static PyObject *RealList_from(ufbx_real_list list, Context *ctx) {
     RealList *obj = (RealList*)PyObject_CallObject((PyObject*)&RealList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -967,12 +1018,11 @@ static PyObject *RealList_from(ufbx_real_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_vec2_list data;
 } Vec2List;
 
-static PyObject *Vec2List_len(Vec2List *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t Vec2List_len(Vec2List *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *Vec2List_item(Vec2List *self, Py_ssize_t index) {
@@ -983,6 +1033,22 @@ static PyObject *Vec2List_item(Vec2List *self, Py_ssize_t index) {
         return NULL;
     }
     return Vec2_from(&self->data.data[index]);
+}
+
+static int Vec2List_traverse(Vec2List *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int Vec2List_clear(Vec2List *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void Vec2List_dealloc(Vec2List *self) {
+    PyObject_GC_UnTrack(self);
+    Vec2List_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods Vec2List_Sequence = {
@@ -996,16 +1062,18 @@ static PyTypeObject Vec2List_Type = {
     .tp_doc = PyDoc_STR("Vec2List"),
     .tp_basicsize = sizeof(Vec2List),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &Vec2List_Sequence,
+    .tp_dealloc = (destructor)&Vec2List_dealloc,
+    .tp_traverse = (traverseproc)&Vec2List_traverse,
+    .tp_clear = (inquiry)&Vec2List_clear,
 };
 
 static PyObject *Vec2List_from(ufbx_vec2_list list, Context *ctx) {
     Vec2List *obj = (Vec2List*)PyObject_CallObject((PyObject*)&Vec2List_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -1013,12 +1081,11 @@ static PyObject *Vec2List_from(ufbx_vec2_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_vec3_list data;
 } Vec3List;
 
-static PyObject *Vec3List_len(Vec3List *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t Vec3List_len(Vec3List *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *Vec3List_item(Vec3List *self, Py_ssize_t index) {
@@ -1029,6 +1096,22 @@ static PyObject *Vec3List_item(Vec3List *self, Py_ssize_t index) {
         return NULL;
     }
     return Vec3_from(&self->data.data[index]);
+}
+
+static int Vec3List_traverse(Vec3List *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int Vec3List_clear(Vec3List *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void Vec3List_dealloc(Vec3List *self) {
+    PyObject_GC_UnTrack(self);
+    Vec3List_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods Vec3List_Sequence = {
@@ -1042,16 +1125,18 @@ static PyTypeObject Vec3List_Type = {
     .tp_doc = PyDoc_STR("Vec3List"),
     .tp_basicsize = sizeof(Vec3List),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &Vec3List_Sequence,
+    .tp_dealloc = (destructor)&Vec3List_dealloc,
+    .tp_traverse = (traverseproc)&Vec3List_traverse,
+    .tp_clear = (inquiry)&Vec3List_clear,
 };
 
 static PyObject *Vec3List_from(ufbx_vec3_list list, Context *ctx) {
     Vec3List *obj = (Vec3List*)PyObject_CallObject((PyObject*)&Vec3List_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -1059,12 +1144,11 @@ static PyObject *Vec3List_from(ufbx_vec3_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_vec4_list data;
 } Vec4List;
 
-static PyObject *Vec4List_len(Vec4List *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t Vec4List_len(Vec4List *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *Vec4List_item(Vec4List *self, Py_ssize_t index) {
@@ -1075,6 +1159,22 @@ static PyObject *Vec4List_item(Vec4List *self, Py_ssize_t index) {
         return NULL;
     }
     return Vec4_from(&self->data.data[index]);
+}
+
+static int Vec4List_traverse(Vec4List *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int Vec4List_clear(Vec4List *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void Vec4List_dealloc(Vec4List *self) {
+    PyObject_GC_UnTrack(self);
+    Vec4List_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods Vec4List_Sequence = {
@@ -1088,16 +1188,18 @@ static PyTypeObject Vec4List_Type = {
     .tp_doc = PyDoc_STR("Vec4List"),
     .tp_basicsize = sizeof(Vec4List),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &Vec4List_Sequence,
+    .tp_dealloc = (destructor)&Vec4List_dealloc,
+    .tp_traverse = (traverseproc)&Vec4List_traverse,
+    .tp_clear = (inquiry)&Vec4List_clear,
 };
 
 static PyObject *Vec4List_from(ufbx_vec4_list list, Context *ctx) {
     Vec4List *obj = (Vec4List*)PyObject_CallObject((PyObject*)&Vec4List_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -1105,12 +1207,11 @@ static PyObject *Vec4List_from(ufbx_vec4_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_string_list data;
 } StringList;
 
-static PyObject *StringList_len(StringList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t StringList_len(StringList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *StringList_item(StringList *self, Py_ssize_t index) {
@@ -1121,6 +1222,22 @@ static PyObject *StringList_item(StringList *self, Py_ssize_t index) {
         return NULL;
     }
     return String_from(self->data.data[index]);
+}
+
+static int StringList_traverse(StringList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int StringList_clear(StringList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void StringList_dealloc(StringList *self) {
+    PyObject_GC_UnTrack(self);
+    StringList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods StringList_Sequence = {
@@ -1134,16 +1251,18 @@ static PyTypeObject StringList_Type = {
     .tp_doc = PyDoc_STR("StringList"),
     .tp_basicsize = sizeof(StringList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &StringList_Sequence,
+    .tp_dealloc = (destructor)&StringList_dealloc,
+    .tp_traverse = (traverseproc)&StringList_traverse,
+    .tp_clear = (inquiry)&StringList_clear,
 };
 
 static PyObject *StringList_from(ufbx_string_list list, Context *ctx) {
     StringList *obj = (StringList*)PyObject_CallObject((PyObject*)&StringList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -1151,12 +1270,11 @@ static PyObject *StringList_from(ufbx_string_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_int32_list data;
 } Int32List;
 
-static PyObject *Int32List_len(Int32List *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t Int32List_len(Int32List *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *Int32List_item(Int32List *self, Py_ssize_t index) {
@@ -1167,6 +1285,22 @@ static PyObject *Int32List_item(Int32List *self, Py_ssize_t index) {
         return NULL;
     }
     return PyLong_FromLong((long)self->data.data[index]);
+}
+
+static int Int32List_traverse(Int32List *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int Int32List_clear(Int32List *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void Int32List_dealloc(Int32List *self) {
+    PyObject_GC_UnTrack(self);
+    Int32List_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods Int32List_Sequence = {
@@ -1180,16 +1314,18 @@ static PyTypeObject Int32List_Type = {
     .tp_doc = PyDoc_STR("Int32List"),
     .tp_basicsize = sizeof(Int32List),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &Int32List_Sequence,
+    .tp_dealloc = (destructor)&Int32List_dealloc,
+    .tp_traverse = (traverseproc)&Int32List_traverse,
+    .tp_clear = (inquiry)&Int32List_clear,
 };
 
 static PyObject *Int32List_from(ufbx_int32_list list, Context *ctx) {
     Int32List *obj = (Int32List*)PyObject_CallObject((PyObject*)&Int32List_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -1197,12 +1333,11 @@ static PyObject *Int32List_from(ufbx_int32_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_int64_list data;
 } Int64List;
 
-static PyObject *Int64List_len(Int64List *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t Int64List_len(Int64List *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *Int64List_item(Int64List *self, Py_ssize_t index) {
@@ -1213,6 +1348,22 @@ static PyObject *Int64List_item(Int64List *self, Py_ssize_t index) {
         return NULL;
     }
     return PyLong_FromLongLong((long long)self->data.data[index]);
+}
+
+static int Int64List_traverse(Int64List *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int Int64List_clear(Int64List *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void Int64List_dealloc(Int64List *self) {
+    PyObject_GC_UnTrack(self);
+    Int64List_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods Int64List_Sequence = {
@@ -1226,16 +1377,18 @@ static PyTypeObject Int64List_Type = {
     .tp_doc = PyDoc_STR("Int64List"),
     .tp_basicsize = sizeof(Int64List),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &Int64List_Sequence,
+    .tp_dealloc = (destructor)&Int64List_dealloc,
+    .tp_traverse = (traverseproc)&Int64List_traverse,
+    .tp_clear = (inquiry)&Int64List_clear,
 };
 
 static PyObject *Int64List_from(ufbx_int64_list list, Context *ctx) {
     Int64List *obj = (Int64List*)PyObject_CallObject((PyObject*)&Int64List_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -1243,12 +1396,11 @@ static PyObject *Int64List_from(ufbx_int64_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_float_list data;
 } FloatList;
 
-static PyObject *FloatList_len(FloatList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t FloatList_len(FloatList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *FloatList_item(FloatList *self, Py_ssize_t index) {
@@ -1259,6 +1411,22 @@ static PyObject *FloatList_item(FloatList *self, Py_ssize_t index) {
         return NULL;
     }
     return PyFloat_FromDouble(self->data.data[index]);
+}
+
+static int FloatList_traverse(FloatList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int FloatList_clear(FloatList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void FloatList_dealloc(FloatList *self) {
+    PyObject_GC_UnTrack(self);
+    FloatList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods FloatList_Sequence = {
@@ -1272,16 +1440,18 @@ static PyTypeObject FloatList_Type = {
     .tp_doc = PyDoc_STR("FloatList"),
     .tp_basicsize = sizeof(FloatList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &FloatList_Sequence,
+    .tp_dealloc = (destructor)&FloatList_dealloc,
+    .tp_traverse = (traverseproc)&FloatList_traverse,
+    .tp_clear = (inquiry)&FloatList_clear,
 };
 
 static PyObject *FloatList_from(ufbx_float_list list, Context *ctx) {
     FloatList *obj = (FloatList*)PyObject_CallObject((PyObject*)&FloatList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -1289,12 +1459,11 @@ static PyObject *FloatList_from(ufbx_float_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_double_list data;
 } DoubleList;
 
-static PyObject *DoubleList_len(DoubleList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t DoubleList_len(DoubleList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *DoubleList_item(DoubleList *self, Py_ssize_t index) {
@@ -1305,6 +1474,22 @@ static PyObject *DoubleList_item(DoubleList *self, Py_ssize_t index) {
         return NULL;
     }
     return PyFloat_FromDouble(self->data.data[index]);
+}
+
+static int DoubleList_traverse(DoubleList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int DoubleList_clear(DoubleList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void DoubleList_dealloc(DoubleList *self) {
+    PyObject_GC_UnTrack(self);
+    DoubleList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods DoubleList_Sequence = {
@@ -1318,16 +1503,18 @@ static PyTypeObject DoubleList_Type = {
     .tp_doc = PyDoc_STR("DoubleList"),
     .tp_basicsize = sizeof(DoubleList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &DoubleList_Sequence,
+    .tp_dealloc = (destructor)&DoubleList_dealloc,
+    .tp_traverse = (traverseproc)&DoubleList_traverse,
+    .tp_clear = (inquiry)&DoubleList_clear,
 };
 
 static PyObject *DoubleList_from(ufbx_double_list list, Context *ctx) {
     DoubleList *obj = (DoubleList*)PyObject_CallObject((PyObject*)&DoubleList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -1335,12 +1522,11 @@ static PyObject *DoubleList_from(ufbx_double_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_blob_list data;
 } BlobList;
 
-static PyObject *BlobList_len(BlobList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t BlobList_len(BlobList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *BlobList_item(BlobList *self, Py_ssize_t index) {
@@ -1351,6 +1537,22 @@ static PyObject *BlobList_item(BlobList *self, Py_ssize_t index) {
         return NULL;
     }
     return Blob_from(self->data.data[index]);
+}
+
+static int BlobList_traverse(BlobList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int BlobList_clear(BlobList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void BlobList_dealloc(BlobList *self) {
+    PyObject_GC_UnTrack(self);
+    BlobList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods BlobList_Sequence = {
@@ -1364,16 +1566,18 @@ static PyTypeObject BlobList_Type = {
     .tp_doc = PyDoc_STR("BlobList"),
     .tp_basicsize = sizeof(BlobList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &BlobList_Sequence,
+    .tp_dealloc = (destructor)&BlobList_dealloc,
+    .tp_traverse = (traverseproc)&BlobList_traverse,
+    .tp_clear = (inquiry)&BlobList_clear,
 };
 
 static PyObject *BlobList_from(ufbx_blob_list list, Context *ctx) {
     BlobList *obj = (BlobList*)PyObject_CallObject((PyObject*)&BlobList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -1381,12 +1585,11 @@ static PyObject *BlobList_from(ufbx_blob_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_dom_node_list data;
 } DomNodeList;
 
-static PyObject *DomNodeList_len(DomNodeList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t DomNodeList_len(DomNodeList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *DomNodeList_item(DomNodeList *self, Py_ssize_t index) {
@@ -1397,6 +1600,22 @@ static PyObject *DomNodeList_item(DomNodeList *self, Py_ssize_t index) {
         return NULL;
     }
     return to_pyobject_todo("ufbx_dom_node*");
+}
+
+static int DomNodeList_traverse(DomNodeList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int DomNodeList_clear(DomNodeList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void DomNodeList_dealloc(DomNodeList *self) {
+    PyObject_GC_UnTrack(self);
+    DomNodeList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods DomNodeList_Sequence = {
@@ -1410,16 +1629,18 @@ static PyTypeObject DomNodeList_Type = {
     .tp_doc = PyDoc_STR("DomNodeList"),
     .tp_basicsize = sizeof(DomNodeList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &DomNodeList_Sequence,
+    .tp_dealloc = (destructor)&DomNodeList_dealloc,
+    .tp_traverse = (traverseproc)&DomNodeList_traverse,
+    .tp_clear = (inquiry)&DomNodeList_clear,
 };
 
 static PyObject *DomNodeList_from(ufbx_dom_node_list list, Context *ctx) {
     DomNodeList *obj = (DomNodeList*)PyObject_CallObject((PyObject*)&DomNodeList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -1427,12 +1648,11 @@ static PyObject *DomNodeList_from(ufbx_dom_node_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_dom_value_list data;
 } DomValueList;
 
-static PyObject *DomValueList_len(DomValueList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t DomValueList_len(DomValueList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *DomValueList_item(DomValueList *self, Py_ssize_t index) {
@@ -1443,6 +1663,22 @@ static PyObject *DomValueList_item(DomValueList *self, Py_ssize_t index) {
         return NULL;
     }
     return DomValue_from(&self->data.data[index], self->ctx);
+}
+
+static int DomValueList_traverse(DomValueList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int DomValueList_clear(DomValueList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void DomValueList_dealloc(DomValueList *self) {
+    PyObject_GC_UnTrack(self);
+    DomValueList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods DomValueList_Sequence = {
@@ -1456,16 +1692,18 @@ static PyTypeObject DomValueList_Type = {
     .tp_doc = PyDoc_STR("DomValueList"),
     .tp_basicsize = sizeof(DomValueList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &DomValueList_Sequence,
+    .tp_dealloc = (destructor)&DomValueList_dealloc,
+    .tp_traverse = (traverseproc)&DomValueList_traverse,
+    .tp_clear = (inquiry)&DomValueList_clear,
 };
 
 static PyObject *DomValueList_from(ufbx_dom_value_list list, Context *ctx) {
     DomValueList *obj = (DomValueList*)PyObject_CallObject((PyObject*)&DomValueList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -1473,12 +1711,11 @@ static PyObject *DomValueList_from(ufbx_dom_value_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_prop_list data;
 } PropList;
 
-static PyObject *PropList_len(PropList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t PropList_len(PropList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *PropList_item(PropList *self, Py_ssize_t index) {
@@ -1489,6 +1726,22 @@ static PyObject *PropList_item(PropList *self, Py_ssize_t index) {
         return NULL;
     }
     return Prop_from(&self->data.data[index], self->ctx);
+}
+
+static int PropList_traverse(PropList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int PropList_clear(PropList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void PropList_dealloc(PropList *self) {
+    PyObject_GC_UnTrack(self);
+    PropList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods PropList_Sequence = {
@@ -1502,16 +1755,18 @@ static PyTypeObject PropList_Type = {
     .tp_doc = PyDoc_STR("PropList"),
     .tp_basicsize = sizeof(PropList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &PropList_Sequence,
+    .tp_dealloc = (destructor)&PropList_dealloc,
+    .tp_traverse = (traverseproc)&PropList_traverse,
+    .tp_clear = (inquiry)&PropList_clear,
 };
 
 static PyObject *PropList_from(ufbx_prop_list list, Context *ctx) {
     PropList *obj = (PropList*)PyObject_CallObject((PyObject*)&PropList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -1519,12 +1774,11 @@ static PyObject *PropList_from(ufbx_prop_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_element_list data;
 } ElementList;
 
-static PyObject *ElementList_len(ElementList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t ElementList_len(ElementList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *ElementList_item(ElementList *self, Py_ssize_t index) {
@@ -1535,6 +1789,22 @@ static PyObject *ElementList_item(ElementList *self, Py_ssize_t index) {
         return NULL;
     }
     return to_pyobject_todo("ufbx_element*");
+}
+
+static int ElementList_traverse(ElementList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int ElementList_clear(ElementList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void ElementList_dealloc(ElementList *self) {
+    PyObject_GC_UnTrack(self);
+    ElementList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods ElementList_Sequence = {
@@ -1548,16 +1818,18 @@ static PyTypeObject ElementList_Type = {
     .tp_doc = PyDoc_STR("ElementList"),
     .tp_basicsize = sizeof(ElementList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &ElementList_Sequence,
+    .tp_dealloc = (destructor)&ElementList_dealloc,
+    .tp_traverse = (traverseproc)&ElementList_traverse,
+    .tp_clear = (inquiry)&ElementList_clear,
 };
 
 static PyObject *ElementList_from(ufbx_element_list list, Context *ctx) {
     ElementList *obj = (ElementList*)PyObject_CallObject((PyObject*)&ElementList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -1565,12 +1837,11 @@ static PyObject *ElementList_from(ufbx_element_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_unknown_list data;
 } UnknownList;
 
-static PyObject *UnknownList_len(UnknownList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t UnknownList_len(UnknownList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *UnknownList_item(UnknownList *self, Py_ssize_t index) {
@@ -1581,6 +1852,22 @@ static PyObject *UnknownList_item(UnknownList *self, Py_ssize_t index) {
         return NULL;
     }
     return Element_from(self->data.data[index], self->ctx);
+}
+
+static int UnknownList_traverse(UnknownList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int UnknownList_clear(UnknownList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void UnknownList_dealloc(UnknownList *self) {
+    PyObject_GC_UnTrack(self);
+    UnknownList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods UnknownList_Sequence = {
@@ -1594,16 +1881,18 @@ static PyTypeObject UnknownList_Type = {
     .tp_doc = PyDoc_STR("UnknownList"),
     .tp_basicsize = sizeof(UnknownList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &UnknownList_Sequence,
+    .tp_dealloc = (destructor)&UnknownList_dealloc,
+    .tp_traverse = (traverseproc)&UnknownList_traverse,
+    .tp_clear = (inquiry)&UnknownList_clear,
 };
 
 static PyObject *UnknownList_from(ufbx_unknown_list list, Context *ctx) {
     UnknownList *obj = (UnknownList*)PyObject_CallObject((PyObject*)&UnknownList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -1611,12 +1900,11 @@ static PyObject *UnknownList_from(ufbx_unknown_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_node_list data;
 } NodeList;
 
-static PyObject *NodeList_len(NodeList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t NodeList_len(NodeList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *NodeList_item(NodeList *self, Py_ssize_t index) {
@@ -1627,6 +1915,22 @@ static PyObject *NodeList_item(NodeList *self, Py_ssize_t index) {
         return NULL;
     }
     return Element_from(self->data.data[index], self->ctx);
+}
+
+static int NodeList_traverse(NodeList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int NodeList_clear(NodeList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void NodeList_dealloc(NodeList *self) {
+    PyObject_GC_UnTrack(self);
+    NodeList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods NodeList_Sequence = {
@@ -1640,16 +1944,18 @@ static PyTypeObject NodeList_Type = {
     .tp_doc = PyDoc_STR("NodeList"),
     .tp_basicsize = sizeof(NodeList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &NodeList_Sequence,
+    .tp_dealloc = (destructor)&NodeList_dealloc,
+    .tp_traverse = (traverseproc)&NodeList_traverse,
+    .tp_clear = (inquiry)&NodeList_clear,
 };
 
 static PyObject *NodeList_from(ufbx_node_list list, Context *ctx) {
     NodeList *obj = (NodeList*)PyObject_CallObject((PyObject*)&NodeList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -1657,12 +1963,11 @@ static PyObject *NodeList_from(ufbx_node_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_mesh_list data;
 } MeshList;
 
-static PyObject *MeshList_len(MeshList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t MeshList_len(MeshList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *MeshList_item(MeshList *self, Py_ssize_t index) {
@@ -1673,6 +1978,22 @@ static PyObject *MeshList_item(MeshList *self, Py_ssize_t index) {
         return NULL;
     }
     return Element_from(self->data.data[index], self->ctx);
+}
+
+static int MeshList_traverse(MeshList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int MeshList_clear(MeshList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void MeshList_dealloc(MeshList *self) {
+    PyObject_GC_UnTrack(self);
+    MeshList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods MeshList_Sequence = {
@@ -1686,16 +2007,18 @@ static PyTypeObject MeshList_Type = {
     .tp_doc = PyDoc_STR("MeshList"),
     .tp_basicsize = sizeof(MeshList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &MeshList_Sequence,
+    .tp_dealloc = (destructor)&MeshList_dealloc,
+    .tp_traverse = (traverseproc)&MeshList_traverse,
+    .tp_clear = (inquiry)&MeshList_clear,
 };
 
 static PyObject *MeshList_from(ufbx_mesh_list list, Context *ctx) {
     MeshList *obj = (MeshList*)PyObject_CallObject((PyObject*)&MeshList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -1703,12 +2026,11 @@ static PyObject *MeshList_from(ufbx_mesh_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_light_list data;
 } LightList;
 
-static PyObject *LightList_len(LightList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t LightList_len(LightList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *LightList_item(LightList *self, Py_ssize_t index) {
@@ -1719,6 +2041,22 @@ static PyObject *LightList_item(LightList *self, Py_ssize_t index) {
         return NULL;
     }
     return Element_from(self->data.data[index], self->ctx);
+}
+
+static int LightList_traverse(LightList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int LightList_clear(LightList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void LightList_dealloc(LightList *self) {
+    PyObject_GC_UnTrack(self);
+    LightList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods LightList_Sequence = {
@@ -1732,16 +2070,18 @@ static PyTypeObject LightList_Type = {
     .tp_doc = PyDoc_STR("LightList"),
     .tp_basicsize = sizeof(LightList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &LightList_Sequence,
+    .tp_dealloc = (destructor)&LightList_dealloc,
+    .tp_traverse = (traverseproc)&LightList_traverse,
+    .tp_clear = (inquiry)&LightList_clear,
 };
 
 static PyObject *LightList_from(ufbx_light_list list, Context *ctx) {
     LightList *obj = (LightList*)PyObject_CallObject((PyObject*)&LightList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -1749,12 +2089,11 @@ static PyObject *LightList_from(ufbx_light_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_camera_list data;
 } CameraList;
 
-static PyObject *CameraList_len(CameraList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t CameraList_len(CameraList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *CameraList_item(CameraList *self, Py_ssize_t index) {
@@ -1765,6 +2104,22 @@ static PyObject *CameraList_item(CameraList *self, Py_ssize_t index) {
         return NULL;
     }
     return Element_from(self->data.data[index], self->ctx);
+}
+
+static int CameraList_traverse(CameraList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int CameraList_clear(CameraList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void CameraList_dealloc(CameraList *self) {
+    PyObject_GC_UnTrack(self);
+    CameraList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods CameraList_Sequence = {
@@ -1778,16 +2133,18 @@ static PyTypeObject CameraList_Type = {
     .tp_doc = PyDoc_STR("CameraList"),
     .tp_basicsize = sizeof(CameraList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &CameraList_Sequence,
+    .tp_dealloc = (destructor)&CameraList_dealloc,
+    .tp_traverse = (traverseproc)&CameraList_traverse,
+    .tp_clear = (inquiry)&CameraList_clear,
 };
 
 static PyObject *CameraList_from(ufbx_camera_list list, Context *ctx) {
     CameraList *obj = (CameraList*)PyObject_CallObject((PyObject*)&CameraList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -1795,12 +2152,11 @@ static PyObject *CameraList_from(ufbx_camera_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_bone_list data;
 } BoneList;
 
-static PyObject *BoneList_len(BoneList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t BoneList_len(BoneList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *BoneList_item(BoneList *self, Py_ssize_t index) {
@@ -1811,6 +2167,22 @@ static PyObject *BoneList_item(BoneList *self, Py_ssize_t index) {
         return NULL;
     }
     return Element_from(self->data.data[index], self->ctx);
+}
+
+static int BoneList_traverse(BoneList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int BoneList_clear(BoneList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void BoneList_dealloc(BoneList *self) {
+    PyObject_GC_UnTrack(self);
+    BoneList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods BoneList_Sequence = {
@@ -1824,16 +2196,18 @@ static PyTypeObject BoneList_Type = {
     .tp_doc = PyDoc_STR("BoneList"),
     .tp_basicsize = sizeof(BoneList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &BoneList_Sequence,
+    .tp_dealloc = (destructor)&BoneList_dealloc,
+    .tp_traverse = (traverseproc)&BoneList_traverse,
+    .tp_clear = (inquiry)&BoneList_clear,
 };
 
 static PyObject *BoneList_from(ufbx_bone_list list, Context *ctx) {
     BoneList *obj = (BoneList*)PyObject_CallObject((PyObject*)&BoneList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -1841,12 +2215,11 @@ static PyObject *BoneList_from(ufbx_bone_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_empty_list data;
 } EmptyList;
 
-static PyObject *EmptyList_len(EmptyList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t EmptyList_len(EmptyList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *EmptyList_item(EmptyList *self, Py_ssize_t index) {
@@ -1857,6 +2230,22 @@ static PyObject *EmptyList_item(EmptyList *self, Py_ssize_t index) {
         return NULL;
     }
     return Element_from(self->data.data[index], self->ctx);
+}
+
+static int EmptyList_traverse(EmptyList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int EmptyList_clear(EmptyList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void EmptyList_dealloc(EmptyList *self) {
+    PyObject_GC_UnTrack(self);
+    EmptyList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods EmptyList_Sequence = {
@@ -1870,16 +2259,18 @@ static PyTypeObject EmptyList_Type = {
     .tp_doc = PyDoc_STR("EmptyList"),
     .tp_basicsize = sizeof(EmptyList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &EmptyList_Sequence,
+    .tp_dealloc = (destructor)&EmptyList_dealloc,
+    .tp_traverse = (traverseproc)&EmptyList_traverse,
+    .tp_clear = (inquiry)&EmptyList_clear,
 };
 
 static PyObject *EmptyList_from(ufbx_empty_list list, Context *ctx) {
     EmptyList *obj = (EmptyList*)PyObject_CallObject((PyObject*)&EmptyList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -1887,12 +2278,11 @@ static PyObject *EmptyList_from(ufbx_empty_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_line_curve_list data;
 } LineCurveList;
 
-static PyObject *LineCurveList_len(LineCurveList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t LineCurveList_len(LineCurveList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *LineCurveList_item(LineCurveList *self, Py_ssize_t index) {
@@ -1903,6 +2293,22 @@ static PyObject *LineCurveList_item(LineCurveList *self, Py_ssize_t index) {
         return NULL;
     }
     return Element_from(self->data.data[index], self->ctx);
+}
+
+static int LineCurveList_traverse(LineCurveList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int LineCurveList_clear(LineCurveList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void LineCurveList_dealloc(LineCurveList *self) {
+    PyObject_GC_UnTrack(self);
+    LineCurveList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods LineCurveList_Sequence = {
@@ -1916,16 +2322,18 @@ static PyTypeObject LineCurveList_Type = {
     .tp_doc = PyDoc_STR("LineCurveList"),
     .tp_basicsize = sizeof(LineCurveList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &LineCurveList_Sequence,
+    .tp_dealloc = (destructor)&LineCurveList_dealloc,
+    .tp_traverse = (traverseproc)&LineCurveList_traverse,
+    .tp_clear = (inquiry)&LineCurveList_clear,
 };
 
 static PyObject *LineCurveList_from(ufbx_line_curve_list list, Context *ctx) {
     LineCurveList *obj = (LineCurveList*)PyObject_CallObject((PyObject*)&LineCurveList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -1933,12 +2341,11 @@ static PyObject *LineCurveList_from(ufbx_line_curve_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_nurbs_curve_list data;
 } NurbsCurveList;
 
-static PyObject *NurbsCurveList_len(NurbsCurveList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t NurbsCurveList_len(NurbsCurveList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *NurbsCurveList_item(NurbsCurveList *self, Py_ssize_t index) {
@@ -1949,6 +2356,22 @@ static PyObject *NurbsCurveList_item(NurbsCurveList *self, Py_ssize_t index) {
         return NULL;
     }
     return Element_from(self->data.data[index], self->ctx);
+}
+
+static int NurbsCurveList_traverse(NurbsCurveList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int NurbsCurveList_clear(NurbsCurveList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void NurbsCurveList_dealloc(NurbsCurveList *self) {
+    PyObject_GC_UnTrack(self);
+    NurbsCurveList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods NurbsCurveList_Sequence = {
@@ -1962,16 +2385,18 @@ static PyTypeObject NurbsCurveList_Type = {
     .tp_doc = PyDoc_STR("NurbsCurveList"),
     .tp_basicsize = sizeof(NurbsCurveList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &NurbsCurveList_Sequence,
+    .tp_dealloc = (destructor)&NurbsCurveList_dealloc,
+    .tp_traverse = (traverseproc)&NurbsCurveList_traverse,
+    .tp_clear = (inquiry)&NurbsCurveList_clear,
 };
 
 static PyObject *NurbsCurveList_from(ufbx_nurbs_curve_list list, Context *ctx) {
     NurbsCurveList *obj = (NurbsCurveList*)PyObject_CallObject((PyObject*)&NurbsCurveList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -1979,12 +2404,11 @@ static PyObject *NurbsCurveList_from(ufbx_nurbs_curve_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_nurbs_surface_list data;
 } NurbsSurfaceList;
 
-static PyObject *NurbsSurfaceList_len(NurbsSurfaceList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t NurbsSurfaceList_len(NurbsSurfaceList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *NurbsSurfaceList_item(NurbsSurfaceList *self, Py_ssize_t index) {
@@ -1995,6 +2419,22 @@ static PyObject *NurbsSurfaceList_item(NurbsSurfaceList *self, Py_ssize_t index)
         return NULL;
     }
     return Element_from(self->data.data[index], self->ctx);
+}
+
+static int NurbsSurfaceList_traverse(NurbsSurfaceList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int NurbsSurfaceList_clear(NurbsSurfaceList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void NurbsSurfaceList_dealloc(NurbsSurfaceList *self) {
+    PyObject_GC_UnTrack(self);
+    NurbsSurfaceList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods NurbsSurfaceList_Sequence = {
@@ -2008,16 +2448,18 @@ static PyTypeObject NurbsSurfaceList_Type = {
     .tp_doc = PyDoc_STR("NurbsSurfaceList"),
     .tp_basicsize = sizeof(NurbsSurfaceList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &NurbsSurfaceList_Sequence,
+    .tp_dealloc = (destructor)&NurbsSurfaceList_dealloc,
+    .tp_traverse = (traverseproc)&NurbsSurfaceList_traverse,
+    .tp_clear = (inquiry)&NurbsSurfaceList_clear,
 };
 
 static PyObject *NurbsSurfaceList_from(ufbx_nurbs_surface_list list, Context *ctx) {
     NurbsSurfaceList *obj = (NurbsSurfaceList*)PyObject_CallObject((PyObject*)&NurbsSurfaceList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -2025,12 +2467,11 @@ static PyObject *NurbsSurfaceList_from(ufbx_nurbs_surface_list list, Context *ct
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_nurbs_trim_surface_list data;
 } NurbsTrimSurfaceList;
 
-static PyObject *NurbsTrimSurfaceList_len(NurbsTrimSurfaceList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t NurbsTrimSurfaceList_len(NurbsTrimSurfaceList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *NurbsTrimSurfaceList_item(NurbsTrimSurfaceList *self, Py_ssize_t index) {
@@ -2041,6 +2482,22 @@ static PyObject *NurbsTrimSurfaceList_item(NurbsTrimSurfaceList *self, Py_ssize_
         return NULL;
     }
     return Element_from(self->data.data[index], self->ctx);
+}
+
+static int NurbsTrimSurfaceList_traverse(NurbsTrimSurfaceList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int NurbsTrimSurfaceList_clear(NurbsTrimSurfaceList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void NurbsTrimSurfaceList_dealloc(NurbsTrimSurfaceList *self) {
+    PyObject_GC_UnTrack(self);
+    NurbsTrimSurfaceList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods NurbsTrimSurfaceList_Sequence = {
@@ -2054,16 +2511,18 @@ static PyTypeObject NurbsTrimSurfaceList_Type = {
     .tp_doc = PyDoc_STR("NurbsTrimSurfaceList"),
     .tp_basicsize = sizeof(NurbsTrimSurfaceList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &NurbsTrimSurfaceList_Sequence,
+    .tp_dealloc = (destructor)&NurbsTrimSurfaceList_dealloc,
+    .tp_traverse = (traverseproc)&NurbsTrimSurfaceList_traverse,
+    .tp_clear = (inquiry)&NurbsTrimSurfaceList_clear,
 };
 
 static PyObject *NurbsTrimSurfaceList_from(ufbx_nurbs_trim_surface_list list, Context *ctx) {
     NurbsTrimSurfaceList *obj = (NurbsTrimSurfaceList*)PyObject_CallObject((PyObject*)&NurbsTrimSurfaceList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -2071,12 +2530,11 @@ static PyObject *NurbsTrimSurfaceList_from(ufbx_nurbs_trim_surface_list list, Co
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_nurbs_trim_boundary_list data;
 } NurbsTrimBoundaryList;
 
-static PyObject *NurbsTrimBoundaryList_len(NurbsTrimBoundaryList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t NurbsTrimBoundaryList_len(NurbsTrimBoundaryList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *NurbsTrimBoundaryList_item(NurbsTrimBoundaryList *self, Py_ssize_t index) {
@@ -2087,6 +2545,22 @@ static PyObject *NurbsTrimBoundaryList_item(NurbsTrimBoundaryList *self, Py_ssiz
         return NULL;
     }
     return Element_from(self->data.data[index], self->ctx);
+}
+
+static int NurbsTrimBoundaryList_traverse(NurbsTrimBoundaryList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int NurbsTrimBoundaryList_clear(NurbsTrimBoundaryList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void NurbsTrimBoundaryList_dealloc(NurbsTrimBoundaryList *self) {
+    PyObject_GC_UnTrack(self);
+    NurbsTrimBoundaryList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods NurbsTrimBoundaryList_Sequence = {
@@ -2100,16 +2574,18 @@ static PyTypeObject NurbsTrimBoundaryList_Type = {
     .tp_doc = PyDoc_STR("NurbsTrimBoundaryList"),
     .tp_basicsize = sizeof(NurbsTrimBoundaryList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &NurbsTrimBoundaryList_Sequence,
+    .tp_dealloc = (destructor)&NurbsTrimBoundaryList_dealloc,
+    .tp_traverse = (traverseproc)&NurbsTrimBoundaryList_traverse,
+    .tp_clear = (inquiry)&NurbsTrimBoundaryList_clear,
 };
 
 static PyObject *NurbsTrimBoundaryList_from(ufbx_nurbs_trim_boundary_list list, Context *ctx) {
     NurbsTrimBoundaryList *obj = (NurbsTrimBoundaryList*)PyObject_CallObject((PyObject*)&NurbsTrimBoundaryList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -2117,12 +2593,11 @@ static PyObject *NurbsTrimBoundaryList_from(ufbx_nurbs_trim_boundary_list list, 
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_procedural_geometry_list data;
 } ProceduralGeometryList;
 
-static PyObject *ProceduralGeometryList_len(ProceduralGeometryList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t ProceduralGeometryList_len(ProceduralGeometryList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *ProceduralGeometryList_item(ProceduralGeometryList *self, Py_ssize_t index) {
@@ -2133,6 +2608,22 @@ static PyObject *ProceduralGeometryList_item(ProceduralGeometryList *self, Py_ss
         return NULL;
     }
     return Element_from(self->data.data[index], self->ctx);
+}
+
+static int ProceduralGeometryList_traverse(ProceduralGeometryList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int ProceduralGeometryList_clear(ProceduralGeometryList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void ProceduralGeometryList_dealloc(ProceduralGeometryList *self) {
+    PyObject_GC_UnTrack(self);
+    ProceduralGeometryList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods ProceduralGeometryList_Sequence = {
@@ -2146,16 +2637,18 @@ static PyTypeObject ProceduralGeometryList_Type = {
     .tp_doc = PyDoc_STR("ProceduralGeometryList"),
     .tp_basicsize = sizeof(ProceduralGeometryList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &ProceduralGeometryList_Sequence,
+    .tp_dealloc = (destructor)&ProceduralGeometryList_dealloc,
+    .tp_traverse = (traverseproc)&ProceduralGeometryList_traverse,
+    .tp_clear = (inquiry)&ProceduralGeometryList_clear,
 };
 
 static PyObject *ProceduralGeometryList_from(ufbx_procedural_geometry_list list, Context *ctx) {
     ProceduralGeometryList *obj = (ProceduralGeometryList*)PyObject_CallObject((PyObject*)&ProceduralGeometryList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -2163,12 +2656,11 @@ static PyObject *ProceduralGeometryList_from(ufbx_procedural_geometry_list list,
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_stereo_camera_list data;
 } StereoCameraList;
 
-static PyObject *StereoCameraList_len(StereoCameraList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t StereoCameraList_len(StereoCameraList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *StereoCameraList_item(StereoCameraList *self, Py_ssize_t index) {
@@ -2179,6 +2671,22 @@ static PyObject *StereoCameraList_item(StereoCameraList *self, Py_ssize_t index)
         return NULL;
     }
     return Element_from(self->data.data[index], self->ctx);
+}
+
+static int StereoCameraList_traverse(StereoCameraList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int StereoCameraList_clear(StereoCameraList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void StereoCameraList_dealloc(StereoCameraList *self) {
+    PyObject_GC_UnTrack(self);
+    StereoCameraList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods StereoCameraList_Sequence = {
@@ -2192,16 +2700,18 @@ static PyTypeObject StereoCameraList_Type = {
     .tp_doc = PyDoc_STR("StereoCameraList"),
     .tp_basicsize = sizeof(StereoCameraList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &StereoCameraList_Sequence,
+    .tp_dealloc = (destructor)&StereoCameraList_dealloc,
+    .tp_traverse = (traverseproc)&StereoCameraList_traverse,
+    .tp_clear = (inquiry)&StereoCameraList_clear,
 };
 
 static PyObject *StereoCameraList_from(ufbx_stereo_camera_list list, Context *ctx) {
     StereoCameraList *obj = (StereoCameraList*)PyObject_CallObject((PyObject*)&StereoCameraList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -2209,12 +2719,11 @@ static PyObject *StereoCameraList_from(ufbx_stereo_camera_list list, Context *ct
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_camera_switcher_list data;
 } CameraSwitcherList;
 
-static PyObject *CameraSwitcherList_len(CameraSwitcherList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t CameraSwitcherList_len(CameraSwitcherList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *CameraSwitcherList_item(CameraSwitcherList *self, Py_ssize_t index) {
@@ -2225,6 +2734,22 @@ static PyObject *CameraSwitcherList_item(CameraSwitcherList *self, Py_ssize_t in
         return NULL;
     }
     return Element_from(self->data.data[index], self->ctx);
+}
+
+static int CameraSwitcherList_traverse(CameraSwitcherList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int CameraSwitcherList_clear(CameraSwitcherList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void CameraSwitcherList_dealloc(CameraSwitcherList *self) {
+    PyObject_GC_UnTrack(self);
+    CameraSwitcherList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods CameraSwitcherList_Sequence = {
@@ -2238,16 +2763,18 @@ static PyTypeObject CameraSwitcherList_Type = {
     .tp_doc = PyDoc_STR("CameraSwitcherList"),
     .tp_basicsize = sizeof(CameraSwitcherList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &CameraSwitcherList_Sequence,
+    .tp_dealloc = (destructor)&CameraSwitcherList_dealloc,
+    .tp_traverse = (traverseproc)&CameraSwitcherList_traverse,
+    .tp_clear = (inquiry)&CameraSwitcherList_clear,
 };
 
 static PyObject *CameraSwitcherList_from(ufbx_camera_switcher_list list, Context *ctx) {
     CameraSwitcherList *obj = (CameraSwitcherList*)PyObject_CallObject((PyObject*)&CameraSwitcherList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -2255,12 +2782,11 @@ static PyObject *CameraSwitcherList_from(ufbx_camera_switcher_list list, Context
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_marker_list data;
 } MarkerList;
 
-static PyObject *MarkerList_len(MarkerList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t MarkerList_len(MarkerList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *MarkerList_item(MarkerList *self, Py_ssize_t index) {
@@ -2271,6 +2797,22 @@ static PyObject *MarkerList_item(MarkerList *self, Py_ssize_t index) {
         return NULL;
     }
     return Element_from(self->data.data[index], self->ctx);
+}
+
+static int MarkerList_traverse(MarkerList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int MarkerList_clear(MarkerList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void MarkerList_dealloc(MarkerList *self) {
+    PyObject_GC_UnTrack(self);
+    MarkerList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods MarkerList_Sequence = {
@@ -2284,16 +2826,18 @@ static PyTypeObject MarkerList_Type = {
     .tp_doc = PyDoc_STR("MarkerList"),
     .tp_basicsize = sizeof(MarkerList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &MarkerList_Sequence,
+    .tp_dealloc = (destructor)&MarkerList_dealloc,
+    .tp_traverse = (traverseproc)&MarkerList_traverse,
+    .tp_clear = (inquiry)&MarkerList_clear,
 };
 
 static PyObject *MarkerList_from(ufbx_marker_list list, Context *ctx) {
     MarkerList *obj = (MarkerList*)PyObject_CallObject((PyObject*)&MarkerList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -2301,12 +2845,11 @@ static PyObject *MarkerList_from(ufbx_marker_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_lod_group_list data;
 } LodGroupList;
 
-static PyObject *LodGroupList_len(LodGroupList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t LodGroupList_len(LodGroupList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *LodGroupList_item(LodGroupList *self, Py_ssize_t index) {
@@ -2317,6 +2860,22 @@ static PyObject *LodGroupList_item(LodGroupList *self, Py_ssize_t index) {
         return NULL;
     }
     return Element_from(self->data.data[index], self->ctx);
+}
+
+static int LodGroupList_traverse(LodGroupList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int LodGroupList_clear(LodGroupList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void LodGroupList_dealloc(LodGroupList *self) {
+    PyObject_GC_UnTrack(self);
+    LodGroupList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods LodGroupList_Sequence = {
@@ -2330,16 +2889,18 @@ static PyTypeObject LodGroupList_Type = {
     .tp_doc = PyDoc_STR("LodGroupList"),
     .tp_basicsize = sizeof(LodGroupList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &LodGroupList_Sequence,
+    .tp_dealloc = (destructor)&LodGroupList_dealloc,
+    .tp_traverse = (traverseproc)&LodGroupList_traverse,
+    .tp_clear = (inquiry)&LodGroupList_clear,
 };
 
 static PyObject *LodGroupList_from(ufbx_lod_group_list list, Context *ctx) {
     LodGroupList *obj = (LodGroupList*)PyObject_CallObject((PyObject*)&LodGroupList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -2347,12 +2908,11 @@ static PyObject *LodGroupList_from(ufbx_lod_group_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_skin_deformer_list data;
 } SkinDeformerList;
 
-static PyObject *SkinDeformerList_len(SkinDeformerList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t SkinDeformerList_len(SkinDeformerList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *SkinDeformerList_item(SkinDeformerList *self, Py_ssize_t index) {
@@ -2363,6 +2923,22 @@ static PyObject *SkinDeformerList_item(SkinDeformerList *self, Py_ssize_t index)
         return NULL;
     }
     return Element_from(self->data.data[index], self->ctx);
+}
+
+static int SkinDeformerList_traverse(SkinDeformerList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int SkinDeformerList_clear(SkinDeformerList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void SkinDeformerList_dealloc(SkinDeformerList *self) {
+    PyObject_GC_UnTrack(self);
+    SkinDeformerList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods SkinDeformerList_Sequence = {
@@ -2376,16 +2952,18 @@ static PyTypeObject SkinDeformerList_Type = {
     .tp_doc = PyDoc_STR("SkinDeformerList"),
     .tp_basicsize = sizeof(SkinDeformerList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &SkinDeformerList_Sequence,
+    .tp_dealloc = (destructor)&SkinDeformerList_dealloc,
+    .tp_traverse = (traverseproc)&SkinDeformerList_traverse,
+    .tp_clear = (inquiry)&SkinDeformerList_clear,
 };
 
 static PyObject *SkinDeformerList_from(ufbx_skin_deformer_list list, Context *ctx) {
     SkinDeformerList *obj = (SkinDeformerList*)PyObject_CallObject((PyObject*)&SkinDeformerList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -2393,12 +2971,11 @@ static PyObject *SkinDeformerList_from(ufbx_skin_deformer_list list, Context *ct
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_skin_cluster_list data;
 } SkinClusterList;
 
-static PyObject *SkinClusterList_len(SkinClusterList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t SkinClusterList_len(SkinClusterList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *SkinClusterList_item(SkinClusterList *self, Py_ssize_t index) {
@@ -2409,6 +2986,22 @@ static PyObject *SkinClusterList_item(SkinClusterList *self, Py_ssize_t index) {
         return NULL;
     }
     return Element_from(self->data.data[index], self->ctx);
+}
+
+static int SkinClusterList_traverse(SkinClusterList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int SkinClusterList_clear(SkinClusterList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void SkinClusterList_dealloc(SkinClusterList *self) {
+    PyObject_GC_UnTrack(self);
+    SkinClusterList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods SkinClusterList_Sequence = {
@@ -2422,16 +3015,18 @@ static PyTypeObject SkinClusterList_Type = {
     .tp_doc = PyDoc_STR("SkinClusterList"),
     .tp_basicsize = sizeof(SkinClusterList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &SkinClusterList_Sequence,
+    .tp_dealloc = (destructor)&SkinClusterList_dealloc,
+    .tp_traverse = (traverseproc)&SkinClusterList_traverse,
+    .tp_clear = (inquiry)&SkinClusterList_clear,
 };
 
 static PyObject *SkinClusterList_from(ufbx_skin_cluster_list list, Context *ctx) {
     SkinClusterList *obj = (SkinClusterList*)PyObject_CallObject((PyObject*)&SkinClusterList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -2439,12 +3034,11 @@ static PyObject *SkinClusterList_from(ufbx_skin_cluster_list list, Context *ctx)
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_blend_deformer_list data;
 } BlendDeformerList;
 
-static PyObject *BlendDeformerList_len(BlendDeformerList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t BlendDeformerList_len(BlendDeformerList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *BlendDeformerList_item(BlendDeformerList *self, Py_ssize_t index) {
@@ -2455,6 +3049,22 @@ static PyObject *BlendDeformerList_item(BlendDeformerList *self, Py_ssize_t inde
         return NULL;
     }
     return Element_from(self->data.data[index], self->ctx);
+}
+
+static int BlendDeformerList_traverse(BlendDeformerList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int BlendDeformerList_clear(BlendDeformerList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void BlendDeformerList_dealloc(BlendDeformerList *self) {
+    PyObject_GC_UnTrack(self);
+    BlendDeformerList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods BlendDeformerList_Sequence = {
@@ -2468,16 +3078,18 @@ static PyTypeObject BlendDeformerList_Type = {
     .tp_doc = PyDoc_STR("BlendDeformerList"),
     .tp_basicsize = sizeof(BlendDeformerList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &BlendDeformerList_Sequence,
+    .tp_dealloc = (destructor)&BlendDeformerList_dealloc,
+    .tp_traverse = (traverseproc)&BlendDeformerList_traverse,
+    .tp_clear = (inquiry)&BlendDeformerList_clear,
 };
 
 static PyObject *BlendDeformerList_from(ufbx_blend_deformer_list list, Context *ctx) {
     BlendDeformerList *obj = (BlendDeformerList*)PyObject_CallObject((PyObject*)&BlendDeformerList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -2485,12 +3097,11 @@ static PyObject *BlendDeformerList_from(ufbx_blend_deformer_list list, Context *
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_blend_channel_list data;
 } BlendChannelList;
 
-static PyObject *BlendChannelList_len(BlendChannelList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t BlendChannelList_len(BlendChannelList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *BlendChannelList_item(BlendChannelList *self, Py_ssize_t index) {
@@ -2501,6 +3112,22 @@ static PyObject *BlendChannelList_item(BlendChannelList *self, Py_ssize_t index)
         return NULL;
     }
     return Element_from(self->data.data[index], self->ctx);
+}
+
+static int BlendChannelList_traverse(BlendChannelList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int BlendChannelList_clear(BlendChannelList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void BlendChannelList_dealloc(BlendChannelList *self) {
+    PyObject_GC_UnTrack(self);
+    BlendChannelList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods BlendChannelList_Sequence = {
@@ -2514,16 +3141,18 @@ static PyTypeObject BlendChannelList_Type = {
     .tp_doc = PyDoc_STR("BlendChannelList"),
     .tp_basicsize = sizeof(BlendChannelList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &BlendChannelList_Sequence,
+    .tp_dealloc = (destructor)&BlendChannelList_dealloc,
+    .tp_traverse = (traverseproc)&BlendChannelList_traverse,
+    .tp_clear = (inquiry)&BlendChannelList_clear,
 };
 
 static PyObject *BlendChannelList_from(ufbx_blend_channel_list list, Context *ctx) {
     BlendChannelList *obj = (BlendChannelList*)PyObject_CallObject((PyObject*)&BlendChannelList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -2531,12 +3160,11 @@ static PyObject *BlendChannelList_from(ufbx_blend_channel_list list, Context *ct
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_blend_shape_list data;
 } BlendShapeList;
 
-static PyObject *BlendShapeList_len(BlendShapeList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t BlendShapeList_len(BlendShapeList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *BlendShapeList_item(BlendShapeList *self, Py_ssize_t index) {
@@ -2547,6 +3175,22 @@ static PyObject *BlendShapeList_item(BlendShapeList *self, Py_ssize_t index) {
         return NULL;
     }
     return Element_from(self->data.data[index], self->ctx);
+}
+
+static int BlendShapeList_traverse(BlendShapeList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int BlendShapeList_clear(BlendShapeList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void BlendShapeList_dealloc(BlendShapeList *self) {
+    PyObject_GC_UnTrack(self);
+    BlendShapeList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods BlendShapeList_Sequence = {
@@ -2560,16 +3204,18 @@ static PyTypeObject BlendShapeList_Type = {
     .tp_doc = PyDoc_STR("BlendShapeList"),
     .tp_basicsize = sizeof(BlendShapeList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &BlendShapeList_Sequence,
+    .tp_dealloc = (destructor)&BlendShapeList_dealloc,
+    .tp_traverse = (traverseproc)&BlendShapeList_traverse,
+    .tp_clear = (inquiry)&BlendShapeList_clear,
 };
 
 static PyObject *BlendShapeList_from(ufbx_blend_shape_list list, Context *ctx) {
     BlendShapeList *obj = (BlendShapeList*)PyObject_CallObject((PyObject*)&BlendShapeList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -2577,12 +3223,11 @@ static PyObject *BlendShapeList_from(ufbx_blend_shape_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_cache_deformer_list data;
 } CacheDeformerList;
 
-static PyObject *CacheDeformerList_len(CacheDeformerList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t CacheDeformerList_len(CacheDeformerList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *CacheDeformerList_item(CacheDeformerList *self, Py_ssize_t index) {
@@ -2593,6 +3238,22 @@ static PyObject *CacheDeformerList_item(CacheDeformerList *self, Py_ssize_t inde
         return NULL;
     }
     return Element_from(self->data.data[index], self->ctx);
+}
+
+static int CacheDeformerList_traverse(CacheDeformerList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int CacheDeformerList_clear(CacheDeformerList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void CacheDeformerList_dealloc(CacheDeformerList *self) {
+    PyObject_GC_UnTrack(self);
+    CacheDeformerList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods CacheDeformerList_Sequence = {
@@ -2606,16 +3267,18 @@ static PyTypeObject CacheDeformerList_Type = {
     .tp_doc = PyDoc_STR("CacheDeformerList"),
     .tp_basicsize = sizeof(CacheDeformerList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &CacheDeformerList_Sequence,
+    .tp_dealloc = (destructor)&CacheDeformerList_dealloc,
+    .tp_traverse = (traverseproc)&CacheDeformerList_traverse,
+    .tp_clear = (inquiry)&CacheDeformerList_clear,
 };
 
 static PyObject *CacheDeformerList_from(ufbx_cache_deformer_list list, Context *ctx) {
     CacheDeformerList *obj = (CacheDeformerList*)PyObject_CallObject((PyObject*)&CacheDeformerList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -2623,12 +3286,11 @@ static PyObject *CacheDeformerList_from(ufbx_cache_deformer_list list, Context *
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_cache_file_list data;
 } CacheFileList;
 
-static PyObject *CacheFileList_len(CacheFileList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t CacheFileList_len(CacheFileList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *CacheFileList_item(CacheFileList *self, Py_ssize_t index) {
@@ -2639,6 +3301,22 @@ static PyObject *CacheFileList_item(CacheFileList *self, Py_ssize_t index) {
         return NULL;
     }
     return Element_from(self->data.data[index], self->ctx);
+}
+
+static int CacheFileList_traverse(CacheFileList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int CacheFileList_clear(CacheFileList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void CacheFileList_dealloc(CacheFileList *self) {
+    PyObject_GC_UnTrack(self);
+    CacheFileList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods CacheFileList_Sequence = {
@@ -2652,16 +3330,18 @@ static PyTypeObject CacheFileList_Type = {
     .tp_doc = PyDoc_STR("CacheFileList"),
     .tp_basicsize = sizeof(CacheFileList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &CacheFileList_Sequence,
+    .tp_dealloc = (destructor)&CacheFileList_dealloc,
+    .tp_traverse = (traverseproc)&CacheFileList_traverse,
+    .tp_clear = (inquiry)&CacheFileList_clear,
 };
 
 static PyObject *CacheFileList_from(ufbx_cache_file_list list, Context *ctx) {
     CacheFileList *obj = (CacheFileList*)PyObject_CallObject((PyObject*)&CacheFileList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -2669,12 +3349,11 @@ static PyObject *CacheFileList_from(ufbx_cache_file_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_material_list data;
 } MaterialList;
 
-static PyObject *MaterialList_len(MaterialList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t MaterialList_len(MaterialList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *MaterialList_item(MaterialList *self, Py_ssize_t index) {
@@ -2685,6 +3364,22 @@ static PyObject *MaterialList_item(MaterialList *self, Py_ssize_t index) {
         return NULL;
     }
     return Element_from(self->data.data[index], self->ctx);
+}
+
+static int MaterialList_traverse(MaterialList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int MaterialList_clear(MaterialList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void MaterialList_dealloc(MaterialList *self) {
+    PyObject_GC_UnTrack(self);
+    MaterialList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods MaterialList_Sequence = {
@@ -2698,16 +3393,18 @@ static PyTypeObject MaterialList_Type = {
     .tp_doc = PyDoc_STR("MaterialList"),
     .tp_basicsize = sizeof(MaterialList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &MaterialList_Sequence,
+    .tp_dealloc = (destructor)&MaterialList_dealloc,
+    .tp_traverse = (traverseproc)&MaterialList_traverse,
+    .tp_clear = (inquiry)&MaterialList_clear,
 };
 
 static PyObject *MaterialList_from(ufbx_material_list list, Context *ctx) {
     MaterialList *obj = (MaterialList*)PyObject_CallObject((PyObject*)&MaterialList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -2715,12 +3412,11 @@ static PyObject *MaterialList_from(ufbx_material_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_texture_list data;
 } TextureList;
 
-static PyObject *TextureList_len(TextureList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t TextureList_len(TextureList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *TextureList_item(TextureList *self, Py_ssize_t index) {
@@ -2731,6 +3427,22 @@ static PyObject *TextureList_item(TextureList *self, Py_ssize_t index) {
         return NULL;
     }
     return Element_from(self->data.data[index], self->ctx);
+}
+
+static int TextureList_traverse(TextureList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int TextureList_clear(TextureList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void TextureList_dealloc(TextureList *self) {
+    PyObject_GC_UnTrack(self);
+    TextureList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods TextureList_Sequence = {
@@ -2744,16 +3456,18 @@ static PyTypeObject TextureList_Type = {
     .tp_doc = PyDoc_STR("TextureList"),
     .tp_basicsize = sizeof(TextureList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &TextureList_Sequence,
+    .tp_dealloc = (destructor)&TextureList_dealloc,
+    .tp_traverse = (traverseproc)&TextureList_traverse,
+    .tp_clear = (inquiry)&TextureList_clear,
 };
 
 static PyObject *TextureList_from(ufbx_texture_list list, Context *ctx) {
     TextureList *obj = (TextureList*)PyObject_CallObject((PyObject*)&TextureList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -2761,12 +3475,11 @@ static PyObject *TextureList_from(ufbx_texture_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_video_list data;
 } VideoList;
 
-static PyObject *VideoList_len(VideoList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t VideoList_len(VideoList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *VideoList_item(VideoList *self, Py_ssize_t index) {
@@ -2777,6 +3490,22 @@ static PyObject *VideoList_item(VideoList *self, Py_ssize_t index) {
         return NULL;
     }
     return Element_from(self->data.data[index], self->ctx);
+}
+
+static int VideoList_traverse(VideoList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int VideoList_clear(VideoList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void VideoList_dealloc(VideoList *self) {
+    PyObject_GC_UnTrack(self);
+    VideoList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods VideoList_Sequence = {
@@ -2790,16 +3519,18 @@ static PyTypeObject VideoList_Type = {
     .tp_doc = PyDoc_STR("VideoList"),
     .tp_basicsize = sizeof(VideoList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &VideoList_Sequence,
+    .tp_dealloc = (destructor)&VideoList_dealloc,
+    .tp_traverse = (traverseproc)&VideoList_traverse,
+    .tp_clear = (inquiry)&VideoList_clear,
 };
 
 static PyObject *VideoList_from(ufbx_video_list list, Context *ctx) {
     VideoList *obj = (VideoList*)PyObject_CallObject((PyObject*)&VideoList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -2807,12 +3538,11 @@ static PyObject *VideoList_from(ufbx_video_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_shader_list data;
 } ShaderList;
 
-static PyObject *ShaderList_len(ShaderList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t ShaderList_len(ShaderList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *ShaderList_item(ShaderList *self, Py_ssize_t index) {
@@ -2823,6 +3553,22 @@ static PyObject *ShaderList_item(ShaderList *self, Py_ssize_t index) {
         return NULL;
     }
     return Element_from(self->data.data[index], self->ctx);
+}
+
+static int ShaderList_traverse(ShaderList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int ShaderList_clear(ShaderList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void ShaderList_dealloc(ShaderList *self) {
+    PyObject_GC_UnTrack(self);
+    ShaderList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods ShaderList_Sequence = {
@@ -2836,16 +3582,18 @@ static PyTypeObject ShaderList_Type = {
     .tp_doc = PyDoc_STR("ShaderList"),
     .tp_basicsize = sizeof(ShaderList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &ShaderList_Sequence,
+    .tp_dealloc = (destructor)&ShaderList_dealloc,
+    .tp_traverse = (traverseproc)&ShaderList_traverse,
+    .tp_clear = (inquiry)&ShaderList_clear,
 };
 
 static PyObject *ShaderList_from(ufbx_shader_list list, Context *ctx) {
     ShaderList *obj = (ShaderList*)PyObject_CallObject((PyObject*)&ShaderList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -2853,12 +3601,11 @@ static PyObject *ShaderList_from(ufbx_shader_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_shader_binding_list data;
 } ShaderBindingList;
 
-static PyObject *ShaderBindingList_len(ShaderBindingList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t ShaderBindingList_len(ShaderBindingList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *ShaderBindingList_item(ShaderBindingList *self, Py_ssize_t index) {
@@ -2869,6 +3616,22 @@ static PyObject *ShaderBindingList_item(ShaderBindingList *self, Py_ssize_t inde
         return NULL;
     }
     return Element_from(self->data.data[index], self->ctx);
+}
+
+static int ShaderBindingList_traverse(ShaderBindingList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int ShaderBindingList_clear(ShaderBindingList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void ShaderBindingList_dealloc(ShaderBindingList *self) {
+    PyObject_GC_UnTrack(self);
+    ShaderBindingList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods ShaderBindingList_Sequence = {
@@ -2882,16 +3645,18 @@ static PyTypeObject ShaderBindingList_Type = {
     .tp_doc = PyDoc_STR("ShaderBindingList"),
     .tp_basicsize = sizeof(ShaderBindingList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &ShaderBindingList_Sequence,
+    .tp_dealloc = (destructor)&ShaderBindingList_dealloc,
+    .tp_traverse = (traverseproc)&ShaderBindingList_traverse,
+    .tp_clear = (inquiry)&ShaderBindingList_clear,
 };
 
 static PyObject *ShaderBindingList_from(ufbx_shader_binding_list list, Context *ctx) {
     ShaderBindingList *obj = (ShaderBindingList*)PyObject_CallObject((PyObject*)&ShaderBindingList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -2899,12 +3664,11 @@ static PyObject *ShaderBindingList_from(ufbx_shader_binding_list list, Context *
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_anim_stack_list data;
 } AnimStackList;
 
-static PyObject *AnimStackList_len(AnimStackList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t AnimStackList_len(AnimStackList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *AnimStackList_item(AnimStackList *self, Py_ssize_t index) {
@@ -2915,6 +3679,22 @@ static PyObject *AnimStackList_item(AnimStackList *self, Py_ssize_t index) {
         return NULL;
     }
     return Element_from(self->data.data[index], self->ctx);
+}
+
+static int AnimStackList_traverse(AnimStackList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int AnimStackList_clear(AnimStackList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void AnimStackList_dealloc(AnimStackList *self) {
+    PyObject_GC_UnTrack(self);
+    AnimStackList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods AnimStackList_Sequence = {
@@ -2928,16 +3708,18 @@ static PyTypeObject AnimStackList_Type = {
     .tp_doc = PyDoc_STR("AnimStackList"),
     .tp_basicsize = sizeof(AnimStackList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &AnimStackList_Sequence,
+    .tp_dealloc = (destructor)&AnimStackList_dealloc,
+    .tp_traverse = (traverseproc)&AnimStackList_traverse,
+    .tp_clear = (inquiry)&AnimStackList_clear,
 };
 
 static PyObject *AnimStackList_from(ufbx_anim_stack_list list, Context *ctx) {
     AnimStackList *obj = (AnimStackList*)PyObject_CallObject((PyObject*)&AnimStackList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -2945,12 +3727,11 @@ static PyObject *AnimStackList_from(ufbx_anim_stack_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_anim_layer_list data;
 } AnimLayerList;
 
-static PyObject *AnimLayerList_len(AnimLayerList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t AnimLayerList_len(AnimLayerList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *AnimLayerList_item(AnimLayerList *self, Py_ssize_t index) {
@@ -2961,6 +3742,22 @@ static PyObject *AnimLayerList_item(AnimLayerList *self, Py_ssize_t index) {
         return NULL;
     }
     return Element_from(self->data.data[index], self->ctx);
+}
+
+static int AnimLayerList_traverse(AnimLayerList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int AnimLayerList_clear(AnimLayerList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void AnimLayerList_dealloc(AnimLayerList *self) {
+    PyObject_GC_UnTrack(self);
+    AnimLayerList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods AnimLayerList_Sequence = {
@@ -2974,16 +3771,18 @@ static PyTypeObject AnimLayerList_Type = {
     .tp_doc = PyDoc_STR("AnimLayerList"),
     .tp_basicsize = sizeof(AnimLayerList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &AnimLayerList_Sequence,
+    .tp_dealloc = (destructor)&AnimLayerList_dealloc,
+    .tp_traverse = (traverseproc)&AnimLayerList_traverse,
+    .tp_clear = (inquiry)&AnimLayerList_clear,
 };
 
 static PyObject *AnimLayerList_from(ufbx_anim_layer_list list, Context *ctx) {
     AnimLayerList *obj = (AnimLayerList*)PyObject_CallObject((PyObject*)&AnimLayerList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -2991,12 +3790,11 @@ static PyObject *AnimLayerList_from(ufbx_anim_layer_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_anim_value_list data;
 } AnimValueList;
 
-static PyObject *AnimValueList_len(AnimValueList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t AnimValueList_len(AnimValueList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *AnimValueList_item(AnimValueList *self, Py_ssize_t index) {
@@ -3007,6 +3805,22 @@ static PyObject *AnimValueList_item(AnimValueList *self, Py_ssize_t index) {
         return NULL;
     }
     return Element_from(self->data.data[index], self->ctx);
+}
+
+static int AnimValueList_traverse(AnimValueList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int AnimValueList_clear(AnimValueList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void AnimValueList_dealloc(AnimValueList *self) {
+    PyObject_GC_UnTrack(self);
+    AnimValueList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods AnimValueList_Sequence = {
@@ -3020,16 +3834,18 @@ static PyTypeObject AnimValueList_Type = {
     .tp_doc = PyDoc_STR("AnimValueList"),
     .tp_basicsize = sizeof(AnimValueList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &AnimValueList_Sequence,
+    .tp_dealloc = (destructor)&AnimValueList_dealloc,
+    .tp_traverse = (traverseproc)&AnimValueList_traverse,
+    .tp_clear = (inquiry)&AnimValueList_clear,
 };
 
 static PyObject *AnimValueList_from(ufbx_anim_value_list list, Context *ctx) {
     AnimValueList *obj = (AnimValueList*)PyObject_CallObject((PyObject*)&AnimValueList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -3037,12 +3853,11 @@ static PyObject *AnimValueList_from(ufbx_anim_value_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_anim_curve_list data;
 } AnimCurveList;
 
-static PyObject *AnimCurveList_len(AnimCurveList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t AnimCurveList_len(AnimCurveList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *AnimCurveList_item(AnimCurveList *self, Py_ssize_t index) {
@@ -3053,6 +3868,22 @@ static PyObject *AnimCurveList_item(AnimCurveList *self, Py_ssize_t index) {
         return NULL;
     }
     return Element_from(self->data.data[index], self->ctx);
+}
+
+static int AnimCurveList_traverse(AnimCurveList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int AnimCurveList_clear(AnimCurveList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void AnimCurveList_dealloc(AnimCurveList *self) {
+    PyObject_GC_UnTrack(self);
+    AnimCurveList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods AnimCurveList_Sequence = {
@@ -3066,16 +3897,18 @@ static PyTypeObject AnimCurveList_Type = {
     .tp_doc = PyDoc_STR("AnimCurveList"),
     .tp_basicsize = sizeof(AnimCurveList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &AnimCurveList_Sequence,
+    .tp_dealloc = (destructor)&AnimCurveList_dealloc,
+    .tp_traverse = (traverseproc)&AnimCurveList_traverse,
+    .tp_clear = (inquiry)&AnimCurveList_clear,
 };
 
 static PyObject *AnimCurveList_from(ufbx_anim_curve_list list, Context *ctx) {
     AnimCurveList *obj = (AnimCurveList*)PyObject_CallObject((PyObject*)&AnimCurveList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -3083,12 +3916,11 @@ static PyObject *AnimCurveList_from(ufbx_anim_curve_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_display_layer_list data;
 } DisplayLayerList;
 
-static PyObject *DisplayLayerList_len(DisplayLayerList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t DisplayLayerList_len(DisplayLayerList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *DisplayLayerList_item(DisplayLayerList *self, Py_ssize_t index) {
@@ -3099,6 +3931,22 @@ static PyObject *DisplayLayerList_item(DisplayLayerList *self, Py_ssize_t index)
         return NULL;
     }
     return Element_from(self->data.data[index], self->ctx);
+}
+
+static int DisplayLayerList_traverse(DisplayLayerList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int DisplayLayerList_clear(DisplayLayerList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void DisplayLayerList_dealloc(DisplayLayerList *self) {
+    PyObject_GC_UnTrack(self);
+    DisplayLayerList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods DisplayLayerList_Sequence = {
@@ -3112,16 +3960,18 @@ static PyTypeObject DisplayLayerList_Type = {
     .tp_doc = PyDoc_STR("DisplayLayerList"),
     .tp_basicsize = sizeof(DisplayLayerList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &DisplayLayerList_Sequence,
+    .tp_dealloc = (destructor)&DisplayLayerList_dealloc,
+    .tp_traverse = (traverseproc)&DisplayLayerList_traverse,
+    .tp_clear = (inquiry)&DisplayLayerList_clear,
 };
 
 static PyObject *DisplayLayerList_from(ufbx_display_layer_list list, Context *ctx) {
     DisplayLayerList *obj = (DisplayLayerList*)PyObject_CallObject((PyObject*)&DisplayLayerList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -3129,12 +3979,11 @@ static PyObject *DisplayLayerList_from(ufbx_display_layer_list list, Context *ct
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_selection_set_list data;
 } SelectionSetList;
 
-static PyObject *SelectionSetList_len(SelectionSetList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t SelectionSetList_len(SelectionSetList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *SelectionSetList_item(SelectionSetList *self, Py_ssize_t index) {
@@ -3145,6 +3994,22 @@ static PyObject *SelectionSetList_item(SelectionSetList *self, Py_ssize_t index)
         return NULL;
     }
     return Element_from(self->data.data[index], self->ctx);
+}
+
+static int SelectionSetList_traverse(SelectionSetList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int SelectionSetList_clear(SelectionSetList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void SelectionSetList_dealloc(SelectionSetList *self) {
+    PyObject_GC_UnTrack(self);
+    SelectionSetList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods SelectionSetList_Sequence = {
@@ -3158,16 +4023,18 @@ static PyTypeObject SelectionSetList_Type = {
     .tp_doc = PyDoc_STR("SelectionSetList"),
     .tp_basicsize = sizeof(SelectionSetList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &SelectionSetList_Sequence,
+    .tp_dealloc = (destructor)&SelectionSetList_dealloc,
+    .tp_traverse = (traverseproc)&SelectionSetList_traverse,
+    .tp_clear = (inquiry)&SelectionSetList_clear,
 };
 
 static PyObject *SelectionSetList_from(ufbx_selection_set_list list, Context *ctx) {
     SelectionSetList *obj = (SelectionSetList*)PyObject_CallObject((PyObject*)&SelectionSetList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -3175,12 +4042,11 @@ static PyObject *SelectionSetList_from(ufbx_selection_set_list list, Context *ct
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_selection_node_list data;
 } SelectionNodeList;
 
-static PyObject *SelectionNodeList_len(SelectionNodeList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t SelectionNodeList_len(SelectionNodeList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *SelectionNodeList_item(SelectionNodeList *self, Py_ssize_t index) {
@@ -3191,6 +4057,22 @@ static PyObject *SelectionNodeList_item(SelectionNodeList *self, Py_ssize_t inde
         return NULL;
     }
     return Element_from(self->data.data[index], self->ctx);
+}
+
+static int SelectionNodeList_traverse(SelectionNodeList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int SelectionNodeList_clear(SelectionNodeList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void SelectionNodeList_dealloc(SelectionNodeList *self) {
+    PyObject_GC_UnTrack(self);
+    SelectionNodeList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods SelectionNodeList_Sequence = {
@@ -3204,16 +4086,18 @@ static PyTypeObject SelectionNodeList_Type = {
     .tp_doc = PyDoc_STR("SelectionNodeList"),
     .tp_basicsize = sizeof(SelectionNodeList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &SelectionNodeList_Sequence,
+    .tp_dealloc = (destructor)&SelectionNodeList_dealloc,
+    .tp_traverse = (traverseproc)&SelectionNodeList_traverse,
+    .tp_clear = (inquiry)&SelectionNodeList_clear,
 };
 
 static PyObject *SelectionNodeList_from(ufbx_selection_node_list list, Context *ctx) {
     SelectionNodeList *obj = (SelectionNodeList*)PyObject_CallObject((PyObject*)&SelectionNodeList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -3221,12 +4105,11 @@ static PyObject *SelectionNodeList_from(ufbx_selection_node_list list, Context *
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_character_list data;
 } CharacterList;
 
-static PyObject *CharacterList_len(CharacterList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t CharacterList_len(CharacterList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *CharacterList_item(CharacterList *self, Py_ssize_t index) {
@@ -3237,6 +4120,22 @@ static PyObject *CharacterList_item(CharacterList *self, Py_ssize_t index) {
         return NULL;
     }
     return Element_from(self->data.data[index], self->ctx);
+}
+
+static int CharacterList_traverse(CharacterList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int CharacterList_clear(CharacterList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void CharacterList_dealloc(CharacterList *self) {
+    PyObject_GC_UnTrack(self);
+    CharacterList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods CharacterList_Sequence = {
@@ -3250,16 +4149,18 @@ static PyTypeObject CharacterList_Type = {
     .tp_doc = PyDoc_STR("CharacterList"),
     .tp_basicsize = sizeof(CharacterList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &CharacterList_Sequence,
+    .tp_dealloc = (destructor)&CharacterList_dealloc,
+    .tp_traverse = (traverseproc)&CharacterList_traverse,
+    .tp_clear = (inquiry)&CharacterList_clear,
 };
 
 static PyObject *CharacterList_from(ufbx_character_list list, Context *ctx) {
     CharacterList *obj = (CharacterList*)PyObject_CallObject((PyObject*)&CharacterList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -3267,12 +4168,11 @@ static PyObject *CharacterList_from(ufbx_character_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_constraint_list data;
 } ConstraintList;
 
-static PyObject *ConstraintList_len(ConstraintList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t ConstraintList_len(ConstraintList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *ConstraintList_item(ConstraintList *self, Py_ssize_t index) {
@@ -3283,6 +4183,22 @@ static PyObject *ConstraintList_item(ConstraintList *self, Py_ssize_t index) {
         return NULL;
     }
     return Element_from(self->data.data[index], self->ctx);
+}
+
+static int ConstraintList_traverse(ConstraintList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int ConstraintList_clear(ConstraintList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void ConstraintList_dealloc(ConstraintList *self) {
+    PyObject_GC_UnTrack(self);
+    ConstraintList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods ConstraintList_Sequence = {
@@ -3296,16 +4212,18 @@ static PyTypeObject ConstraintList_Type = {
     .tp_doc = PyDoc_STR("ConstraintList"),
     .tp_basicsize = sizeof(ConstraintList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &ConstraintList_Sequence,
+    .tp_dealloc = (destructor)&ConstraintList_dealloc,
+    .tp_traverse = (traverseproc)&ConstraintList_traverse,
+    .tp_clear = (inquiry)&ConstraintList_clear,
 };
 
 static PyObject *ConstraintList_from(ufbx_constraint_list list, Context *ctx) {
     ConstraintList *obj = (ConstraintList*)PyObject_CallObject((PyObject*)&ConstraintList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -3313,12 +4231,11 @@ static PyObject *ConstraintList_from(ufbx_constraint_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_audio_layer_list data;
 } AudioLayerList;
 
-static PyObject *AudioLayerList_len(AudioLayerList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t AudioLayerList_len(AudioLayerList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *AudioLayerList_item(AudioLayerList *self, Py_ssize_t index) {
@@ -3329,6 +4246,22 @@ static PyObject *AudioLayerList_item(AudioLayerList *self, Py_ssize_t index) {
         return NULL;
     }
     return Element_from(self->data.data[index], self->ctx);
+}
+
+static int AudioLayerList_traverse(AudioLayerList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int AudioLayerList_clear(AudioLayerList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void AudioLayerList_dealloc(AudioLayerList *self) {
+    PyObject_GC_UnTrack(self);
+    AudioLayerList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods AudioLayerList_Sequence = {
@@ -3342,16 +4275,18 @@ static PyTypeObject AudioLayerList_Type = {
     .tp_doc = PyDoc_STR("AudioLayerList"),
     .tp_basicsize = sizeof(AudioLayerList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &AudioLayerList_Sequence,
+    .tp_dealloc = (destructor)&AudioLayerList_dealloc,
+    .tp_traverse = (traverseproc)&AudioLayerList_traverse,
+    .tp_clear = (inquiry)&AudioLayerList_clear,
 };
 
 static PyObject *AudioLayerList_from(ufbx_audio_layer_list list, Context *ctx) {
     AudioLayerList *obj = (AudioLayerList*)PyObject_CallObject((PyObject*)&AudioLayerList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -3359,12 +4294,11 @@ static PyObject *AudioLayerList_from(ufbx_audio_layer_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_audio_clip_list data;
 } AudioClipList;
 
-static PyObject *AudioClipList_len(AudioClipList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t AudioClipList_len(AudioClipList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *AudioClipList_item(AudioClipList *self, Py_ssize_t index) {
@@ -3375,6 +4309,22 @@ static PyObject *AudioClipList_item(AudioClipList *self, Py_ssize_t index) {
         return NULL;
     }
     return Element_from(self->data.data[index], self->ctx);
+}
+
+static int AudioClipList_traverse(AudioClipList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int AudioClipList_clear(AudioClipList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void AudioClipList_dealloc(AudioClipList *self) {
+    PyObject_GC_UnTrack(self);
+    AudioClipList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods AudioClipList_Sequence = {
@@ -3388,16 +4338,18 @@ static PyTypeObject AudioClipList_Type = {
     .tp_doc = PyDoc_STR("AudioClipList"),
     .tp_basicsize = sizeof(AudioClipList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &AudioClipList_Sequence,
+    .tp_dealloc = (destructor)&AudioClipList_dealloc,
+    .tp_traverse = (traverseproc)&AudioClipList_traverse,
+    .tp_clear = (inquiry)&AudioClipList_clear,
 };
 
 static PyObject *AudioClipList_from(ufbx_audio_clip_list list, Context *ctx) {
     AudioClipList *obj = (AudioClipList*)PyObject_CallObject((PyObject*)&AudioClipList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -3405,12 +4357,11 @@ static PyObject *AudioClipList_from(ufbx_audio_clip_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_pose_list data;
 } PoseList;
 
-static PyObject *PoseList_len(PoseList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t PoseList_len(PoseList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *PoseList_item(PoseList *self, Py_ssize_t index) {
@@ -3421,6 +4372,22 @@ static PyObject *PoseList_item(PoseList *self, Py_ssize_t index) {
         return NULL;
     }
     return Element_from(self->data.data[index], self->ctx);
+}
+
+static int PoseList_traverse(PoseList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int PoseList_clear(PoseList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void PoseList_dealloc(PoseList *self) {
+    PyObject_GC_UnTrack(self);
+    PoseList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods PoseList_Sequence = {
@@ -3434,16 +4401,18 @@ static PyTypeObject PoseList_Type = {
     .tp_doc = PyDoc_STR("PoseList"),
     .tp_basicsize = sizeof(PoseList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &PoseList_Sequence,
+    .tp_dealloc = (destructor)&PoseList_dealloc,
+    .tp_traverse = (traverseproc)&PoseList_traverse,
+    .tp_clear = (inquiry)&PoseList_clear,
 };
 
 static PyObject *PoseList_from(ufbx_pose_list list, Context *ctx) {
     PoseList *obj = (PoseList*)PyObject_CallObject((PyObject*)&PoseList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -3451,12 +4420,11 @@ static PyObject *PoseList_from(ufbx_pose_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_metadata_object_list data;
 } MetadataObjectList;
 
-static PyObject *MetadataObjectList_len(MetadataObjectList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t MetadataObjectList_len(MetadataObjectList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *MetadataObjectList_item(MetadataObjectList *self, Py_ssize_t index) {
@@ -3467,6 +4435,22 @@ static PyObject *MetadataObjectList_item(MetadataObjectList *self, Py_ssize_t in
         return NULL;
     }
     return Element_from(self->data.data[index], self->ctx);
+}
+
+static int MetadataObjectList_traverse(MetadataObjectList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int MetadataObjectList_clear(MetadataObjectList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void MetadataObjectList_dealloc(MetadataObjectList *self) {
+    PyObject_GC_UnTrack(self);
+    MetadataObjectList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods MetadataObjectList_Sequence = {
@@ -3480,16 +4464,18 @@ static PyTypeObject MetadataObjectList_Type = {
     .tp_doc = PyDoc_STR("MetadataObjectList"),
     .tp_basicsize = sizeof(MetadataObjectList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &MetadataObjectList_Sequence,
+    .tp_dealloc = (destructor)&MetadataObjectList_dealloc,
+    .tp_traverse = (traverseproc)&MetadataObjectList_traverse,
+    .tp_clear = (inquiry)&MetadataObjectList_clear,
 };
 
 static PyObject *MetadataObjectList_from(ufbx_metadata_object_list list, Context *ctx) {
     MetadataObjectList *obj = (MetadataObjectList*)PyObject_CallObject((PyObject*)&MetadataObjectList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -3497,12 +4483,11 @@ static PyObject *MetadataObjectList_from(ufbx_metadata_object_list list, Context
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_connection_list data;
 } ConnectionList;
 
-static PyObject *ConnectionList_len(ConnectionList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t ConnectionList_len(ConnectionList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *ConnectionList_item(ConnectionList *self, Py_ssize_t index) {
@@ -3513,6 +4498,22 @@ static PyObject *ConnectionList_item(ConnectionList *self, Py_ssize_t index) {
         return NULL;
     }
     return Connection_from(&self->data.data[index], self->ctx);
+}
+
+static int ConnectionList_traverse(ConnectionList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int ConnectionList_clear(ConnectionList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void ConnectionList_dealloc(ConnectionList *self) {
+    PyObject_GC_UnTrack(self);
+    ConnectionList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods ConnectionList_Sequence = {
@@ -3526,16 +4527,18 @@ static PyTypeObject ConnectionList_Type = {
     .tp_doc = PyDoc_STR("ConnectionList"),
     .tp_basicsize = sizeof(ConnectionList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &ConnectionList_Sequence,
+    .tp_dealloc = (destructor)&ConnectionList_dealloc,
+    .tp_traverse = (traverseproc)&ConnectionList_traverse,
+    .tp_clear = (inquiry)&ConnectionList_clear,
 };
 
 static PyObject *ConnectionList_from(ufbx_connection_list list, Context *ctx) {
     ConnectionList *obj = (ConnectionList*)PyObject_CallObject((PyObject*)&ConnectionList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -3543,12 +4546,11 @@ static PyObject *ConnectionList_from(ufbx_connection_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_uv_set_list data;
 } UvSetList;
 
-static PyObject *UvSetList_len(UvSetList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t UvSetList_len(UvSetList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *UvSetList_item(UvSetList *self, Py_ssize_t index) {
@@ -3559,6 +4561,22 @@ static PyObject *UvSetList_item(UvSetList *self, Py_ssize_t index) {
         return NULL;
     }
     return UvSet_from(&self->data.data[index], self->ctx);
+}
+
+static int UvSetList_traverse(UvSetList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int UvSetList_clear(UvSetList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void UvSetList_dealloc(UvSetList *self) {
+    PyObject_GC_UnTrack(self);
+    UvSetList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods UvSetList_Sequence = {
@@ -3572,16 +4590,18 @@ static PyTypeObject UvSetList_Type = {
     .tp_doc = PyDoc_STR("UvSetList"),
     .tp_basicsize = sizeof(UvSetList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &UvSetList_Sequence,
+    .tp_dealloc = (destructor)&UvSetList_dealloc,
+    .tp_traverse = (traverseproc)&UvSetList_traverse,
+    .tp_clear = (inquiry)&UvSetList_clear,
 };
 
 static PyObject *UvSetList_from(ufbx_uv_set_list list, Context *ctx) {
     UvSetList *obj = (UvSetList*)PyObject_CallObject((PyObject*)&UvSetList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -3589,12 +4609,11 @@ static PyObject *UvSetList_from(ufbx_uv_set_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_color_set_list data;
 } ColorSetList;
 
-static PyObject *ColorSetList_len(ColorSetList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t ColorSetList_len(ColorSetList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *ColorSetList_item(ColorSetList *self, Py_ssize_t index) {
@@ -3605,6 +4624,22 @@ static PyObject *ColorSetList_item(ColorSetList *self, Py_ssize_t index) {
         return NULL;
     }
     return ColorSet_from(&self->data.data[index], self->ctx);
+}
+
+static int ColorSetList_traverse(ColorSetList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int ColorSetList_clear(ColorSetList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void ColorSetList_dealloc(ColorSetList *self) {
+    PyObject_GC_UnTrack(self);
+    ColorSetList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods ColorSetList_Sequence = {
@@ -3618,16 +4653,18 @@ static PyTypeObject ColorSetList_Type = {
     .tp_doc = PyDoc_STR("ColorSetList"),
     .tp_basicsize = sizeof(ColorSetList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &ColorSetList_Sequence,
+    .tp_dealloc = (destructor)&ColorSetList_dealloc,
+    .tp_traverse = (traverseproc)&ColorSetList_traverse,
+    .tp_clear = (inquiry)&ColorSetList_clear,
 };
 
 static PyObject *ColorSetList_from(ufbx_color_set_list list, Context *ctx) {
     ColorSetList *obj = (ColorSetList*)PyObject_CallObject((PyObject*)&ColorSetList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -3635,12 +4672,11 @@ static PyObject *ColorSetList_from(ufbx_color_set_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_edge_list data;
 } EdgeList;
 
-static PyObject *EdgeList_len(EdgeList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t EdgeList_len(EdgeList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *EdgeList_item(EdgeList *self, Py_ssize_t index) {
@@ -3651,6 +4687,22 @@ static PyObject *EdgeList_item(EdgeList *self, Py_ssize_t index) {
         return NULL;
     }
     return Edge_from(&self->data.data[index]);
+}
+
+static int EdgeList_traverse(EdgeList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int EdgeList_clear(EdgeList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void EdgeList_dealloc(EdgeList *self) {
+    PyObject_GC_UnTrack(self);
+    EdgeList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods EdgeList_Sequence = {
@@ -3664,16 +4716,18 @@ static PyTypeObject EdgeList_Type = {
     .tp_doc = PyDoc_STR("EdgeList"),
     .tp_basicsize = sizeof(EdgeList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &EdgeList_Sequence,
+    .tp_dealloc = (destructor)&EdgeList_dealloc,
+    .tp_traverse = (traverseproc)&EdgeList_traverse,
+    .tp_clear = (inquiry)&EdgeList_clear,
 };
 
 static PyObject *EdgeList_from(ufbx_edge_list list, Context *ctx) {
     EdgeList *obj = (EdgeList*)PyObject_CallObject((PyObject*)&EdgeList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -3681,12 +4735,11 @@ static PyObject *EdgeList_from(ufbx_edge_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_face_list data;
 } FaceList;
 
-static PyObject *FaceList_len(FaceList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t FaceList_len(FaceList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *FaceList_item(FaceList *self, Py_ssize_t index) {
@@ -3697,6 +4750,22 @@ static PyObject *FaceList_item(FaceList *self, Py_ssize_t index) {
         return NULL;
     }
     return Face_from(&self->data.data[index]);
+}
+
+static int FaceList_traverse(FaceList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int FaceList_clear(FaceList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void FaceList_dealloc(FaceList *self) {
+    PyObject_GC_UnTrack(self);
+    FaceList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods FaceList_Sequence = {
@@ -3710,16 +4779,18 @@ static PyTypeObject FaceList_Type = {
     .tp_doc = PyDoc_STR("FaceList"),
     .tp_basicsize = sizeof(FaceList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &FaceList_Sequence,
+    .tp_dealloc = (destructor)&FaceList_dealloc,
+    .tp_traverse = (traverseproc)&FaceList_traverse,
+    .tp_clear = (inquiry)&FaceList_clear,
 };
 
 static PyObject *FaceList_from(ufbx_face_list list, Context *ctx) {
     FaceList *obj = (FaceList*)PyObject_CallObject((PyObject*)&FaceList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -3727,12 +4798,11 @@ static PyObject *FaceList_from(ufbx_face_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_mesh_part_list data;
 } MeshPartList;
 
-static PyObject *MeshPartList_len(MeshPartList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t MeshPartList_len(MeshPartList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *MeshPartList_item(MeshPartList *self, Py_ssize_t index) {
@@ -3743,6 +4813,22 @@ static PyObject *MeshPartList_item(MeshPartList *self, Py_ssize_t index) {
         return NULL;
     }
     return MeshPart_from(&self->data.data[index], self->ctx);
+}
+
+static int MeshPartList_traverse(MeshPartList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int MeshPartList_clear(MeshPartList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void MeshPartList_dealloc(MeshPartList *self) {
+    PyObject_GC_UnTrack(self);
+    MeshPartList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods MeshPartList_Sequence = {
@@ -3756,16 +4842,18 @@ static PyTypeObject MeshPartList_Type = {
     .tp_doc = PyDoc_STR("MeshPartList"),
     .tp_basicsize = sizeof(MeshPartList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &MeshPartList_Sequence,
+    .tp_dealloc = (destructor)&MeshPartList_dealloc,
+    .tp_traverse = (traverseproc)&MeshPartList_traverse,
+    .tp_clear = (inquiry)&MeshPartList_clear,
 };
 
 static PyObject *MeshPartList_from(ufbx_mesh_part_list list, Context *ctx) {
     MeshPartList *obj = (MeshPartList*)PyObject_CallObject((PyObject*)&MeshPartList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -3773,12 +4861,11 @@ static PyObject *MeshPartList_from(ufbx_mesh_part_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_face_group_list data;
 } FaceGroupList;
 
-static PyObject *FaceGroupList_len(FaceGroupList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t FaceGroupList_len(FaceGroupList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *FaceGroupList_item(FaceGroupList *self, Py_ssize_t index) {
@@ -3789,6 +4876,22 @@ static PyObject *FaceGroupList_item(FaceGroupList *self, Py_ssize_t index) {
         return NULL;
     }
     return FaceGroup_from(&self->data.data[index], self->ctx);
+}
+
+static int FaceGroupList_traverse(FaceGroupList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int FaceGroupList_clear(FaceGroupList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void FaceGroupList_dealloc(FaceGroupList *self) {
+    PyObject_GC_UnTrack(self);
+    FaceGroupList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods FaceGroupList_Sequence = {
@@ -3802,16 +4905,18 @@ static PyTypeObject FaceGroupList_Type = {
     .tp_doc = PyDoc_STR("FaceGroupList"),
     .tp_basicsize = sizeof(FaceGroupList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &FaceGroupList_Sequence,
+    .tp_dealloc = (destructor)&FaceGroupList_dealloc,
+    .tp_traverse = (traverseproc)&FaceGroupList_traverse,
+    .tp_clear = (inquiry)&FaceGroupList_clear,
 };
 
 static PyObject *FaceGroupList_from(ufbx_face_group_list list, Context *ctx) {
     FaceGroupList *obj = (FaceGroupList*)PyObject_CallObject((PyObject*)&FaceGroupList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -3819,12 +4924,11 @@ static PyObject *FaceGroupList_from(ufbx_face_group_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_subdivision_weight_range_list data;
 } SubdivisionWeightRangeList;
 
-static PyObject *SubdivisionWeightRangeList_len(SubdivisionWeightRangeList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t SubdivisionWeightRangeList_len(SubdivisionWeightRangeList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *SubdivisionWeightRangeList_item(SubdivisionWeightRangeList *self, Py_ssize_t index) {
@@ -3835,6 +4939,22 @@ static PyObject *SubdivisionWeightRangeList_item(SubdivisionWeightRangeList *sel
         return NULL;
     }
     return SubdivisionWeightRange_from(&self->data.data[index], self->ctx);
+}
+
+static int SubdivisionWeightRangeList_traverse(SubdivisionWeightRangeList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int SubdivisionWeightRangeList_clear(SubdivisionWeightRangeList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void SubdivisionWeightRangeList_dealloc(SubdivisionWeightRangeList *self) {
+    PyObject_GC_UnTrack(self);
+    SubdivisionWeightRangeList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods SubdivisionWeightRangeList_Sequence = {
@@ -3848,16 +4968,18 @@ static PyTypeObject SubdivisionWeightRangeList_Type = {
     .tp_doc = PyDoc_STR("SubdivisionWeightRangeList"),
     .tp_basicsize = sizeof(SubdivisionWeightRangeList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &SubdivisionWeightRangeList_Sequence,
+    .tp_dealloc = (destructor)&SubdivisionWeightRangeList_dealloc,
+    .tp_traverse = (traverseproc)&SubdivisionWeightRangeList_traverse,
+    .tp_clear = (inquiry)&SubdivisionWeightRangeList_clear,
 };
 
 static PyObject *SubdivisionWeightRangeList_from(ufbx_subdivision_weight_range_list list, Context *ctx) {
     SubdivisionWeightRangeList *obj = (SubdivisionWeightRangeList*)PyObject_CallObject((PyObject*)&SubdivisionWeightRangeList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -3865,12 +4987,11 @@ static PyObject *SubdivisionWeightRangeList_from(ufbx_subdivision_weight_range_l
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_subdivision_weight_list data;
 } SubdivisionWeightList;
 
-static PyObject *SubdivisionWeightList_len(SubdivisionWeightList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t SubdivisionWeightList_len(SubdivisionWeightList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *SubdivisionWeightList_item(SubdivisionWeightList *self, Py_ssize_t index) {
@@ -3881,6 +5002,22 @@ static PyObject *SubdivisionWeightList_item(SubdivisionWeightList *self, Py_ssiz
         return NULL;
     }
     return SubdivisionWeight_from(&self->data.data[index], self->ctx);
+}
+
+static int SubdivisionWeightList_traverse(SubdivisionWeightList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int SubdivisionWeightList_clear(SubdivisionWeightList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void SubdivisionWeightList_dealloc(SubdivisionWeightList *self) {
+    PyObject_GC_UnTrack(self);
+    SubdivisionWeightList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods SubdivisionWeightList_Sequence = {
@@ -3894,16 +5031,18 @@ static PyTypeObject SubdivisionWeightList_Type = {
     .tp_doc = PyDoc_STR("SubdivisionWeightList"),
     .tp_basicsize = sizeof(SubdivisionWeightList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &SubdivisionWeightList_Sequence,
+    .tp_dealloc = (destructor)&SubdivisionWeightList_dealloc,
+    .tp_traverse = (traverseproc)&SubdivisionWeightList_traverse,
+    .tp_clear = (inquiry)&SubdivisionWeightList_clear,
 };
 
 static PyObject *SubdivisionWeightList_from(ufbx_subdivision_weight_list list, Context *ctx) {
     SubdivisionWeightList *obj = (SubdivisionWeightList*)PyObject_CallObject((PyObject*)&SubdivisionWeightList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -3911,12 +5050,11 @@ static PyObject *SubdivisionWeightList_from(ufbx_subdivision_weight_list list, C
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_line_segment_list data;
 } LineSegmentList;
 
-static PyObject *LineSegmentList_len(LineSegmentList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t LineSegmentList_len(LineSegmentList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *LineSegmentList_item(LineSegmentList *self, Py_ssize_t index) {
@@ -3927,6 +5065,22 @@ static PyObject *LineSegmentList_item(LineSegmentList *self, Py_ssize_t index) {
         return NULL;
     }
     return LineSegment_from(&self->data.data[index], self->ctx);
+}
+
+static int LineSegmentList_traverse(LineSegmentList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int LineSegmentList_clear(LineSegmentList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void LineSegmentList_dealloc(LineSegmentList *self) {
+    PyObject_GC_UnTrack(self);
+    LineSegmentList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods LineSegmentList_Sequence = {
@@ -3940,16 +5094,18 @@ static PyTypeObject LineSegmentList_Type = {
     .tp_doc = PyDoc_STR("LineSegmentList"),
     .tp_basicsize = sizeof(LineSegmentList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &LineSegmentList_Sequence,
+    .tp_dealloc = (destructor)&LineSegmentList_dealloc,
+    .tp_traverse = (traverseproc)&LineSegmentList_traverse,
+    .tp_clear = (inquiry)&LineSegmentList_clear,
 };
 
 static PyObject *LineSegmentList_from(ufbx_line_segment_list list, Context *ctx) {
     LineSegmentList *obj = (LineSegmentList*)PyObject_CallObject((PyObject*)&LineSegmentList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -3957,12 +5113,11 @@ static PyObject *LineSegmentList_from(ufbx_line_segment_list list, Context *ctx)
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_lod_level_list data;
 } LodLevelList;
 
-static PyObject *LodLevelList_len(LodLevelList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t LodLevelList_len(LodLevelList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *LodLevelList_item(LodLevelList *self, Py_ssize_t index) {
@@ -3973,6 +5128,22 @@ static PyObject *LodLevelList_item(LodLevelList *self, Py_ssize_t index) {
         return NULL;
     }
     return LodLevel_from(&self->data.data[index]);
+}
+
+static int LodLevelList_traverse(LodLevelList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int LodLevelList_clear(LodLevelList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void LodLevelList_dealloc(LodLevelList *self) {
+    PyObject_GC_UnTrack(self);
+    LodLevelList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods LodLevelList_Sequence = {
@@ -3986,16 +5157,18 @@ static PyTypeObject LodLevelList_Type = {
     .tp_doc = PyDoc_STR("LodLevelList"),
     .tp_basicsize = sizeof(LodLevelList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &LodLevelList_Sequence,
+    .tp_dealloc = (destructor)&LodLevelList_dealloc,
+    .tp_traverse = (traverseproc)&LodLevelList_traverse,
+    .tp_clear = (inquiry)&LodLevelList_clear,
 };
 
 static PyObject *LodLevelList_from(ufbx_lod_level_list list, Context *ctx) {
     LodLevelList *obj = (LodLevelList*)PyObject_CallObject((PyObject*)&LodLevelList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -4003,12 +5176,11 @@ static PyObject *LodLevelList_from(ufbx_lod_level_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_skin_vertex_list data;
 } SkinVertexList;
 
-static PyObject *SkinVertexList_len(SkinVertexList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t SkinVertexList_len(SkinVertexList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *SkinVertexList_item(SkinVertexList *self, Py_ssize_t index) {
@@ -4019,6 +5191,22 @@ static PyObject *SkinVertexList_item(SkinVertexList *self, Py_ssize_t index) {
         return NULL;
     }
     return SkinVertex_from(&self->data.data[index]);
+}
+
+static int SkinVertexList_traverse(SkinVertexList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int SkinVertexList_clear(SkinVertexList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void SkinVertexList_dealloc(SkinVertexList *self) {
+    PyObject_GC_UnTrack(self);
+    SkinVertexList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods SkinVertexList_Sequence = {
@@ -4032,16 +5220,18 @@ static PyTypeObject SkinVertexList_Type = {
     .tp_doc = PyDoc_STR("SkinVertexList"),
     .tp_basicsize = sizeof(SkinVertexList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &SkinVertexList_Sequence,
+    .tp_dealloc = (destructor)&SkinVertexList_dealloc,
+    .tp_traverse = (traverseproc)&SkinVertexList_traverse,
+    .tp_clear = (inquiry)&SkinVertexList_clear,
 };
 
 static PyObject *SkinVertexList_from(ufbx_skin_vertex_list list, Context *ctx) {
     SkinVertexList *obj = (SkinVertexList*)PyObject_CallObject((PyObject*)&SkinVertexList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -4049,12 +5239,11 @@ static PyObject *SkinVertexList_from(ufbx_skin_vertex_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_skin_weight_list data;
 } SkinWeightList;
 
-static PyObject *SkinWeightList_len(SkinWeightList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t SkinWeightList_len(SkinWeightList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *SkinWeightList_item(SkinWeightList *self, Py_ssize_t index) {
@@ -4065,6 +5254,22 @@ static PyObject *SkinWeightList_item(SkinWeightList *self, Py_ssize_t index) {
         return NULL;
     }
     return SkinWeight_from(&self->data.data[index]);
+}
+
+static int SkinWeightList_traverse(SkinWeightList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int SkinWeightList_clear(SkinWeightList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void SkinWeightList_dealloc(SkinWeightList *self) {
+    PyObject_GC_UnTrack(self);
+    SkinWeightList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods SkinWeightList_Sequence = {
@@ -4078,16 +5283,18 @@ static PyTypeObject SkinWeightList_Type = {
     .tp_doc = PyDoc_STR("SkinWeightList"),
     .tp_basicsize = sizeof(SkinWeightList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &SkinWeightList_Sequence,
+    .tp_dealloc = (destructor)&SkinWeightList_dealloc,
+    .tp_traverse = (traverseproc)&SkinWeightList_traverse,
+    .tp_clear = (inquiry)&SkinWeightList_clear,
 };
 
 static PyObject *SkinWeightList_from(ufbx_skin_weight_list list, Context *ctx) {
     SkinWeightList *obj = (SkinWeightList*)PyObject_CallObject((PyObject*)&SkinWeightList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -4095,12 +5302,11 @@ static PyObject *SkinWeightList_from(ufbx_skin_weight_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_blend_keyframe_list data;
 } BlendKeyframeList;
 
-static PyObject *BlendKeyframeList_len(BlendKeyframeList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t BlendKeyframeList_len(BlendKeyframeList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *BlendKeyframeList_item(BlendKeyframeList *self, Py_ssize_t index) {
@@ -4111,6 +5317,22 @@ static PyObject *BlendKeyframeList_item(BlendKeyframeList *self, Py_ssize_t inde
         return NULL;
     }
     return BlendKeyframe_from(&self->data.data[index], self->ctx);
+}
+
+static int BlendKeyframeList_traverse(BlendKeyframeList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int BlendKeyframeList_clear(BlendKeyframeList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void BlendKeyframeList_dealloc(BlendKeyframeList *self) {
+    PyObject_GC_UnTrack(self);
+    BlendKeyframeList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods BlendKeyframeList_Sequence = {
@@ -4124,16 +5346,18 @@ static PyTypeObject BlendKeyframeList_Type = {
     .tp_doc = PyDoc_STR("BlendKeyframeList"),
     .tp_basicsize = sizeof(BlendKeyframeList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &BlendKeyframeList_Sequence,
+    .tp_dealloc = (destructor)&BlendKeyframeList_dealloc,
+    .tp_traverse = (traverseproc)&BlendKeyframeList_traverse,
+    .tp_clear = (inquiry)&BlendKeyframeList_clear,
 };
 
 static PyObject *BlendKeyframeList_from(ufbx_blend_keyframe_list list, Context *ctx) {
     BlendKeyframeList *obj = (BlendKeyframeList*)PyObject_CallObject((PyObject*)&BlendKeyframeList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -4141,12 +5365,11 @@ static PyObject *BlendKeyframeList_from(ufbx_blend_keyframe_list list, Context *
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_cache_frame_list data;
 } CacheFrameList;
 
-static PyObject *CacheFrameList_len(CacheFrameList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t CacheFrameList_len(CacheFrameList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *CacheFrameList_item(CacheFrameList *self, Py_ssize_t index) {
@@ -4157,6 +5380,22 @@ static PyObject *CacheFrameList_item(CacheFrameList *self, Py_ssize_t index) {
         return NULL;
     }
     return CacheFrame_from(&self->data.data[index], self->ctx);
+}
+
+static int CacheFrameList_traverse(CacheFrameList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int CacheFrameList_clear(CacheFrameList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void CacheFrameList_dealloc(CacheFrameList *self) {
+    PyObject_GC_UnTrack(self);
+    CacheFrameList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods CacheFrameList_Sequence = {
@@ -4170,16 +5409,18 @@ static PyTypeObject CacheFrameList_Type = {
     .tp_doc = PyDoc_STR("CacheFrameList"),
     .tp_basicsize = sizeof(CacheFrameList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &CacheFrameList_Sequence,
+    .tp_dealloc = (destructor)&CacheFrameList_dealloc,
+    .tp_traverse = (traverseproc)&CacheFrameList_traverse,
+    .tp_clear = (inquiry)&CacheFrameList_clear,
 };
 
 static PyObject *CacheFrameList_from(ufbx_cache_frame_list list, Context *ctx) {
     CacheFrameList *obj = (CacheFrameList*)PyObject_CallObject((PyObject*)&CacheFrameList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -4187,12 +5428,11 @@ static PyObject *CacheFrameList_from(ufbx_cache_frame_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_cache_channel_list data;
 } CacheChannelList;
 
-static PyObject *CacheChannelList_len(CacheChannelList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t CacheChannelList_len(CacheChannelList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *CacheChannelList_item(CacheChannelList *self, Py_ssize_t index) {
@@ -4203,6 +5443,22 @@ static PyObject *CacheChannelList_item(CacheChannelList *self, Py_ssize_t index)
         return NULL;
     }
     return CacheChannel_from(&self->data.data[index], self->ctx);
+}
+
+static int CacheChannelList_traverse(CacheChannelList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int CacheChannelList_clear(CacheChannelList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void CacheChannelList_dealloc(CacheChannelList *self) {
+    PyObject_GC_UnTrack(self);
+    CacheChannelList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods CacheChannelList_Sequence = {
@@ -4216,16 +5472,18 @@ static PyTypeObject CacheChannelList_Type = {
     .tp_doc = PyDoc_STR("CacheChannelList"),
     .tp_basicsize = sizeof(CacheChannelList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &CacheChannelList_Sequence,
+    .tp_dealloc = (destructor)&CacheChannelList_dealloc,
+    .tp_traverse = (traverseproc)&CacheChannelList_traverse,
+    .tp_clear = (inquiry)&CacheChannelList_clear,
 };
 
 static PyObject *CacheChannelList_from(ufbx_cache_channel_list list, Context *ctx) {
     CacheChannelList *obj = (CacheChannelList*)PyObject_CallObject((PyObject*)&CacheChannelList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -4233,12 +5491,11 @@ static PyObject *CacheChannelList_from(ufbx_cache_channel_list list, Context *ct
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_material_texture_list data;
 } MaterialTextureList;
 
-static PyObject *MaterialTextureList_len(MaterialTextureList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t MaterialTextureList_len(MaterialTextureList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *MaterialTextureList_item(MaterialTextureList *self, Py_ssize_t index) {
@@ -4249,6 +5506,22 @@ static PyObject *MaterialTextureList_item(MaterialTextureList *self, Py_ssize_t 
         return NULL;
     }
     return MaterialTexture_from(&self->data.data[index], self->ctx);
+}
+
+static int MaterialTextureList_traverse(MaterialTextureList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int MaterialTextureList_clear(MaterialTextureList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void MaterialTextureList_dealloc(MaterialTextureList *self) {
+    PyObject_GC_UnTrack(self);
+    MaterialTextureList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods MaterialTextureList_Sequence = {
@@ -4262,16 +5535,18 @@ static PyTypeObject MaterialTextureList_Type = {
     .tp_doc = PyDoc_STR("MaterialTextureList"),
     .tp_basicsize = sizeof(MaterialTextureList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &MaterialTextureList_Sequence,
+    .tp_dealloc = (destructor)&MaterialTextureList_dealloc,
+    .tp_traverse = (traverseproc)&MaterialTextureList_traverse,
+    .tp_clear = (inquiry)&MaterialTextureList_clear,
 };
 
 static PyObject *MaterialTextureList_from(ufbx_material_texture_list list, Context *ctx) {
     MaterialTextureList *obj = (MaterialTextureList*)PyObject_CallObject((PyObject*)&MaterialTextureList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -4279,12 +5554,11 @@ static PyObject *MaterialTextureList_from(ufbx_material_texture_list list, Conte
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_texture_layer_list data;
 } TextureLayerList;
 
-static PyObject *TextureLayerList_len(TextureLayerList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t TextureLayerList_len(TextureLayerList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *TextureLayerList_item(TextureLayerList *self, Py_ssize_t index) {
@@ -4295,6 +5569,22 @@ static PyObject *TextureLayerList_item(TextureLayerList *self, Py_ssize_t index)
         return NULL;
     }
     return TextureLayer_from(&self->data.data[index], self->ctx);
+}
+
+static int TextureLayerList_traverse(TextureLayerList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int TextureLayerList_clear(TextureLayerList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void TextureLayerList_dealloc(TextureLayerList *self) {
+    PyObject_GC_UnTrack(self);
+    TextureLayerList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods TextureLayerList_Sequence = {
@@ -4308,16 +5598,18 @@ static PyTypeObject TextureLayerList_Type = {
     .tp_doc = PyDoc_STR("TextureLayerList"),
     .tp_basicsize = sizeof(TextureLayerList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &TextureLayerList_Sequence,
+    .tp_dealloc = (destructor)&TextureLayerList_dealloc,
+    .tp_traverse = (traverseproc)&TextureLayerList_traverse,
+    .tp_clear = (inquiry)&TextureLayerList_clear,
 };
 
 static PyObject *TextureLayerList_from(ufbx_texture_layer_list list, Context *ctx) {
     TextureLayerList *obj = (TextureLayerList*)PyObject_CallObject((PyObject*)&TextureLayerList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -4325,12 +5617,11 @@ static PyObject *TextureLayerList_from(ufbx_texture_layer_list list, Context *ct
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_shader_texture_input_list data;
 } ShaderTextureInputList;
 
-static PyObject *ShaderTextureInputList_len(ShaderTextureInputList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t ShaderTextureInputList_len(ShaderTextureInputList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *ShaderTextureInputList_item(ShaderTextureInputList *self, Py_ssize_t index) {
@@ -4341,6 +5632,22 @@ static PyObject *ShaderTextureInputList_item(ShaderTextureInputList *self, Py_ss
         return NULL;
     }
     return ShaderTextureInput_from(&self->data.data[index], self->ctx);
+}
+
+static int ShaderTextureInputList_traverse(ShaderTextureInputList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int ShaderTextureInputList_clear(ShaderTextureInputList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void ShaderTextureInputList_dealloc(ShaderTextureInputList *self) {
+    PyObject_GC_UnTrack(self);
+    ShaderTextureInputList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods ShaderTextureInputList_Sequence = {
@@ -4354,16 +5661,18 @@ static PyTypeObject ShaderTextureInputList_Type = {
     .tp_doc = PyDoc_STR("ShaderTextureInputList"),
     .tp_basicsize = sizeof(ShaderTextureInputList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &ShaderTextureInputList_Sequence,
+    .tp_dealloc = (destructor)&ShaderTextureInputList_dealloc,
+    .tp_traverse = (traverseproc)&ShaderTextureInputList_traverse,
+    .tp_clear = (inquiry)&ShaderTextureInputList_clear,
 };
 
 static PyObject *ShaderTextureInputList_from(ufbx_shader_texture_input_list list, Context *ctx) {
     ShaderTextureInputList *obj = (ShaderTextureInputList*)PyObject_CallObject((PyObject*)&ShaderTextureInputList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -4371,12 +5680,11 @@ static PyObject *ShaderTextureInputList_from(ufbx_shader_texture_input_list list
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_texture_file_list data;
 } TextureFileList;
 
-static PyObject *TextureFileList_len(TextureFileList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t TextureFileList_len(TextureFileList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *TextureFileList_item(TextureFileList *self, Py_ssize_t index) {
@@ -4387,6 +5695,22 @@ static PyObject *TextureFileList_item(TextureFileList *self, Py_ssize_t index) {
         return NULL;
     }
     return TextureFile_from(&self->data.data[index], self->ctx);
+}
+
+static int TextureFileList_traverse(TextureFileList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int TextureFileList_clear(TextureFileList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void TextureFileList_dealloc(TextureFileList *self) {
+    PyObject_GC_UnTrack(self);
+    TextureFileList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods TextureFileList_Sequence = {
@@ -4400,16 +5724,18 @@ static PyTypeObject TextureFileList_Type = {
     .tp_doc = PyDoc_STR("TextureFileList"),
     .tp_basicsize = sizeof(TextureFileList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &TextureFileList_Sequence,
+    .tp_dealloc = (destructor)&TextureFileList_dealloc,
+    .tp_traverse = (traverseproc)&TextureFileList_traverse,
+    .tp_clear = (inquiry)&TextureFileList_clear,
 };
 
 static PyObject *TextureFileList_from(ufbx_texture_file_list list, Context *ctx) {
     TextureFileList *obj = (TextureFileList*)PyObject_CallObject((PyObject*)&TextureFileList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -4417,12 +5743,11 @@ static PyObject *TextureFileList_from(ufbx_texture_file_list list, Context *ctx)
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_shader_prop_binding_list data;
 } ShaderPropBindingList;
 
-static PyObject *ShaderPropBindingList_len(ShaderPropBindingList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t ShaderPropBindingList_len(ShaderPropBindingList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *ShaderPropBindingList_item(ShaderPropBindingList *self, Py_ssize_t index) {
@@ -4433,6 +5758,22 @@ static PyObject *ShaderPropBindingList_item(ShaderPropBindingList *self, Py_ssiz
         return NULL;
     }
     return ShaderPropBinding_from(&self->data.data[index], self->ctx);
+}
+
+static int ShaderPropBindingList_traverse(ShaderPropBindingList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int ShaderPropBindingList_clear(ShaderPropBindingList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void ShaderPropBindingList_dealloc(ShaderPropBindingList *self) {
+    PyObject_GC_UnTrack(self);
+    ShaderPropBindingList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods ShaderPropBindingList_Sequence = {
@@ -4446,16 +5787,18 @@ static PyTypeObject ShaderPropBindingList_Type = {
     .tp_doc = PyDoc_STR("ShaderPropBindingList"),
     .tp_basicsize = sizeof(ShaderPropBindingList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &ShaderPropBindingList_Sequence,
+    .tp_dealloc = (destructor)&ShaderPropBindingList_dealloc,
+    .tp_traverse = (traverseproc)&ShaderPropBindingList_traverse,
+    .tp_clear = (inquiry)&ShaderPropBindingList_clear,
 };
 
 static PyObject *ShaderPropBindingList_from(ufbx_shader_prop_binding_list list, Context *ctx) {
     ShaderPropBindingList *obj = (ShaderPropBindingList*)PyObject_CallObject((PyObject*)&ShaderPropBindingList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -4463,12 +5806,11 @@ static PyObject *ShaderPropBindingList_from(ufbx_shader_prop_binding_list list, 
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_prop_override_list data;
 } PropOverrideList;
 
-static PyObject *PropOverrideList_len(PropOverrideList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t PropOverrideList_len(PropOverrideList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *PropOverrideList_item(PropOverrideList *self, Py_ssize_t index) {
@@ -4479,6 +5821,22 @@ static PyObject *PropOverrideList_item(PropOverrideList *self, Py_ssize_t index)
         return NULL;
     }
     return PropOverride_from(&self->data.data[index], self->ctx);
+}
+
+static int PropOverrideList_traverse(PropOverrideList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int PropOverrideList_clear(PropOverrideList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void PropOverrideList_dealloc(PropOverrideList *self) {
+    PyObject_GC_UnTrack(self);
+    PropOverrideList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods PropOverrideList_Sequence = {
@@ -4492,16 +5850,18 @@ static PyTypeObject PropOverrideList_Type = {
     .tp_doc = PyDoc_STR("PropOverrideList"),
     .tp_basicsize = sizeof(PropOverrideList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &PropOverrideList_Sequence,
+    .tp_dealloc = (destructor)&PropOverrideList_dealloc,
+    .tp_traverse = (traverseproc)&PropOverrideList_traverse,
+    .tp_clear = (inquiry)&PropOverrideList_clear,
 };
 
 static PyObject *PropOverrideList_from(ufbx_prop_override_list list, Context *ctx) {
     PropOverrideList *obj = (PropOverrideList*)PyObject_CallObject((PyObject*)&PropOverrideList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -4509,12 +5869,11 @@ static PyObject *PropOverrideList_from(ufbx_prop_override_list list, Context *ct
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_transform_override_list data;
 } TransformOverrideList;
 
-static PyObject *TransformOverrideList_len(TransformOverrideList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t TransformOverrideList_len(TransformOverrideList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *TransformOverrideList_item(TransformOverrideList *self, Py_ssize_t index) {
@@ -4525,6 +5884,22 @@ static PyObject *TransformOverrideList_item(TransformOverrideList *self, Py_ssiz
         return NULL;
     }
     return TransformOverride_from(&self->data.data[index]);
+}
+
+static int TransformOverrideList_traverse(TransformOverrideList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int TransformOverrideList_clear(TransformOverrideList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void TransformOverrideList_dealloc(TransformOverrideList *self) {
+    PyObject_GC_UnTrack(self);
+    TransformOverrideList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods TransformOverrideList_Sequence = {
@@ -4538,16 +5913,18 @@ static PyTypeObject TransformOverrideList_Type = {
     .tp_doc = PyDoc_STR("TransformOverrideList"),
     .tp_basicsize = sizeof(TransformOverrideList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &TransformOverrideList_Sequence,
+    .tp_dealloc = (destructor)&TransformOverrideList_dealloc,
+    .tp_traverse = (traverseproc)&TransformOverrideList_traverse,
+    .tp_clear = (inquiry)&TransformOverrideList_clear,
 };
 
 static PyObject *TransformOverrideList_from(ufbx_transform_override_list list, Context *ctx) {
     TransformOverrideList *obj = (TransformOverrideList*)PyObject_CallObject((PyObject*)&TransformOverrideList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -4555,12 +5932,11 @@ static PyObject *TransformOverrideList_from(ufbx_transform_override_list list, C
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_anim_prop_list data;
 } AnimPropList;
 
-static PyObject *AnimPropList_len(AnimPropList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t AnimPropList_len(AnimPropList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *AnimPropList_item(AnimPropList *self, Py_ssize_t index) {
@@ -4571,6 +5947,22 @@ static PyObject *AnimPropList_item(AnimPropList *self, Py_ssize_t index) {
         return NULL;
     }
     return AnimProp_from(&self->data.data[index], self->ctx);
+}
+
+static int AnimPropList_traverse(AnimPropList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int AnimPropList_clear(AnimPropList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void AnimPropList_dealloc(AnimPropList *self) {
+    PyObject_GC_UnTrack(self);
+    AnimPropList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods AnimPropList_Sequence = {
@@ -4584,16 +5976,18 @@ static PyTypeObject AnimPropList_Type = {
     .tp_doc = PyDoc_STR("AnimPropList"),
     .tp_basicsize = sizeof(AnimPropList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &AnimPropList_Sequence,
+    .tp_dealloc = (destructor)&AnimPropList_dealloc,
+    .tp_traverse = (traverseproc)&AnimPropList_traverse,
+    .tp_clear = (inquiry)&AnimPropList_clear,
 };
 
 static PyObject *AnimPropList_from(ufbx_anim_prop_list list, Context *ctx) {
     AnimPropList *obj = (AnimPropList*)PyObject_CallObject((PyObject*)&AnimPropList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -4601,12 +5995,11 @@ static PyObject *AnimPropList_from(ufbx_anim_prop_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_keyframe_list data;
 } KeyframeList;
 
-static PyObject *KeyframeList_len(KeyframeList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t KeyframeList_len(KeyframeList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *KeyframeList_item(KeyframeList *self, Py_ssize_t index) {
@@ -4617,6 +6010,22 @@ static PyObject *KeyframeList_item(KeyframeList *self, Py_ssize_t index) {
         return NULL;
     }
     return Keyframe_from(&self->data.data[index]);
+}
+
+static int KeyframeList_traverse(KeyframeList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int KeyframeList_clear(KeyframeList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void KeyframeList_dealloc(KeyframeList *self) {
+    PyObject_GC_UnTrack(self);
+    KeyframeList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods KeyframeList_Sequence = {
@@ -4630,16 +6039,18 @@ static PyTypeObject KeyframeList_Type = {
     .tp_doc = PyDoc_STR("KeyframeList"),
     .tp_basicsize = sizeof(KeyframeList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &KeyframeList_Sequence,
+    .tp_dealloc = (destructor)&KeyframeList_dealloc,
+    .tp_traverse = (traverseproc)&KeyframeList_traverse,
+    .tp_clear = (inquiry)&KeyframeList_clear,
 };
 
 static PyObject *KeyframeList_from(ufbx_keyframe_list list, Context *ctx) {
     KeyframeList *obj = (KeyframeList*)PyObject_CallObject((PyObject*)&KeyframeList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -4647,12 +6058,11 @@ static PyObject *KeyframeList_from(ufbx_keyframe_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_constraint_target_list data;
 } ConstraintTargetList;
 
-static PyObject *ConstraintTargetList_len(ConstraintTargetList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t ConstraintTargetList_len(ConstraintTargetList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *ConstraintTargetList_item(ConstraintTargetList *self, Py_ssize_t index) {
@@ -4663,6 +6073,22 @@ static PyObject *ConstraintTargetList_item(ConstraintTargetList *self, Py_ssize_
         return NULL;
     }
     return ConstraintTarget_from(&self->data.data[index], self->ctx);
+}
+
+static int ConstraintTargetList_traverse(ConstraintTargetList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int ConstraintTargetList_clear(ConstraintTargetList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void ConstraintTargetList_dealloc(ConstraintTargetList *self) {
+    PyObject_GC_UnTrack(self);
+    ConstraintTargetList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods ConstraintTargetList_Sequence = {
@@ -4676,16 +6102,18 @@ static PyTypeObject ConstraintTargetList_Type = {
     .tp_doc = PyDoc_STR("ConstraintTargetList"),
     .tp_basicsize = sizeof(ConstraintTargetList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &ConstraintTargetList_Sequence,
+    .tp_dealloc = (destructor)&ConstraintTargetList_dealloc,
+    .tp_traverse = (traverseproc)&ConstraintTargetList_traverse,
+    .tp_clear = (inquiry)&ConstraintTargetList_clear,
 };
 
 static PyObject *ConstraintTargetList_from(ufbx_constraint_target_list list, Context *ctx) {
     ConstraintTargetList *obj = (ConstraintTargetList*)PyObject_CallObject((PyObject*)&ConstraintTargetList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -4693,12 +6121,11 @@ static PyObject *ConstraintTargetList_from(ufbx_constraint_target_list list, Con
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_bone_pose_list data;
 } BonePoseList;
 
-static PyObject *BonePoseList_len(BonePoseList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t BonePoseList_len(BonePoseList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *BonePoseList_item(BonePoseList *self, Py_ssize_t index) {
@@ -4709,6 +6136,22 @@ static PyObject *BonePoseList_item(BonePoseList *self, Py_ssize_t index) {
         return NULL;
     }
     return BonePose_from(&self->data.data[index], self->ctx);
+}
+
+static int BonePoseList_traverse(BonePoseList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int BonePoseList_clear(BonePoseList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void BonePoseList_dealloc(BonePoseList *self) {
+    PyObject_GC_UnTrack(self);
+    BonePoseList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods BonePoseList_Sequence = {
@@ -4722,16 +6165,18 @@ static PyTypeObject BonePoseList_Type = {
     .tp_doc = PyDoc_STR("BonePoseList"),
     .tp_basicsize = sizeof(BonePoseList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &BonePoseList_Sequence,
+    .tp_dealloc = (destructor)&BonePoseList_dealloc,
+    .tp_traverse = (traverseproc)&BonePoseList_traverse,
+    .tp_clear = (inquiry)&BonePoseList_clear,
 };
 
 static PyObject *BonePoseList_from(ufbx_bone_pose_list list, Context *ctx) {
     BonePoseList *obj = (BonePoseList*)PyObject_CallObject((PyObject*)&BonePoseList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -4739,12 +6184,11 @@ static PyObject *BonePoseList_from(ufbx_bone_pose_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_name_element_list data;
 } NameElementList;
 
-static PyObject *NameElementList_len(NameElementList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t NameElementList_len(NameElementList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *NameElementList_item(NameElementList *self, Py_ssize_t index) {
@@ -4755,6 +6199,22 @@ static PyObject *NameElementList_item(NameElementList *self, Py_ssize_t index) {
         return NULL;
     }
     return NameElement_from(&self->data.data[index], self->ctx);
+}
+
+static int NameElementList_traverse(NameElementList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int NameElementList_clear(NameElementList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void NameElementList_dealloc(NameElementList *self) {
+    PyObject_GC_UnTrack(self);
+    NameElementList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods NameElementList_Sequence = {
@@ -4768,16 +6228,18 @@ static PyTypeObject NameElementList_Type = {
     .tp_doc = PyDoc_STR("NameElementList"),
     .tp_basicsize = sizeof(NameElementList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &NameElementList_Sequence,
+    .tp_dealloc = (destructor)&NameElementList_dealloc,
+    .tp_traverse = (traverseproc)&NameElementList_traverse,
+    .tp_clear = (inquiry)&NameElementList_clear,
 };
 
 static PyObject *NameElementList_from(ufbx_name_element_list list, Context *ctx) {
     NameElementList *obj = (NameElementList*)PyObject_CallObject((PyObject*)&NameElementList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -4785,12 +6247,11 @@ static PyObject *NameElementList_from(ufbx_name_element_list list, Context *ctx)
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_warning_list data;
 } WarningList;
 
-static PyObject *WarningList_len(WarningList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t WarningList_len(WarningList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *WarningList_item(WarningList *self, Py_ssize_t index) {
@@ -4801,6 +6262,22 @@ static PyObject *WarningList_item(WarningList *self, Py_ssize_t index) {
         return NULL;
     }
     return Warning_from(&self->data.data[index], self->ctx);
+}
+
+static int WarningList_traverse(WarningList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int WarningList_clear(WarningList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void WarningList_dealloc(WarningList *self) {
+    PyObject_GC_UnTrack(self);
+    WarningList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods WarningList_Sequence = {
@@ -4814,16 +6291,18 @@ static PyTypeObject WarningList_Type = {
     .tp_doc = PyDoc_STR("WarningList"),
     .tp_basicsize = sizeof(WarningList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &WarningList_Sequence,
+    .tp_dealloc = (destructor)&WarningList_dealloc,
+    .tp_traverse = (traverseproc)&WarningList_traverse,
+    .tp_clear = (inquiry)&WarningList_clear,
 };
 
 static PyObject *WarningList_from(ufbx_warning_list list, Context *ctx) {
     WarningList *obj = (WarningList*)PyObject_CallObject((PyObject*)&WarningList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -4831,12 +6310,11 @@ static PyObject *WarningList_from(ufbx_warning_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_baked_vec3_list data;
 } BakedVec3List;
 
-static PyObject *BakedVec3List_len(BakedVec3List *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t BakedVec3List_len(BakedVec3List *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *BakedVec3List_item(BakedVec3List *self, Py_ssize_t index) {
@@ -4847,6 +6325,22 @@ static PyObject *BakedVec3List_item(BakedVec3List *self, Py_ssize_t index) {
         return NULL;
     }
     return BakedVec3_from(&self->data.data[index], self->ctx);
+}
+
+static int BakedVec3List_traverse(BakedVec3List *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int BakedVec3List_clear(BakedVec3List *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void BakedVec3List_dealloc(BakedVec3List *self) {
+    PyObject_GC_UnTrack(self);
+    BakedVec3List_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods BakedVec3List_Sequence = {
@@ -4860,16 +6354,18 @@ static PyTypeObject BakedVec3List_Type = {
     .tp_doc = PyDoc_STR("BakedVec3List"),
     .tp_basicsize = sizeof(BakedVec3List),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &BakedVec3List_Sequence,
+    .tp_dealloc = (destructor)&BakedVec3List_dealloc,
+    .tp_traverse = (traverseproc)&BakedVec3List_traverse,
+    .tp_clear = (inquiry)&BakedVec3List_clear,
 };
 
 static PyObject *BakedVec3List_from(ufbx_baked_vec3_list list, Context *ctx) {
     BakedVec3List *obj = (BakedVec3List*)PyObject_CallObject((PyObject*)&BakedVec3List_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -4877,12 +6373,11 @@ static PyObject *BakedVec3List_from(ufbx_baked_vec3_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_baked_quat_list data;
 } BakedQuatList;
 
-static PyObject *BakedQuatList_len(BakedQuatList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t BakedQuatList_len(BakedQuatList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *BakedQuatList_item(BakedQuatList *self, Py_ssize_t index) {
@@ -4893,6 +6388,22 @@ static PyObject *BakedQuatList_item(BakedQuatList *self, Py_ssize_t index) {
         return NULL;
     }
     return BakedQuat_from(&self->data.data[index], self->ctx);
+}
+
+static int BakedQuatList_traverse(BakedQuatList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int BakedQuatList_clear(BakedQuatList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void BakedQuatList_dealloc(BakedQuatList *self) {
+    PyObject_GC_UnTrack(self);
+    BakedQuatList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods BakedQuatList_Sequence = {
@@ -4906,16 +6417,18 @@ static PyTypeObject BakedQuatList_Type = {
     .tp_doc = PyDoc_STR("BakedQuatList"),
     .tp_basicsize = sizeof(BakedQuatList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &BakedQuatList_Sequence,
+    .tp_dealloc = (destructor)&BakedQuatList_dealloc,
+    .tp_traverse = (traverseproc)&BakedQuatList_traverse,
+    .tp_clear = (inquiry)&BakedQuatList_clear,
 };
 
 static PyObject *BakedQuatList_from(ufbx_baked_quat_list list, Context *ctx) {
     BakedQuatList *obj = (BakedQuatList*)PyObject_CallObject((PyObject*)&BakedQuatList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -4923,12 +6436,11 @@ static PyObject *BakedQuatList_from(ufbx_baked_quat_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_baked_node_list data;
 } BakedNodeList;
 
-static PyObject *BakedNodeList_len(BakedNodeList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t BakedNodeList_len(BakedNodeList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *BakedNodeList_item(BakedNodeList *self, Py_ssize_t index) {
@@ -4939,6 +6451,22 @@ static PyObject *BakedNodeList_item(BakedNodeList *self, Py_ssize_t index) {
         return NULL;
     }
     return BakedNode_from(&self->data.data[index], self->ctx);
+}
+
+static int BakedNodeList_traverse(BakedNodeList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int BakedNodeList_clear(BakedNodeList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void BakedNodeList_dealloc(BakedNodeList *self) {
+    PyObject_GC_UnTrack(self);
+    BakedNodeList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods BakedNodeList_Sequence = {
@@ -4952,16 +6480,18 @@ static PyTypeObject BakedNodeList_Type = {
     .tp_doc = PyDoc_STR("BakedNodeList"),
     .tp_basicsize = sizeof(BakedNodeList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &BakedNodeList_Sequence,
+    .tp_dealloc = (destructor)&BakedNodeList_dealloc,
+    .tp_traverse = (traverseproc)&BakedNodeList_traverse,
+    .tp_clear = (inquiry)&BakedNodeList_clear,
 };
 
 static PyObject *BakedNodeList_from(ufbx_baked_node_list list, Context *ctx) {
     BakedNodeList *obj = (BakedNodeList*)PyObject_CallObject((PyObject*)&BakedNodeList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -4969,12 +6499,11 @@ static PyObject *BakedNodeList_from(ufbx_baked_node_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_baked_prop_list data;
 } BakedPropList;
 
-static PyObject *BakedPropList_len(BakedPropList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t BakedPropList_len(BakedPropList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *BakedPropList_item(BakedPropList *self, Py_ssize_t index) {
@@ -4985,6 +6514,22 @@ static PyObject *BakedPropList_item(BakedPropList *self, Py_ssize_t index) {
         return NULL;
     }
     return BakedProp_from(&self->data.data[index], self->ctx);
+}
+
+static int BakedPropList_traverse(BakedPropList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int BakedPropList_clear(BakedPropList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void BakedPropList_dealloc(BakedPropList *self) {
+    PyObject_GC_UnTrack(self);
+    BakedPropList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods BakedPropList_Sequence = {
@@ -4998,16 +6543,18 @@ static PyTypeObject BakedPropList_Type = {
     .tp_doc = PyDoc_STR("BakedPropList"),
     .tp_basicsize = sizeof(BakedPropList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &BakedPropList_Sequence,
+    .tp_dealloc = (destructor)&BakedPropList_dealloc,
+    .tp_traverse = (traverseproc)&BakedPropList_traverse,
+    .tp_clear = (inquiry)&BakedPropList_clear,
 };
 
 static PyObject *BakedPropList_from(ufbx_baked_prop_list list, Context *ctx) {
     BakedPropList *obj = (BakedPropList*)PyObject_CallObject((PyObject*)&BakedPropList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -5015,12 +6562,11 @@ static PyObject *BakedPropList_from(ufbx_baked_prop_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_baked_element_list data;
 } BakedElementList;
 
-static PyObject *BakedElementList_len(BakedElementList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t BakedElementList_len(BakedElementList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *BakedElementList_item(BakedElementList *self, Py_ssize_t index) {
@@ -5031,6 +6577,22 @@ static PyObject *BakedElementList_item(BakedElementList *self, Py_ssize_t index)
         return NULL;
     }
     return BakedElement_from(&self->data.data[index], self->ctx);
+}
+
+static int BakedElementList_traverse(BakedElementList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int BakedElementList_clear(BakedElementList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void BakedElementList_dealloc(BakedElementList *self) {
+    PyObject_GC_UnTrack(self);
+    BakedElementList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods BakedElementList_Sequence = {
@@ -5044,16 +6606,18 @@ static PyTypeObject BakedElementList_Type = {
     .tp_doc = PyDoc_STR("BakedElementList"),
     .tp_basicsize = sizeof(BakedElementList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &BakedElementList_Sequence,
+    .tp_dealloc = (destructor)&BakedElementList_dealloc,
+    .tp_traverse = (traverseproc)&BakedElementList_traverse,
+    .tp_clear = (inquiry)&BakedElementList_clear,
 };
 
 static PyObject *BakedElementList_from(ufbx_baked_element_list list, Context *ctx) {
     BakedElementList *obj = (BakedElementList*)PyObject_CallObject((PyObject*)&BakedElementList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -5061,12 +6625,11 @@ static PyObject *BakedElementList_from(ufbx_baked_element_list list, Context *ct
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_const_uint32_list data;
 } ConstUint32List;
 
-static PyObject *ConstUint32List_len(ConstUint32List *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t ConstUint32List_len(ConstUint32List *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *ConstUint32List_item(ConstUint32List *self, Py_ssize_t index) {
@@ -5077,6 +6640,22 @@ static PyObject *ConstUint32List_item(ConstUint32List *self, Py_ssize_t index) {
         return NULL;
     }
     return PyLong_FromUnsignedLong((unsigned long)self->data.data[index]);
+}
+
+static int ConstUint32List_traverse(ConstUint32List *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int ConstUint32List_clear(ConstUint32List *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void ConstUint32List_dealloc(ConstUint32List *self) {
+    PyObject_GC_UnTrack(self);
+    ConstUint32List_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods ConstUint32List_Sequence = {
@@ -5090,16 +6669,18 @@ static PyTypeObject ConstUint32List_Type = {
     .tp_doc = PyDoc_STR("ConstUint32List"),
     .tp_basicsize = sizeof(ConstUint32List),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &ConstUint32List_Sequence,
+    .tp_dealloc = (destructor)&ConstUint32List_dealloc,
+    .tp_traverse = (traverseproc)&ConstUint32List_traverse,
+    .tp_clear = (inquiry)&ConstUint32List_clear,
 };
 
 static PyObject *ConstUint32List_from(ufbx_const_uint32_list list, Context *ctx) {
     ConstUint32List *obj = (ConstUint32List*)PyObject_CallObject((PyObject*)&ConstUint32List_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -5107,12 +6688,11 @@ static PyObject *ConstUint32List_from(ufbx_const_uint32_list list, Context *ctx)
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_const_real_list data;
 } ConstRealList;
 
-static PyObject *ConstRealList_len(ConstRealList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t ConstRealList_len(ConstRealList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *ConstRealList_item(ConstRealList *self, Py_ssize_t index) {
@@ -5123,6 +6703,22 @@ static PyObject *ConstRealList_item(ConstRealList *self, Py_ssize_t index) {
         return NULL;
     }
     return PyFloat_FromDouble(self->data.data[index]);
+}
+
+static int ConstRealList_traverse(ConstRealList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int ConstRealList_clear(ConstRealList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void ConstRealList_dealloc(ConstRealList *self) {
+    PyObject_GC_UnTrack(self);
+    ConstRealList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods ConstRealList_Sequence = {
@@ -5136,16 +6732,18 @@ static PyTypeObject ConstRealList_Type = {
     .tp_doc = PyDoc_STR("ConstRealList"),
     .tp_basicsize = sizeof(ConstRealList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &ConstRealList_Sequence,
+    .tp_dealloc = (destructor)&ConstRealList_dealloc,
+    .tp_traverse = (traverseproc)&ConstRealList_traverse,
+    .tp_clear = (inquiry)&ConstRealList_clear,
 };
 
 static PyObject *ConstRealList_from(ufbx_const_real_list list, Context *ctx) {
     ConstRealList *obj = (ConstRealList*)PyObject_CallObject((PyObject*)&ConstRealList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -5153,12 +6751,11 @@ static PyObject *ConstRealList_from(ufbx_const_real_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_const_prop_override_desc_list data;
 } ConstPropOverrideDescList;
 
-static PyObject *ConstPropOverrideDescList_len(ConstPropOverrideDescList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t ConstPropOverrideDescList_len(ConstPropOverrideDescList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *ConstPropOverrideDescList_item(ConstPropOverrideDescList *self, Py_ssize_t index) {
@@ -5169,6 +6766,22 @@ static PyObject *ConstPropOverrideDescList_item(ConstPropOverrideDescList *self,
         return NULL;
     }
     return to_pyobject_todo("ufbx_prop_override_desc");
+}
+
+static int ConstPropOverrideDescList_traverse(ConstPropOverrideDescList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int ConstPropOverrideDescList_clear(ConstPropOverrideDescList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void ConstPropOverrideDescList_dealloc(ConstPropOverrideDescList *self) {
+    PyObject_GC_UnTrack(self);
+    ConstPropOverrideDescList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods ConstPropOverrideDescList_Sequence = {
@@ -5182,16 +6795,18 @@ static PyTypeObject ConstPropOverrideDescList_Type = {
     .tp_doc = PyDoc_STR("ConstPropOverrideDescList"),
     .tp_basicsize = sizeof(ConstPropOverrideDescList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &ConstPropOverrideDescList_Sequence,
+    .tp_dealloc = (destructor)&ConstPropOverrideDescList_dealloc,
+    .tp_traverse = (traverseproc)&ConstPropOverrideDescList_traverse,
+    .tp_clear = (inquiry)&ConstPropOverrideDescList_clear,
 };
 
 static PyObject *ConstPropOverrideDescList_from(ufbx_const_prop_override_desc_list list, Context *ctx) {
     ConstPropOverrideDescList *obj = (ConstPropOverrideDescList*)PyObject_CallObject((PyObject*)&ConstPropOverrideDescList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -5199,12 +6814,11 @@ static PyObject *ConstPropOverrideDescList_from(ufbx_const_prop_override_desc_li
 typedef struct {
     PyObject_HEAD
     Context *ctx;
-    PyObject *count;
     ufbx_const_transform_override_list data;
 } ConstTransformOverrideList;
 
-static PyObject *ConstTransformOverrideList_len(ConstTransformOverrideList *self, PyObject *key) {
-    return Py_NewRef(self->count);
+static Py_ssize_t ConstTransformOverrideList_len(ConstTransformOverrideList *self, PyObject *key) {
+    return (Py_ssize_t)self->data.count;
 }
 
 static PyObject *ConstTransformOverrideList_item(ConstTransformOverrideList *self, Py_ssize_t index) {
@@ -5215,6 +6829,22 @@ static PyObject *ConstTransformOverrideList_item(ConstTransformOverrideList *sel
         return NULL;
     }
     return TransformOverride_from(&self->data.data[index]);
+}
+
+static int ConstTransformOverrideList_traverse(ConstTransformOverrideList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int ConstTransformOverrideList_clear(ConstTransformOverrideList *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void ConstTransformOverrideList_dealloc(ConstTransformOverrideList *self) {
+    PyObject_GC_UnTrack(self);
+    ConstTransformOverrideList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PySequenceMethods ConstTransformOverrideList_Sequence = {
@@ -5228,16 +6858,18 @@ static PyTypeObject ConstTransformOverrideList_Type = {
     .tp_doc = PyDoc_STR("ConstTransformOverrideList"),
     .tp_basicsize = sizeof(ConstTransformOverrideList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
     .tp_as_sequence = &ConstTransformOverrideList_Sequence,
+    .tp_dealloc = (destructor)&ConstTransformOverrideList_dealloc,
+    .tp_traverse = (traverseproc)&ConstTransformOverrideList_traverse,
+    .tp_clear = (inquiry)&ConstTransformOverrideList_clear,
 };
 
 static PyObject *ConstTransformOverrideList_from(ufbx_const_transform_override_list list, Context *ctx) {
     ConstTransformOverrideList *obj = (ConstTransformOverrideList*)PyObject_CallObject((PyObject*)&ConstTransformOverrideList_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
 }
@@ -22379,6 +24011,7 @@ static PyObject *Panic_from(ufbx_panic *data, Context *ctx) {
 }
 
 static int to_allocator_opts(ufbx_allocator_opts *dst, PyObject *src) {
+    if (!src) return 0;
     PyObject *value;
     value = PyDict_GetItemString(src, "memory_limit");
     if (value) {
@@ -22404,10 +24037,12 @@ static int to_allocator_opts(ufbx_allocator_opts *dst, PyObject *src) {
 }
 
 static int to_open_memory_opts(ufbx_open_memory_opts *dst, PyObject *src) {
+    if (!src) return 0;
     return 0;
 }
 
 static int to_thread_opts(ufbx_thread_opts *dst, PyObject *src) {
+    if (!src) return 0;
     PyObject *value;
     value = PyDict_GetItemString(src, "num_tasks");
     if (value) {
@@ -22423,6 +24058,7 @@ static int to_thread_opts(ufbx_thread_opts *dst, PyObject *src) {
 }
 
 static int to_load_opts(ufbx_load_opts *dst, PyObject *src) {
+    if (!src) return 0;
     PyObject *value;
     value = PyDict_GetItemString(src, "ignore_geometry");
     if (value) {
@@ -22713,6 +24349,7 @@ static int to_load_opts(ufbx_load_opts *dst, PyObject *src) {
 }
 
 static int to_evaluate_opts(ufbx_evaluate_opts *dst, PyObject *src) {
+    if (!src) return 0;
     PyObject *value;
     value = PyDict_GetItemString(src, "evaluate_skinning");
     if (value) {
@@ -22738,6 +24375,7 @@ static int to_evaluate_opts(ufbx_evaluate_opts *dst, PyObject *src) {
 }
 
 static int to_prop_override_desc(ufbx_prop_override_desc *dst, PyObject *src) {
+    if (!src) return 0;
     PyObject *value;
     value = PyDict_GetItemString(src, "element_id");
     if (value) {
@@ -22758,6 +24396,7 @@ static int to_prop_override_desc(ufbx_prop_override_desc *dst, PyObject *src) {
 }
 
 static int to_anim_opts(ufbx_anim_opts *dst, PyObject *src) {
+    if (!src) return 0;
     PyObject *value;
     value = PyDict_GetItemString(src, "ignore_connections");
     if (value) {
@@ -22768,6 +24407,7 @@ static int to_anim_opts(ufbx_anim_opts *dst, PyObject *src) {
 }
 
 static int to_bake_opts(ufbx_bake_opts *dst, PyObject *src) {
+    if (!src) return 0;
     PyObject *value;
     value = PyDict_GetItemString(src, "trim_start_time");
     if (value) {
@@ -22858,6 +24498,7 @@ static int to_bake_opts(ufbx_bake_opts *dst, PyObject *src) {
 }
 
 static int to_tessellate_curve_opts(ufbx_tessellate_curve_opts *dst, PyObject *src) {
+    if (!src) return 0;
     PyObject *value;
     value = PyDict_GetItemString(src, "span_subdivision");
     if (value) {
@@ -22868,6 +24509,7 @@ static int to_tessellate_curve_opts(ufbx_tessellate_curve_opts *dst, PyObject *s
 }
 
 static int to_tessellate_surface_opts(ufbx_tessellate_surface_opts *dst, PyObject *src) {
+    if (!src) return 0;
     PyObject *value;
     value = PyDict_GetItemString(src, "span_subdivision_u");
     if (value) {
@@ -22888,6 +24530,7 @@ static int to_tessellate_surface_opts(ufbx_tessellate_surface_opts *dst, PyObjec
 }
 
 static int to_subdivide_opts(ufbx_subdivide_opts *dst, PyObject *src) {
+    if (!src) return 0;
     PyObject *value;
     value = PyDict_GetItemString(src, "boundary");
     if (value) {
@@ -22943,6 +24586,7 @@ static int to_subdivide_opts(ufbx_subdivide_opts *dst, PyObject *src) {
 }
 
 static int to_geometry_cache_opts(ufbx_geometry_cache_opts *dst, PyObject *src) {
+    if (!src) return 0;
     PyObject *value;
     value = PyDict_GetItemString(src, "frames_per_second");
     if (value) {
@@ -22968,6 +24612,7 @@ static int to_geometry_cache_opts(ufbx_geometry_cache_opts *dst, PyObject *src) 
 }
 
 static int to_geometry_cache_data_opts(ufbx_geometry_cache_data_opts *dst, PyObject *src) {
+    if (!src) return 0;
     PyObject *value;
     value = PyDict_GetItemString(src, "additive");
     if (value) {
@@ -24697,6 +26342,7 @@ static EnumType enum_types[] = {
 };
 
 static ErrorType error_types[] = {
+    { NULL },
     { "ufbx.UnknownError", "UnknownError" },
     { "ufbx.FileNotFoundError", "FileNotFoundError" },
     { "ufbx.EmptyFileError", "EmptyFileError" },

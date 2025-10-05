@@ -495,7 +495,6 @@ def emit_list(ps: PythonStruct):
         typedef struct {{
             PyObject_HEAD
             Context *ctx;
-            PyObject *count;
             {ps.ir.name} data;
         }} {name};
     """)
@@ -503,8 +502,8 @@ def emit_list(ps: PythonStruct):
     # Mapping
     emit()
     emit_lines(f"""
-        static PyObject *{name}_len({name} *self, PyObject *key) {{
-            return Py_NewRef(self->count);
+        static Py_ssize_t {name}_len({name} *self, PyObject *key) {{
+            return (Py_ssize_t)self->data.count;
         }}
     """)
 
@@ -524,6 +523,34 @@ def emit_list(ps: PythonStruct):
         }}
     """)
 
+    # Traverse
+    emit()
+    emit_lines(f"""
+        static int {ps.name}_traverse({ps.name} *self, visitproc visit, void *arg) {{
+            Py_VISIT(self->ctx);
+            return 0;
+        }}
+    """)
+
+    # Clear
+    emit()
+    emit_lines(f"""
+        static int {ps.name}_clear({ps.name} *self) {{
+            Py_CLEAR(self->ctx);
+            return 0;
+        }}
+    """)
+
+    # Dealloc
+    emit()
+    emit_lines(f"""
+        void {ps.name}_dealloc({ps.name} *self) {{
+            PyObject_GC_UnTrack(self);
+            {ps.name}_clear(self);
+            Py_TYPE(self)->tp_free((PyObject *) self);
+        }}
+    """)
+
     # Type declaration
     emit()
     emit_lines(f"""
@@ -538,9 +565,12 @@ def emit_list(ps: PythonStruct):
         .tp_doc = PyDoc_STR("{ps.name}"),
         .tp_basicsize = sizeof({ps.name}),
         .tp_itemsize = 0,
-        .tp_flags = Py_TPFLAGS_DEFAULT,
+        .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
         .tp_new = PyType_GenericNew,
         .tp_as_sequence = &{ps.name}_Sequence,
+        .tp_dealloc = (destructor)&{ps.name}_dealloc,
+        .tp_traverse = (traverseproc)&{ps.name}_traverse,
+        .tp_clear = (inquiry)&{ps.name}_clear,
     }};
     """)
 
@@ -551,7 +581,6 @@ def emit_list(ps: PythonStruct):
         {ps.name} *obj = ({ps.name}*)PyObject_CallObject((PyObject*)&{ps.name}_Type, NULL);
         if (!obj) return NULL;
         obj->ctx = (Context*)Py_NewRef(ctx);
-        obj->count = PyLong_FromSize_t(list.count);
         obj->data = list;
         return (PyObject*)obj;
     }}
@@ -793,6 +822,10 @@ def emit_input_struct(ps: PythonStruct):
     emit()
     emit(f"static int to_{ps.ir.short_name}({ps.ir.name} *dst, PyObject *src) {{")
     indent()
+
+    emit_lines(f"""
+        if (!src) return 0;
+    """)
 
     has_any = any(from_pyobject(g_file.types[field.ir.type], "value") for field in ps.fields)
 
@@ -1048,6 +1081,7 @@ def emit_module_types():
     indent()
     for val_key in err_enum.values:
         if val_key == "UFBX_ERROR_NONE":
+            emit("{ NULL },")
             continue
         value = g_file.enum_values[val_key]
         name = ir.to_pascal(value.short_name)
@@ -1085,6 +1119,7 @@ def emit_module_types():
 def emit_pyi_prefix():
     emit_lines(f"""
         from typing import Any, Union, Iterator, Tuple, NamedTuple, Optional, TypedDict
+        from typing_extensions import Unpack
         from enum import IntEnum, IntFlag
     """)
 
@@ -1269,7 +1304,7 @@ def emit_pyi_func(pf: PythonFunc):
             yield f"{name}: {arg.typ}"
         if pf.input_type:
             ps = py_structs[pf.input_type]
-            yield f"**kwargs: {ps.name}"
+            yield f"**kwargs: Unpack[{ps.name}]"
 
     ret_pt = None
     if pf.ir.return_type != "void":
