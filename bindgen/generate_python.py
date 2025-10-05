@@ -3,7 +3,8 @@ import argparse
 import ufbx_ir as ir
 import json
 import re
-from collections import namedtuple
+from dataclasses import dataclass
+from typing import Optional
 
 g_file: ir.File = None
 g_outfile = None
@@ -12,8 +13,21 @@ g_indent = 0
 py_types: dict[str, "PythonType"] = { }
 py_structs: dict[str, "PythonStruct"] = { }
 py_enums: dict[str, "PythonEnum"] = { }
+py_funcs: dict[str, "PythonFunc"] = { }
 
 module_types = []
+module_funcs = []
+
+@dataclass
+class PyhtonArg:
+    name: str
+    typ: str
+    fmt: str
+    ptr: str
+    arg: str
+    vars: str
+    ctx: Optional[str] = None
+    post: Optional[str] = None
 
 def emit(line=""):
     global g_indent
@@ -33,6 +47,14 @@ def unindent(delta=1):
 
 def get_struct_python_name(st: ir.Struct):
     name = ir.to_pascal(st.short_name)
+    return name
+
+def get_func_name(fn: ir.Function):
+    name = fn.short_name
+    if fn.is_catch:
+        name = name.replace("catch_", "")
+    if fn.is_len:
+        name = name[:-4]
     return name
 
 def emit_lines(extra: str):
@@ -139,6 +161,10 @@ class PythonEnum:
             pv = PythonEnumValue(value)
             self.values.append(pv)
 
+class PythonFunc:
+    def __init__(self, ir_func: ir.Function):
+        self.ir = ir_func
+        self.name = get_func_name(self.ir)
 
 primitive_types = {
     "void": "None",
@@ -197,6 +223,14 @@ pyobject_manual = {
     "ufbx_blob": lambda v: f"Blob_from({v})",
 }
 
+return_manual = {
+    "ufbx_scene*": lambda v: f"Scene_create({v})",
+}
+
+unsupported_funcs = {
+    "ufbx_inflate",
+}
+
 def cbool(b):
     return "true" if b else "false"
 
@@ -229,6 +263,11 @@ def to_pyobject(irt: ir.Type, expr: str, ctx: str):
         return f"PyObject_CallFunction({pe.name}_Enum, \"i\", (int){expr})"
 
     return f"to_pyobject_todo(\"{irt.key}\")"
+
+def emit_error_forward():
+    err_enum = g_file.enums["ufbx_error_type"]
+    emit()
+    emit(f"static PyObject *error_type_objs[{len(err_enum.values)}];")
 
 def emit_getter(ps: PythonStruct, pf: PythonField):
     emit()
@@ -498,6 +537,155 @@ def emit_element():
     unindent()
     emit("}")
 
+class FunctionArgNotImplemented(NotImplementedError):
+    pass
+
+def func_arg(arg: ir.Argument) -> Optional[PyhtonArg]:
+    name = arg.name
+    if arg.kind == "stringPointer":
+        return PyhtonArg(name, "str", "s#", f"&{name}, &{name}_len", f"{name}, (size_t){name}_len", f"""
+            const char *{name};
+            Py_ssize_t {name}_len;
+        """)
+    elif arg.kind == "stringLength":
+        pass
+    elif arg.kind == "arrayPointer":
+        # TODO
+        raise FunctionArgNotImplemented()
+    elif arg.kind == "arrayLength":
+        pass
+    elif arg.kind == "blobPointer":
+        return PyhtonArg(name, "bytes", "z#", f"&{name}, &{name}_len", f"{name}, (size_t){name}_len", f"""
+            const char *{name};
+            Py_ssize_t {name}_len;
+        """)
+    elif arg.kind == "blobSize":
+        pass
+    elif arg.kind == "error":
+        # TODO
+        return PyhtonArg("", "", "", "", f"&error", f"""
+            ufbx_error error;
+        """, post=f"""
+            if (error.type != UFBX_ERROR_NONE) {{
+                return UfbxError_raise(&error);
+            }}
+        """)
+    elif arg.kind == "panic":
+        pass
+    else:
+        arg_type = g_file.types[arg.type]
+        if arg_type.kind == "pointer":
+            inner_type = g_file.types[arg_type.inner]
+            if inner_type.kind == "struct":
+                ps = py_structs[inner_type.key]
+                if ps.ir.is_element or ps.name == "ufbx_element" or ps.is_emitted:
+                    return PyhtonArg(name, ps.name, "O!", f"&{ps.name}_Type, &{name}", f"{name}->data", f"""
+                        {ps.name} *{name};
+                    """, ctx=f"{name}->ctx")
+                elif ps.ir.is_input:
+                    # TODO
+                    return PyhtonArg(name, "", "", "", f"&{name}", f"""
+                            {ps.ir.name} {name} = {{ 0 }};
+                        """)
+
+        raise FunctionArgNotImplemented()
+
+def emit_func(pf: PythonFunc):
+    if pf.ir.is_inline: return
+    if pf.ir.is_ffi: return
+    if pf.ir.catch_name: return
+    if pf.ir.len_name: return
+    if pf.ir.kind in ("retain", "free"): return
+    if pf.ir.name in unsupported_funcs: return
+
+    try:
+        args = [func_arg(arg) for arg in pf.ir.arguments]
+    except FunctionArgNotImplemented:
+        return
+    args = [arg for arg in args if arg]
+
+    module_funcs.append(pf)
+
+    ctx = None
+    for arg in args:
+        if arg.ctx:
+            ctx = arg.ctx
+            break
+
+    emit()
+    emit(f"static PyObject *mod_{pf.name}(PyObject *self, PyObject *args) {{")
+    indent()
+
+    fmt = ""
+    ptr_list = []
+    arg_list = []
+    for arg in args:
+        emit_lines(arg.vars)
+        fmt += arg.fmt
+        ptr_list += [a.strip() for a in arg.ptr.split(",") if a.strip()]
+        arg_list += [a.strip() for a in arg.arg.split(",") if a.strip()]
+
+    if fmt:
+        ptr_str = ", ".join(ptr_list)
+        emit_lines(f"""
+            if (!PyArg_ParseTuple(args, \"{fmt}\", {ptr_str})) {{
+                return NULL;
+            }}
+        """)
+    else:
+        emit_lines(f"""
+            if (!PyArg_ParseTuple(args, \"\")) {{
+                return NULL;
+            }}
+        """)
+
+    if ctx:
+        emit_lines(f"""
+            if (!{ctx}->ok) {{
+                return Context_error({ctx});
+            }}
+        """)
+
+    ret_pt = None
+    arg_str = ", ".join(arg_list)
+    if pf.ir.return_type != "void":
+        ret_pt = py_types[pf.ir.return_type]
+        name = ret_pt.ir.key
+        emit(f"{name} ret = {pf.ir.name}({arg_str});")
+    else:
+        emit(f"{pf.ir.name}({arg_str});")
+
+    for arg in args:
+        if arg.post:
+            emit_lines(arg.post)
+
+    if pf.ir.nullable_return:
+        emit_lines(f"""
+            if (!ret) {{
+                return Py_None;
+            }}
+        """)
+
+    if ret_pt:
+        manual = return_manual.get(ret_pt.ir.key)
+        if manual:
+            ret_ex = manual("ret")
+            emit_lines(f"""
+                return {ret_ex};
+            """)
+        else:
+            ret_ex = to_pyobject(ret_pt.ir, "ret", ctx)
+            emit_lines(f"""
+                return {ret_ex};
+            """)
+    else:
+        emit_lines(f"""
+            return Py_None;
+        """)
+
+    unindent()
+    emit("}")
+
 def emit_module_types():
 
     # Enums types
@@ -511,6 +699,21 @@ def emit_module_types():
     unindent()
     emit("};")
 
+    # Error types
+    err_enum = g_file.enums["ufbx_error_type"]
+    emit()
+    emit("static ErrorType error_types[] = {")
+    indent()
+    for val_key in err_enum.values:
+        if val_key == "UFBX_ERROR_NONE":
+            continue
+        value = g_file.enum_values[val_key]
+        name = ir.to_pascal(value.short_name)
+        name = f"{name}Error"
+        emit(f"{{ \"ufbx.{name}\", \"{name}\" }},")
+    unindent()
+    emit("};")
+
     # Generated types
     emit()
     emit("static ModuleType generated_types[] = {")
@@ -518,6 +721,18 @@ def emit_module_types():
 
     for name in module_types:
         emit(f"{{ &{name}_Type, \"{name}\" }},")
+
+    unindent()
+    emit("};")
+
+    # Methods
+    emit()
+    emit("static PyMethodDef mod_methods[] = {")
+    indent()
+
+    for pf in module_funcs:
+        emit(f"{{ \"{pf.name}\", &mod_{pf.name}, METH_VARARGS, NULL }},")
+    emit(f"{{ NULL }},")
 
     unindent()
     emit("};")
@@ -564,6 +779,9 @@ def main():
         for key, typ in file.types.items():
             py_types[key] = PythonType(typ)
 
+        for key, func in file.functions.items():
+            py_funcs[key] = PythonFunc(func)
+
         for pe in py_enums.values():
             emit_enum(pe)
 
@@ -571,11 +789,16 @@ def main():
         for ps in py_structs.values():
             emit_struct_forward(ps)
 
+        emit_error_forward()
+
         for ps in py_structs.values():
             emit_list(ps)
 
         for ps in py_structs.values():
             emit_struct(ps)
+
+        for pf in py_funcs.values():
+            emit_func(pf)
 
         emit_element()
 

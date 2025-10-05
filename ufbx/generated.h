@@ -799,6 +799,8 @@ static PyObject *BakedAnim_from(ufbx_baked_anim *data, Context *ctx);
 static PyObject *ThreadPoolInfo_from(ufbx_thread_pool_info *data, Context *ctx);
 static PyObject *Panic_from(ufbx_panic *data, Context *ctx);
 
+static PyObject *error_type_objs[24];
+
 typedef struct {
     PyObject_HEAD
     Context *ctx;
@@ -16684,6 +16686,1092 @@ static PyObject *Panic_from(ufbx_panic *data, Context *ctx) {
     return (PyObject*)obj;
 }
 
+static PyObject *mod_is_thread_safe(PyObject *self, PyObject *args) {
+    if (!PyArg_ParseTuple(args, "")) {
+        return NULL;
+    }
+    bool ret = ufbx_is_thread_safe();
+    return ret ? Py_True : Py_False;
+}
+
+static PyObject *mod_load_memory(PyObject *self, PyObject *args) {
+    const char *data;
+    Py_ssize_t data_len;
+    ufbx_load_opts opts = { 0 };
+    ufbx_error error;
+    if (!PyArg_ParseTuple(args, "z#", &data, &data_len)) {
+        return NULL;
+    }
+    ufbx_scene* ret = ufbx_load_memory(data, (size_t)data_len, &opts, &error);
+    if (error.type != UFBX_ERROR_NONE) {
+        return UfbxError_raise(&error);
+    }
+    return Scene_create(ret);
+}
+
+static PyObject *mod_load_file(PyObject *self, PyObject *args) {
+    const char *filename;
+    Py_ssize_t filename_len;
+    ufbx_load_opts opts = { 0 };
+    ufbx_error error;
+    if (!PyArg_ParseTuple(args, "s#", &filename, &filename_len)) {
+        return NULL;
+    }
+    ufbx_scene* ret = ufbx_load_file_len(filename, (size_t)filename_len, &opts, &error);
+    if (error.type != UFBX_ERROR_NONE) {
+        return UfbxError_raise(&error);
+    }
+    return Scene_create(ret);
+}
+
+static PyObject *mod_find_prop(PyObject *self, PyObject *args) {
+    Props *props;
+    const char *name;
+    Py_ssize_t name_len;
+    if (!PyArg_ParseTuple(args, "O!s#", &Props_Type, &props, &name, &name_len)) {
+        return NULL;
+    }
+    if (!props->ctx->ok) {
+        return Context_error(props->ctx);
+    }
+    ufbx_prop* ret = ufbx_find_prop_len(props->data, name, (size_t)name_len);
+    if (!ret) {
+        return Py_None;
+    }
+    return to_pyobject_todo("ufbx_prop*");
+}
+
+static PyObject *mod_find_node(PyObject *self, PyObject *args) {
+    Scene *scene;
+    const char *name;
+    Py_ssize_t name_len;
+    if (!PyArg_ParseTuple(args, "O!s#", &Scene_Type, &scene, &name, &name_len)) {
+        return NULL;
+    }
+    if (!scene->ctx->ok) {
+        return Context_error(scene->ctx);
+    }
+    ufbx_node* ret = ufbx_find_node_len(scene->data, name, (size_t)name_len);
+    if (!ret) {
+        return Py_None;
+    }
+    return Element_from(ret, scene->ctx);
+}
+
+static PyObject *mod_find_anim_stack(PyObject *self, PyObject *args) {
+    Scene *scene;
+    const char *name;
+    Py_ssize_t name_len;
+    if (!PyArg_ParseTuple(args, "O!s#", &Scene_Type, &scene, &name, &name_len)) {
+        return NULL;
+    }
+    if (!scene->ctx->ok) {
+        return Context_error(scene->ctx);
+    }
+    ufbx_anim_stack* ret = ufbx_find_anim_stack_len(scene->data, name, (size_t)name_len);
+    if (!ret) {
+        return Py_None;
+    }
+    return Element_from(ret, scene->ctx);
+}
+
+static PyObject *mod_find_material(PyObject *self, PyObject *args) {
+    Scene *scene;
+    const char *name;
+    Py_ssize_t name_len;
+    if (!PyArg_ParseTuple(args, "O!s#", &Scene_Type, &scene, &name, &name_len)) {
+        return NULL;
+    }
+    if (!scene->ctx->ok) {
+        return Context_error(scene->ctx);
+    }
+    ufbx_material* ret = ufbx_find_material_len(scene->data, name, (size_t)name_len);
+    if (!ret) {
+        return Py_None;
+    }
+    return Element_from(ret, scene->ctx);
+}
+
+static PyObject *mod_find_anim_prop(PyObject *self, PyObject *args) {
+    AnimLayer *layer;
+    Element *element;
+    const char *prop;
+    Py_ssize_t prop_len;
+    if (!PyArg_ParseTuple(args, "O!O!s#", &AnimLayer_Type, &layer, &Element_Type, &element, &prop, &prop_len)) {
+        return NULL;
+    }
+    if (!layer->ctx->ok) {
+        return Context_error(layer->ctx);
+    }
+    ufbx_anim_prop* ret = ufbx_find_anim_prop_len(layer->data, element->data, prop, (size_t)prop_len);
+    if (!ret) {
+        return Py_None;
+    }
+    return to_pyobject_todo("ufbx_anim_prop*");
+}
+
+static PyObject *mod_find_anim_props(PyObject *self, PyObject *args) {
+    AnimLayer *layer;
+    Element *element;
+    if (!PyArg_ParseTuple(args, "O!O!", &AnimLayer_Type, &layer, &Element_Type, &element)) {
+        return NULL;
+    }
+    if (!layer->ctx->ok) {
+        return Context_error(layer->ctx);
+    }
+    ufbx_anim_prop_list ret = ufbx_find_anim_props(layer->data, element->data);
+    return AnimPropList_from(ret, layer->ctx);
+}
+
+static PyObject *mod_get_compatible_matrix_for_normals(PyObject *self, PyObject *args) {
+    Node *node;
+    if (!PyArg_ParseTuple(args, "O!", &Node_Type, &node)) {
+        return NULL;
+    }
+    if (!node->ctx->ok) {
+        return Context_error(node->ctx);
+    }
+    ufbx_matrix ret = ufbx_get_compatible_matrix_for_normals(node->data);
+    return Matrix_from(&ret);
+}
+
+static PyObject *mod_create_anim(PyObject *self, PyObject *args) {
+    Scene *scene;
+    ufbx_anim_opts opts = { 0 };
+    ufbx_error error;
+    if (!PyArg_ParseTuple(args, "O!", &Scene_Type, &scene)) {
+        return NULL;
+    }
+    if (!scene->ctx->ok) {
+        return Context_error(scene->ctx);
+    }
+    ufbx_anim* ret = ufbx_create_anim(scene->data, &opts, &error);
+    if (error.type != UFBX_ERROR_NONE) {
+        return UfbxError_raise(&error);
+    }
+    return to_pyobject_todo("ufbx_anim*");
+}
+
+static PyObject *mod_bake_anim(PyObject *self, PyObject *args) {
+    Scene *scene;
+    Anim *anim;
+    ufbx_bake_opts opts = { 0 };
+    ufbx_error error;
+    if (!PyArg_ParseTuple(args, "O!O!", &Scene_Type, &scene, &Anim_Type, &anim)) {
+        return NULL;
+    }
+    if (!scene->ctx->ok) {
+        return Context_error(scene->ctx);
+    }
+    ufbx_baked_anim* ret = ufbx_bake_anim(scene->data, anim->data, &opts, &error);
+    if (error.type != UFBX_ERROR_NONE) {
+        return UfbxError_raise(&error);
+    }
+    return to_pyobject_todo("ufbx_baked_anim*");
+}
+
+static PyObject *mod_find_baked_node(PyObject *self, PyObject *args) {
+    BakedAnim *bake;
+    Node *node;
+    if (!PyArg_ParseTuple(args, "O!O!", &BakedAnim_Type, &bake, &Node_Type, &node)) {
+        return NULL;
+    }
+    if (!bake->ctx->ok) {
+        return Context_error(bake->ctx);
+    }
+    ufbx_baked_node* ret = ufbx_find_baked_node(bake->data, node->data);
+    if (!ret) {
+        return Py_None;
+    }
+    return to_pyobject_todo("ufbx_baked_node*");
+}
+
+static PyObject *mod_find_baked_element(PyObject *self, PyObject *args) {
+    BakedAnim *bake;
+    Element *element;
+    if (!PyArg_ParseTuple(args, "O!O!", &BakedAnim_Type, &bake, &Element_Type, &element)) {
+        return NULL;
+    }
+    if (!bake->ctx->ok) {
+        return Context_error(bake->ctx);
+    }
+    ufbx_baked_element* ret = ufbx_find_baked_element(bake->data, element->data);
+    if (!ret) {
+        return Py_None;
+    }
+    return to_pyobject_todo("ufbx_baked_element*");
+}
+
+static PyObject *mod_get_bone_pose(PyObject *self, PyObject *args) {
+    Pose *pose;
+    Node *node;
+    if (!PyArg_ParseTuple(args, "O!O!", &Pose_Type, &pose, &Node_Type, &node)) {
+        return NULL;
+    }
+    if (!pose->ctx->ok) {
+        return Context_error(pose->ctx);
+    }
+    ufbx_bone_pose* ret = ufbx_get_bone_pose(pose->data, node->data);
+    if (!ret) {
+        return Py_None;
+    }
+    return to_pyobject_todo("ufbx_bone_pose*");
+}
+
+static PyObject *mod_find_prop_texture(PyObject *self, PyObject *args) {
+    Material *material;
+    const char *name;
+    Py_ssize_t name_len;
+    if (!PyArg_ParseTuple(args, "O!s#", &Material_Type, &material, &name, &name_len)) {
+        return NULL;
+    }
+    if (!material->ctx->ok) {
+        return Context_error(material->ctx);
+    }
+    ufbx_texture* ret = ufbx_find_prop_texture_len(material->data, name, (size_t)name_len);
+    if (!ret) {
+        return Py_None;
+    }
+    return Element_from(ret, material->ctx);
+}
+
+static PyObject *mod_find_shader_prop(PyObject *self, PyObject *args) {
+    Shader *shader;
+    const char *name;
+    Py_ssize_t name_len;
+    if (!PyArg_ParseTuple(args, "O!s#", &Shader_Type, &shader, &name, &name_len)) {
+        return NULL;
+    }
+    if (!shader->ctx->ok) {
+        return Context_error(shader->ctx);
+    }
+    ufbx_string ret = ufbx_find_shader_prop_len(shader->data, name, (size_t)name_len);
+    return String_from(ret);
+}
+
+static PyObject *mod_find_shader_prop_bindings(PyObject *self, PyObject *args) {
+    Shader *shader;
+    const char *name;
+    Py_ssize_t name_len;
+    if (!PyArg_ParseTuple(args, "O!s#", &Shader_Type, &shader, &name, &name_len)) {
+        return NULL;
+    }
+    if (!shader->ctx->ok) {
+        return Context_error(shader->ctx);
+    }
+    ufbx_shader_prop_binding_list ret = ufbx_find_shader_prop_bindings_len(shader->data, name, (size_t)name_len);
+    return ShaderPropBindingList_from(ret, shader->ctx);
+}
+
+static PyObject *mod_find_shader_texture_input(PyObject *self, PyObject *args) {
+    ShaderTexture *shader;
+    const char *name;
+    Py_ssize_t name_len;
+    if (!PyArg_ParseTuple(args, "O!s#", &ShaderTexture_Type, &shader, &name, &name_len)) {
+        return NULL;
+    }
+    if (!shader->ctx->ok) {
+        return Context_error(shader->ctx);
+    }
+    ufbx_shader_texture_input* ret = ufbx_find_shader_texture_input_len(shader->data, name, (size_t)name_len);
+    if (!ret) {
+        return Py_None;
+    }
+    return to_pyobject_todo("ufbx_shader_texture_input*");
+}
+
+static PyObject *mod_tessellate_nurbs_curve(PyObject *self, PyObject *args) {
+    NurbsCurve *curve;
+    ufbx_tessellate_curve_opts opts = { 0 };
+    ufbx_error error;
+    if (!PyArg_ParseTuple(args, "O!", &NurbsCurve_Type, &curve)) {
+        return NULL;
+    }
+    if (!curve->ctx->ok) {
+        return Context_error(curve->ctx);
+    }
+    ufbx_line_curve* ret = ufbx_tessellate_nurbs_curve(curve->data, &opts, &error);
+    if (error.type != UFBX_ERROR_NONE) {
+        return UfbxError_raise(&error);
+    }
+    return Element_from(ret, curve->ctx);
+}
+
+static PyObject *mod_tessellate_nurbs_surface(PyObject *self, PyObject *args) {
+    NurbsSurface *surface;
+    ufbx_tessellate_surface_opts opts = { 0 };
+    ufbx_error error;
+    if (!PyArg_ParseTuple(args, "O!", &NurbsSurface_Type, &surface)) {
+        return NULL;
+    }
+    if (!surface->ctx->ok) {
+        return Context_error(surface->ctx);
+    }
+    ufbx_mesh* ret = ufbx_tessellate_nurbs_surface(surface->data, &opts, &error);
+    if (error.type != UFBX_ERROR_NONE) {
+        return UfbxError_raise(&error);
+    }
+    return Element_from(ret, surface->ctx);
+}
+
+static PyObject *mod_load_geometry_cache(PyObject *self, PyObject *args) {
+    const char *filename;
+    Py_ssize_t filename_len;
+    ufbx_geometry_cache_opts opts = { 0 };
+    ufbx_error error;
+    if (!PyArg_ParseTuple(args, "s#", &filename, &filename_len)) {
+        return NULL;
+    }
+    ufbx_geometry_cache* ret = ufbx_load_geometry_cache_len(filename, (size_t)filename_len, &opts, &error);
+    if (error.type != UFBX_ERROR_NONE) {
+        return UfbxError_raise(&error);
+    }
+    return to_pyobject_todo("ufbx_geometry_cache*");
+}
+
+static PyObject *mod_dom_find(PyObject *self, PyObject *args) {
+    DomNode *parent;
+    const char *name;
+    Py_ssize_t name_len;
+    if (!PyArg_ParseTuple(args, "O!s#", &DomNode_Type, &parent, &name, &name_len)) {
+        return NULL;
+    }
+    if (!parent->ctx->ok) {
+        return Context_error(parent->ctx);
+    }
+    ufbx_dom_node* ret = ufbx_dom_find_len(parent->data, name, (size_t)name_len);
+    if (!ret) {
+        return Py_None;
+    }
+    return to_pyobject_todo("ufbx_dom_node*");
+}
+
+static PyObject *mod_as_unknown(PyObject *self, PyObject *args) {
+    Element *element;
+    if (!PyArg_ParseTuple(args, "O!", &Element_Type, &element)) {
+        return NULL;
+    }
+    if (!element->ctx->ok) {
+        return Context_error(element->ctx);
+    }
+    ufbx_unknown* ret = ufbx_as_unknown(element->data);
+    if (!ret) {
+        return Py_None;
+    }
+    return Element_from(ret, element->ctx);
+}
+
+static PyObject *mod_as_node(PyObject *self, PyObject *args) {
+    Element *element;
+    if (!PyArg_ParseTuple(args, "O!", &Element_Type, &element)) {
+        return NULL;
+    }
+    if (!element->ctx->ok) {
+        return Context_error(element->ctx);
+    }
+    ufbx_node* ret = ufbx_as_node(element->data);
+    if (!ret) {
+        return Py_None;
+    }
+    return Element_from(ret, element->ctx);
+}
+
+static PyObject *mod_as_mesh(PyObject *self, PyObject *args) {
+    Element *element;
+    if (!PyArg_ParseTuple(args, "O!", &Element_Type, &element)) {
+        return NULL;
+    }
+    if (!element->ctx->ok) {
+        return Context_error(element->ctx);
+    }
+    ufbx_mesh* ret = ufbx_as_mesh(element->data);
+    if (!ret) {
+        return Py_None;
+    }
+    return Element_from(ret, element->ctx);
+}
+
+static PyObject *mod_as_light(PyObject *self, PyObject *args) {
+    Element *element;
+    if (!PyArg_ParseTuple(args, "O!", &Element_Type, &element)) {
+        return NULL;
+    }
+    if (!element->ctx->ok) {
+        return Context_error(element->ctx);
+    }
+    ufbx_light* ret = ufbx_as_light(element->data);
+    if (!ret) {
+        return Py_None;
+    }
+    return Element_from(ret, element->ctx);
+}
+
+static PyObject *mod_as_camera(PyObject *self, PyObject *args) {
+    Element *element;
+    if (!PyArg_ParseTuple(args, "O!", &Element_Type, &element)) {
+        return NULL;
+    }
+    if (!element->ctx->ok) {
+        return Context_error(element->ctx);
+    }
+    ufbx_camera* ret = ufbx_as_camera(element->data);
+    if (!ret) {
+        return Py_None;
+    }
+    return Element_from(ret, element->ctx);
+}
+
+static PyObject *mod_as_bone(PyObject *self, PyObject *args) {
+    Element *element;
+    if (!PyArg_ParseTuple(args, "O!", &Element_Type, &element)) {
+        return NULL;
+    }
+    if (!element->ctx->ok) {
+        return Context_error(element->ctx);
+    }
+    ufbx_bone* ret = ufbx_as_bone(element->data);
+    if (!ret) {
+        return Py_None;
+    }
+    return Element_from(ret, element->ctx);
+}
+
+static PyObject *mod_as_empty(PyObject *self, PyObject *args) {
+    Element *element;
+    if (!PyArg_ParseTuple(args, "O!", &Element_Type, &element)) {
+        return NULL;
+    }
+    if (!element->ctx->ok) {
+        return Context_error(element->ctx);
+    }
+    ufbx_empty* ret = ufbx_as_empty(element->data);
+    if (!ret) {
+        return Py_None;
+    }
+    return Element_from(ret, element->ctx);
+}
+
+static PyObject *mod_as_line_curve(PyObject *self, PyObject *args) {
+    Element *element;
+    if (!PyArg_ParseTuple(args, "O!", &Element_Type, &element)) {
+        return NULL;
+    }
+    if (!element->ctx->ok) {
+        return Context_error(element->ctx);
+    }
+    ufbx_line_curve* ret = ufbx_as_line_curve(element->data);
+    if (!ret) {
+        return Py_None;
+    }
+    return Element_from(ret, element->ctx);
+}
+
+static PyObject *mod_as_nurbs_curve(PyObject *self, PyObject *args) {
+    Element *element;
+    if (!PyArg_ParseTuple(args, "O!", &Element_Type, &element)) {
+        return NULL;
+    }
+    if (!element->ctx->ok) {
+        return Context_error(element->ctx);
+    }
+    ufbx_nurbs_curve* ret = ufbx_as_nurbs_curve(element->data);
+    if (!ret) {
+        return Py_None;
+    }
+    return Element_from(ret, element->ctx);
+}
+
+static PyObject *mod_as_nurbs_surface(PyObject *self, PyObject *args) {
+    Element *element;
+    if (!PyArg_ParseTuple(args, "O!", &Element_Type, &element)) {
+        return NULL;
+    }
+    if (!element->ctx->ok) {
+        return Context_error(element->ctx);
+    }
+    ufbx_nurbs_surface* ret = ufbx_as_nurbs_surface(element->data);
+    if (!ret) {
+        return Py_None;
+    }
+    return Element_from(ret, element->ctx);
+}
+
+static PyObject *mod_as_nurbs_trim_surface(PyObject *self, PyObject *args) {
+    Element *element;
+    if (!PyArg_ParseTuple(args, "O!", &Element_Type, &element)) {
+        return NULL;
+    }
+    if (!element->ctx->ok) {
+        return Context_error(element->ctx);
+    }
+    ufbx_nurbs_trim_surface* ret = ufbx_as_nurbs_trim_surface(element->data);
+    if (!ret) {
+        return Py_None;
+    }
+    return Element_from(ret, element->ctx);
+}
+
+static PyObject *mod_as_nurbs_trim_boundary(PyObject *self, PyObject *args) {
+    Element *element;
+    if (!PyArg_ParseTuple(args, "O!", &Element_Type, &element)) {
+        return NULL;
+    }
+    if (!element->ctx->ok) {
+        return Context_error(element->ctx);
+    }
+    ufbx_nurbs_trim_boundary* ret = ufbx_as_nurbs_trim_boundary(element->data);
+    if (!ret) {
+        return Py_None;
+    }
+    return Element_from(ret, element->ctx);
+}
+
+static PyObject *mod_as_procedural_geometry(PyObject *self, PyObject *args) {
+    Element *element;
+    if (!PyArg_ParseTuple(args, "O!", &Element_Type, &element)) {
+        return NULL;
+    }
+    if (!element->ctx->ok) {
+        return Context_error(element->ctx);
+    }
+    ufbx_procedural_geometry* ret = ufbx_as_procedural_geometry(element->data);
+    if (!ret) {
+        return Py_None;
+    }
+    return Element_from(ret, element->ctx);
+}
+
+static PyObject *mod_as_stereo_camera(PyObject *self, PyObject *args) {
+    Element *element;
+    if (!PyArg_ParseTuple(args, "O!", &Element_Type, &element)) {
+        return NULL;
+    }
+    if (!element->ctx->ok) {
+        return Context_error(element->ctx);
+    }
+    ufbx_stereo_camera* ret = ufbx_as_stereo_camera(element->data);
+    if (!ret) {
+        return Py_None;
+    }
+    return Element_from(ret, element->ctx);
+}
+
+static PyObject *mod_as_camera_switcher(PyObject *self, PyObject *args) {
+    Element *element;
+    if (!PyArg_ParseTuple(args, "O!", &Element_Type, &element)) {
+        return NULL;
+    }
+    if (!element->ctx->ok) {
+        return Context_error(element->ctx);
+    }
+    ufbx_camera_switcher* ret = ufbx_as_camera_switcher(element->data);
+    if (!ret) {
+        return Py_None;
+    }
+    return Element_from(ret, element->ctx);
+}
+
+static PyObject *mod_as_marker(PyObject *self, PyObject *args) {
+    Element *element;
+    if (!PyArg_ParseTuple(args, "O!", &Element_Type, &element)) {
+        return NULL;
+    }
+    if (!element->ctx->ok) {
+        return Context_error(element->ctx);
+    }
+    ufbx_marker* ret = ufbx_as_marker(element->data);
+    if (!ret) {
+        return Py_None;
+    }
+    return Element_from(ret, element->ctx);
+}
+
+static PyObject *mod_as_lod_group(PyObject *self, PyObject *args) {
+    Element *element;
+    if (!PyArg_ParseTuple(args, "O!", &Element_Type, &element)) {
+        return NULL;
+    }
+    if (!element->ctx->ok) {
+        return Context_error(element->ctx);
+    }
+    ufbx_lod_group* ret = ufbx_as_lod_group(element->data);
+    if (!ret) {
+        return Py_None;
+    }
+    return Element_from(ret, element->ctx);
+}
+
+static PyObject *mod_as_skin_deformer(PyObject *self, PyObject *args) {
+    Element *element;
+    if (!PyArg_ParseTuple(args, "O!", &Element_Type, &element)) {
+        return NULL;
+    }
+    if (!element->ctx->ok) {
+        return Context_error(element->ctx);
+    }
+    ufbx_skin_deformer* ret = ufbx_as_skin_deformer(element->data);
+    if (!ret) {
+        return Py_None;
+    }
+    return Element_from(ret, element->ctx);
+}
+
+static PyObject *mod_as_skin_cluster(PyObject *self, PyObject *args) {
+    Element *element;
+    if (!PyArg_ParseTuple(args, "O!", &Element_Type, &element)) {
+        return NULL;
+    }
+    if (!element->ctx->ok) {
+        return Context_error(element->ctx);
+    }
+    ufbx_skin_cluster* ret = ufbx_as_skin_cluster(element->data);
+    if (!ret) {
+        return Py_None;
+    }
+    return Element_from(ret, element->ctx);
+}
+
+static PyObject *mod_as_blend_deformer(PyObject *self, PyObject *args) {
+    Element *element;
+    if (!PyArg_ParseTuple(args, "O!", &Element_Type, &element)) {
+        return NULL;
+    }
+    if (!element->ctx->ok) {
+        return Context_error(element->ctx);
+    }
+    ufbx_blend_deformer* ret = ufbx_as_blend_deformer(element->data);
+    if (!ret) {
+        return Py_None;
+    }
+    return Element_from(ret, element->ctx);
+}
+
+static PyObject *mod_as_blend_channel(PyObject *self, PyObject *args) {
+    Element *element;
+    if (!PyArg_ParseTuple(args, "O!", &Element_Type, &element)) {
+        return NULL;
+    }
+    if (!element->ctx->ok) {
+        return Context_error(element->ctx);
+    }
+    ufbx_blend_channel* ret = ufbx_as_blend_channel(element->data);
+    if (!ret) {
+        return Py_None;
+    }
+    return Element_from(ret, element->ctx);
+}
+
+static PyObject *mod_as_blend_shape(PyObject *self, PyObject *args) {
+    Element *element;
+    if (!PyArg_ParseTuple(args, "O!", &Element_Type, &element)) {
+        return NULL;
+    }
+    if (!element->ctx->ok) {
+        return Context_error(element->ctx);
+    }
+    ufbx_blend_shape* ret = ufbx_as_blend_shape(element->data);
+    if (!ret) {
+        return Py_None;
+    }
+    return Element_from(ret, element->ctx);
+}
+
+static PyObject *mod_as_cache_deformer(PyObject *self, PyObject *args) {
+    Element *element;
+    if (!PyArg_ParseTuple(args, "O!", &Element_Type, &element)) {
+        return NULL;
+    }
+    if (!element->ctx->ok) {
+        return Context_error(element->ctx);
+    }
+    ufbx_cache_deformer* ret = ufbx_as_cache_deformer(element->data);
+    if (!ret) {
+        return Py_None;
+    }
+    return Element_from(ret, element->ctx);
+}
+
+static PyObject *mod_as_cache_file(PyObject *self, PyObject *args) {
+    Element *element;
+    if (!PyArg_ParseTuple(args, "O!", &Element_Type, &element)) {
+        return NULL;
+    }
+    if (!element->ctx->ok) {
+        return Context_error(element->ctx);
+    }
+    ufbx_cache_file* ret = ufbx_as_cache_file(element->data);
+    if (!ret) {
+        return Py_None;
+    }
+    return Element_from(ret, element->ctx);
+}
+
+static PyObject *mod_as_material(PyObject *self, PyObject *args) {
+    Element *element;
+    if (!PyArg_ParseTuple(args, "O!", &Element_Type, &element)) {
+        return NULL;
+    }
+    if (!element->ctx->ok) {
+        return Context_error(element->ctx);
+    }
+    ufbx_material* ret = ufbx_as_material(element->data);
+    if (!ret) {
+        return Py_None;
+    }
+    return Element_from(ret, element->ctx);
+}
+
+static PyObject *mod_as_texture(PyObject *self, PyObject *args) {
+    Element *element;
+    if (!PyArg_ParseTuple(args, "O!", &Element_Type, &element)) {
+        return NULL;
+    }
+    if (!element->ctx->ok) {
+        return Context_error(element->ctx);
+    }
+    ufbx_texture* ret = ufbx_as_texture(element->data);
+    if (!ret) {
+        return Py_None;
+    }
+    return Element_from(ret, element->ctx);
+}
+
+static PyObject *mod_as_video(PyObject *self, PyObject *args) {
+    Element *element;
+    if (!PyArg_ParseTuple(args, "O!", &Element_Type, &element)) {
+        return NULL;
+    }
+    if (!element->ctx->ok) {
+        return Context_error(element->ctx);
+    }
+    ufbx_video* ret = ufbx_as_video(element->data);
+    if (!ret) {
+        return Py_None;
+    }
+    return Element_from(ret, element->ctx);
+}
+
+static PyObject *mod_as_shader(PyObject *self, PyObject *args) {
+    Element *element;
+    if (!PyArg_ParseTuple(args, "O!", &Element_Type, &element)) {
+        return NULL;
+    }
+    if (!element->ctx->ok) {
+        return Context_error(element->ctx);
+    }
+    ufbx_shader* ret = ufbx_as_shader(element->data);
+    if (!ret) {
+        return Py_None;
+    }
+    return Element_from(ret, element->ctx);
+}
+
+static PyObject *mod_as_shader_binding(PyObject *self, PyObject *args) {
+    Element *element;
+    if (!PyArg_ParseTuple(args, "O!", &Element_Type, &element)) {
+        return NULL;
+    }
+    if (!element->ctx->ok) {
+        return Context_error(element->ctx);
+    }
+    ufbx_shader_binding* ret = ufbx_as_shader_binding(element->data);
+    if (!ret) {
+        return Py_None;
+    }
+    return Element_from(ret, element->ctx);
+}
+
+static PyObject *mod_as_anim_stack(PyObject *self, PyObject *args) {
+    Element *element;
+    if (!PyArg_ParseTuple(args, "O!", &Element_Type, &element)) {
+        return NULL;
+    }
+    if (!element->ctx->ok) {
+        return Context_error(element->ctx);
+    }
+    ufbx_anim_stack* ret = ufbx_as_anim_stack(element->data);
+    if (!ret) {
+        return Py_None;
+    }
+    return Element_from(ret, element->ctx);
+}
+
+static PyObject *mod_as_anim_layer(PyObject *self, PyObject *args) {
+    Element *element;
+    if (!PyArg_ParseTuple(args, "O!", &Element_Type, &element)) {
+        return NULL;
+    }
+    if (!element->ctx->ok) {
+        return Context_error(element->ctx);
+    }
+    ufbx_anim_layer* ret = ufbx_as_anim_layer(element->data);
+    if (!ret) {
+        return Py_None;
+    }
+    return Element_from(ret, element->ctx);
+}
+
+static PyObject *mod_as_anim_value(PyObject *self, PyObject *args) {
+    Element *element;
+    if (!PyArg_ParseTuple(args, "O!", &Element_Type, &element)) {
+        return NULL;
+    }
+    if (!element->ctx->ok) {
+        return Context_error(element->ctx);
+    }
+    ufbx_anim_value* ret = ufbx_as_anim_value(element->data);
+    if (!ret) {
+        return Py_None;
+    }
+    return Element_from(ret, element->ctx);
+}
+
+static PyObject *mod_as_anim_curve(PyObject *self, PyObject *args) {
+    Element *element;
+    if (!PyArg_ParseTuple(args, "O!", &Element_Type, &element)) {
+        return NULL;
+    }
+    if (!element->ctx->ok) {
+        return Context_error(element->ctx);
+    }
+    ufbx_anim_curve* ret = ufbx_as_anim_curve(element->data);
+    if (!ret) {
+        return Py_None;
+    }
+    return Element_from(ret, element->ctx);
+}
+
+static PyObject *mod_as_display_layer(PyObject *self, PyObject *args) {
+    Element *element;
+    if (!PyArg_ParseTuple(args, "O!", &Element_Type, &element)) {
+        return NULL;
+    }
+    if (!element->ctx->ok) {
+        return Context_error(element->ctx);
+    }
+    ufbx_display_layer* ret = ufbx_as_display_layer(element->data);
+    if (!ret) {
+        return Py_None;
+    }
+    return Element_from(ret, element->ctx);
+}
+
+static PyObject *mod_as_selection_set(PyObject *self, PyObject *args) {
+    Element *element;
+    if (!PyArg_ParseTuple(args, "O!", &Element_Type, &element)) {
+        return NULL;
+    }
+    if (!element->ctx->ok) {
+        return Context_error(element->ctx);
+    }
+    ufbx_selection_set* ret = ufbx_as_selection_set(element->data);
+    if (!ret) {
+        return Py_None;
+    }
+    return Element_from(ret, element->ctx);
+}
+
+static PyObject *mod_as_selection_node(PyObject *self, PyObject *args) {
+    Element *element;
+    if (!PyArg_ParseTuple(args, "O!", &Element_Type, &element)) {
+        return NULL;
+    }
+    if (!element->ctx->ok) {
+        return Context_error(element->ctx);
+    }
+    ufbx_selection_node* ret = ufbx_as_selection_node(element->data);
+    if (!ret) {
+        return Py_None;
+    }
+    return Element_from(ret, element->ctx);
+}
+
+static PyObject *mod_as_character(PyObject *self, PyObject *args) {
+    Element *element;
+    if (!PyArg_ParseTuple(args, "O!", &Element_Type, &element)) {
+        return NULL;
+    }
+    if (!element->ctx->ok) {
+        return Context_error(element->ctx);
+    }
+    ufbx_character* ret = ufbx_as_character(element->data);
+    if (!ret) {
+        return Py_None;
+    }
+    return Element_from(ret, element->ctx);
+}
+
+static PyObject *mod_as_constraint(PyObject *self, PyObject *args) {
+    Element *element;
+    if (!PyArg_ParseTuple(args, "O!", &Element_Type, &element)) {
+        return NULL;
+    }
+    if (!element->ctx->ok) {
+        return Context_error(element->ctx);
+    }
+    ufbx_constraint* ret = ufbx_as_constraint(element->data);
+    if (!ret) {
+        return Py_None;
+    }
+    return Element_from(ret, element->ctx);
+}
+
+static PyObject *mod_as_audio_layer(PyObject *self, PyObject *args) {
+    Element *element;
+    if (!PyArg_ParseTuple(args, "O!", &Element_Type, &element)) {
+        return NULL;
+    }
+    if (!element->ctx->ok) {
+        return Context_error(element->ctx);
+    }
+    ufbx_audio_layer* ret = ufbx_as_audio_layer(element->data);
+    if (!ret) {
+        return Py_None;
+    }
+    return Element_from(ret, element->ctx);
+}
+
+static PyObject *mod_as_audio_clip(PyObject *self, PyObject *args) {
+    Element *element;
+    if (!PyArg_ParseTuple(args, "O!", &Element_Type, &element)) {
+        return NULL;
+    }
+    if (!element->ctx->ok) {
+        return Context_error(element->ctx);
+    }
+    ufbx_audio_clip* ret = ufbx_as_audio_clip(element->data);
+    if (!ret) {
+        return Py_None;
+    }
+    return Element_from(ret, element->ctx);
+}
+
+static PyObject *mod_as_pose(PyObject *self, PyObject *args) {
+    Element *element;
+    if (!PyArg_ParseTuple(args, "O!", &Element_Type, &element)) {
+        return NULL;
+    }
+    if (!element->ctx->ok) {
+        return Context_error(element->ctx);
+    }
+    ufbx_pose* ret = ufbx_as_pose(element->data);
+    if (!ret) {
+        return Py_None;
+    }
+    return Element_from(ret, element->ctx);
+}
+
+static PyObject *mod_as_metadata_object(PyObject *self, PyObject *args) {
+    Element *element;
+    if (!PyArg_ParseTuple(args, "O!", &Element_Type, &element)) {
+        return NULL;
+    }
+    if (!element->ctx->ok) {
+        return Context_error(element->ctx);
+    }
+    ufbx_metadata_object* ret = ufbx_as_metadata_object(element->data);
+    if (!ret) {
+        return Py_None;
+    }
+    return Element_from(ret, element->ctx);
+}
+
+static PyObject *mod_dom_is_array(PyObject *self, PyObject *args) {
+    DomNode *node;
+    if (!PyArg_ParseTuple(args, "O!", &DomNode_Type, &node)) {
+        return NULL;
+    }
+    if (!node->ctx->ok) {
+        return Context_error(node->ctx);
+    }
+    bool ret = ufbx_dom_is_array(node->data);
+    return ret ? Py_True : Py_False;
+}
+
+static PyObject *mod_dom_array_size(PyObject *self, PyObject *args) {
+    DomNode *node;
+    if (!PyArg_ParseTuple(args, "O!", &DomNode_Type, &node)) {
+        return NULL;
+    }
+    if (!node->ctx->ok) {
+        return Context_error(node->ctx);
+    }
+    size_t ret = ufbx_dom_array_size(node->data);
+    return PyLong_FromSize_t(ret);
+}
+
+static PyObject *mod_dom_as_int32_list(PyObject *self, PyObject *args) {
+    DomNode *node;
+    if (!PyArg_ParseTuple(args, "O!", &DomNode_Type, &node)) {
+        return NULL;
+    }
+    if (!node->ctx->ok) {
+        return Context_error(node->ctx);
+    }
+    ufbx_int32_list ret = ufbx_dom_as_int32_list(node->data);
+    return Int32List_from(ret, node->ctx);
+}
+
+static PyObject *mod_dom_as_int64_list(PyObject *self, PyObject *args) {
+    DomNode *node;
+    if (!PyArg_ParseTuple(args, "O!", &DomNode_Type, &node)) {
+        return NULL;
+    }
+    if (!node->ctx->ok) {
+        return Context_error(node->ctx);
+    }
+    ufbx_int64_list ret = ufbx_dom_as_int64_list(node->data);
+    return Int64List_from(ret, node->ctx);
+}
+
+static PyObject *mod_dom_as_float_list(PyObject *self, PyObject *args) {
+    DomNode *node;
+    if (!PyArg_ParseTuple(args, "O!", &DomNode_Type, &node)) {
+        return NULL;
+    }
+    if (!node->ctx->ok) {
+        return Context_error(node->ctx);
+    }
+    ufbx_float_list ret = ufbx_dom_as_float_list(node->data);
+    return FloatList_from(ret, node->ctx);
+}
+
+static PyObject *mod_dom_as_double_list(PyObject *self, PyObject *args) {
+    DomNode *node;
+    if (!PyArg_ParseTuple(args, "O!", &DomNode_Type, &node)) {
+        return NULL;
+    }
+    if (!node->ctx->ok) {
+        return Context_error(node->ctx);
+    }
+    ufbx_double_list ret = ufbx_dom_as_double_list(node->data);
+    return DoubleList_from(ret, node->ctx);
+}
+
+static PyObject *mod_dom_as_real_list(PyObject *self, PyObject *args) {
+    DomNode *node;
+    if (!PyArg_ParseTuple(args, "O!", &DomNode_Type, &node)) {
+        return NULL;
+    }
+    if (!node->ctx->ok) {
+        return Context_error(node->ctx);
+    }
+    ufbx_real_list ret = ufbx_dom_as_real_list(node->data);
+    return RealList_from(ret, node->ctx);
+}
+
+static PyObject *mod_dom_as_blob_list(PyObject *self, PyObject *args) {
+    DomNode *node;
+    if (!PyArg_ParseTuple(args, "O!", &DomNode_Type, &node)) {
+        return NULL;
+    }
+    if (!node->ctx->ok) {
+        return Context_error(node->ctx);
+    }
+    ufbx_blob_list ret = ufbx_dom_as_blob_list(node->data);
+    return BlobList_from(ret, node->ctx);
+}
+
 static PyTypeObject *Element_typeof(ufbx_element_type type) {
     switch (type) {
         case UFBX_ELEMENT_UNKNOWN: return &Unknown_Type;
@@ -16801,6 +17889,32 @@ static EnumType enum_types[] = {
     { &EvaluateFlags_Enum, "EvaluateFlags", EvaluateFlags_values, array_count(EvaluateFlags_values), true },
     { &BakeStepHandling_Enum, "BakeStepHandling", BakeStepHandling_values, array_count(BakeStepHandling_values), false },
     { &TransformFlags_Enum, "TransformFlags", TransformFlags_values, array_count(TransformFlags_values), true },
+};
+
+static ErrorType error_types[] = {
+    { "ufbx.UnknownError", "UnknownError" },
+    { "ufbx.FileNotFoundError", "FileNotFoundError" },
+    { "ufbx.EmptyFileError", "EmptyFileError" },
+    { "ufbx.ExternalFileNotFoundError", "ExternalFileNotFoundError" },
+    { "ufbx.OutOfMemoryError", "OutOfMemoryError" },
+    { "ufbx.MemoryLimitError", "MemoryLimitError" },
+    { "ufbx.AllocationLimitError", "AllocationLimitError" },
+    { "ufbx.TruncatedFileError", "TruncatedFileError" },
+    { "ufbx.IoError", "IoError" },
+    { "ufbx.CancelledError", "CancelledError" },
+    { "ufbx.UnrecognizedFileFormatError", "UnrecognizedFileFormatError" },
+    { "ufbx.UninitializedOptionsError", "UninitializedOptionsError" },
+    { "ufbx.ZeroVertexSizeError", "ZeroVertexSizeError" },
+    { "ufbx.TruncatedVertexStreamError", "TruncatedVertexStreamError" },
+    { "ufbx.InvalidUtf8Error", "InvalidUtf8Error" },
+    { "ufbx.FeatureDisabledError", "FeatureDisabledError" },
+    { "ufbx.BadNurbsError", "BadNurbsError" },
+    { "ufbx.BadIndexError", "BadIndexError" },
+    { "ufbx.NodeDepthLimitError", "NodeDepthLimitError" },
+    { "ufbx.ThreadedAsciiParseError", "ThreadedAsciiParseError" },
+    { "ufbx.UnsafeOptionsError", "UnsafeOptionsError" },
+    { "ufbx.DuplicateOverrideError", "DuplicateOverrideError" },
+    { "ufbx.UnsupportedVersionError", "UnsupportedVersionError" },
 };
 
 static ModuleType generated_types[] = {
@@ -17008,5 +18122,82 @@ static ModuleType generated_types[] = {
     { &BakedAnim_Type, "BakedAnim" },
     { &ThreadPoolInfo_Type, "ThreadPoolInfo" },
     { &Panic_Type, "Panic" },
+};
+
+static PyMethodDef mod_methods[] = {
+    { "is_thread_safe", &mod_is_thread_safe, METH_VARARGS, NULL },
+    { "load_memory", &mod_load_memory, METH_VARARGS, NULL },
+    { "load_file", &mod_load_file, METH_VARARGS, NULL },
+    { "find_prop", &mod_find_prop, METH_VARARGS, NULL },
+    { "find_node", &mod_find_node, METH_VARARGS, NULL },
+    { "find_anim_stack", &mod_find_anim_stack, METH_VARARGS, NULL },
+    { "find_material", &mod_find_material, METH_VARARGS, NULL },
+    { "find_anim_prop", &mod_find_anim_prop, METH_VARARGS, NULL },
+    { "find_anim_props", &mod_find_anim_props, METH_VARARGS, NULL },
+    { "get_compatible_matrix_for_normals", &mod_get_compatible_matrix_for_normals, METH_VARARGS, NULL },
+    { "create_anim", &mod_create_anim, METH_VARARGS, NULL },
+    { "bake_anim", &mod_bake_anim, METH_VARARGS, NULL },
+    { "find_baked_node", &mod_find_baked_node, METH_VARARGS, NULL },
+    { "find_baked_element", &mod_find_baked_element, METH_VARARGS, NULL },
+    { "get_bone_pose", &mod_get_bone_pose, METH_VARARGS, NULL },
+    { "find_prop_texture", &mod_find_prop_texture, METH_VARARGS, NULL },
+    { "find_shader_prop", &mod_find_shader_prop, METH_VARARGS, NULL },
+    { "find_shader_prop_bindings", &mod_find_shader_prop_bindings, METH_VARARGS, NULL },
+    { "find_shader_texture_input", &mod_find_shader_texture_input, METH_VARARGS, NULL },
+    { "tessellate_nurbs_curve", &mod_tessellate_nurbs_curve, METH_VARARGS, NULL },
+    { "tessellate_nurbs_surface", &mod_tessellate_nurbs_surface, METH_VARARGS, NULL },
+    { "load_geometry_cache", &mod_load_geometry_cache, METH_VARARGS, NULL },
+    { "dom_find", &mod_dom_find, METH_VARARGS, NULL },
+    { "as_unknown", &mod_as_unknown, METH_VARARGS, NULL },
+    { "as_node", &mod_as_node, METH_VARARGS, NULL },
+    { "as_mesh", &mod_as_mesh, METH_VARARGS, NULL },
+    { "as_light", &mod_as_light, METH_VARARGS, NULL },
+    { "as_camera", &mod_as_camera, METH_VARARGS, NULL },
+    { "as_bone", &mod_as_bone, METH_VARARGS, NULL },
+    { "as_empty", &mod_as_empty, METH_VARARGS, NULL },
+    { "as_line_curve", &mod_as_line_curve, METH_VARARGS, NULL },
+    { "as_nurbs_curve", &mod_as_nurbs_curve, METH_VARARGS, NULL },
+    { "as_nurbs_surface", &mod_as_nurbs_surface, METH_VARARGS, NULL },
+    { "as_nurbs_trim_surface", &mod_as_nurbs_trim_surface, METH_VARARGS, NULL },
+    { "as_nurbs_trim_boundary", &mod_as_nurbs_trim_boundary, METH_VARARGS, NULL },
+    { "as_procedural_geometry", &mod_as_procedural_geometry, METH_VARARGS, NULL },
+    { "as_stereo_camera", &mod_as_stereo_camera, METH_VARARGS, NULL },
+    { "as_camera_switcher", &mod_as_camera_switcher, METH_VARARGS, NULL },
+    { "as_marker", &mod_as_marker, METH_VARARGS, NULL },
+    { "as_lod_group", &mod_as_lod_group, METH_VARARGS, NULL },
+    { "as_skin_deformer", &mod_as_skin_deformer, METH_VARARGS, NULL },
+    { "as_skin_cluster", &mod_as_skin_cluster, METH_VARARGS, NULL },
+    { "as_blend_deformer", &mod_as_blend_deformer, METH_VARARGS, NULL },
+    { "as_blend_channel", &mod_as_blend_channel, METH_VARARGS, NULL },
+    { "as_blend_shape", &mod_as_blend_shape, METH_VARARGS, NULL },
+    { "as_cache_deformer", &mod_as_cache_deformer, METH_VARARGS, NULL },
+    { "as_cache_file", &mod_as_cache_file, METH_VARARGS, NULL },
+    { "as_material", &mod_as_material, METH_VARARGS, NULL },
+    { "as_texture", &mod_as_texture, METH_VARARGS, NULL },
+    { "as_video", &mod_as_video, METH_VARARGS, NULL },
+    { "as_shader", &mod_as_shader, METH_VARARGS, NULL },
+    { "as_shader_binding", &mod_as_shader_binding, METH_VARARGS, NULL },
+    { "as_anim_stack", &mod_as_anim_stack, METH_VARARGS, NULL },
+    { "as_anim_layer", &mod_as_anim_layer, METH_VARARGS, NULL },
+    { "as_anim_value", &mod_as_anim_value, METH_VARARGS, NULL },
+    { "as_anim_curve", &mod_as_anim_curve, METH_VARARGS, NULL },
+    { "as_display_layer", &mod_as_display_layer, METH_VARARGS, NULL },
+    { "as_selection_set", &mod_as_selection_set, METH_VARARGS, NULL },
+    { "as_selection_node", &mod_as_selection_node, METH_VARARGS, NULL },
+    { "as_character", &mod_as_character, METH_VARARGS, NULL },
+    { "as_constraint", &mod_as_constraint, METH_VARARGS, NULL },
+    { "as_audio_layer", &mod_as_audio_layer, METH_VARARGS, NULL },
+    { "as_audio_clip", &mod_as_audio_clip, METH_VARARGS, NULL },
+    { "as_pose", &mod_as_pose, METH_VARARGS, NULL },
+    { "as_metadata_object", &mod_as_metadata_object, METH_VARARGS, NULL },
+    { "dom_is_array", &mod_dom_is_array, METH_VARARGS, NULL },
+    { "dom_array_size", &mod_dom_array_size, METH_VARARGS, NULL },
+    { "dom_as_int32_list", &mod_dom_as_int32_list, METH_VARARGS, NULL },
+    { "dom_as_int64_list", &mod_dom_as_int64_list, METH_VARARGS, NULL },
+    { "dom_as_float_list", &mod_dom_as_float_list, METH_VARARGS, NULL },
+    { "dom_as_double_list", &mod_dom_as_double_list, METH_VARARGS, NULL },
+    { "dom_as_real_list", &mod_dom_as_real_list, METH_VARARGS, NULL },
+    { "dom_as_blob_list", &mod_dom_as_blob_list, METH_VARARGS, NULL },
+    { NULL },
 };
 

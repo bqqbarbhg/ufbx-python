@@ -5,6 +5,8 @@
 
 #define array_count(arr) (sizeof(arr) / sizeof(*(arr)))
 
+static PyObject *UfbxError = NULL;
+
 static PyObject *_Py_NewRef(PyObject *obj)
 {
 	Py_XINCREF(obj);
@@ -48,8 +50,11 @@ static PyTypeObject Context_Type = {
 
 static PyObject *Element_create(ufbx_element *elem, Context *ctx);
 
+static PyObject *UfbxError_raise(ufbx_error *error);
+
 static PyObject *Context_error(Context *ctx)
 {
+	// TODO: Proper error type
 	PyErr_Format(PyExc_RuntimeError, "context freed: %U", ctx->name);
 	return NULL;
 }
@@ -146,6 +151,8 @@ static PyObject* Element_from(void *p_elem, Context *ctx)
     return obj;
 }
 
+static PyObject* Scene_create(ufbx_scene *scene);
+
 static PyObject* to_pyobject_todo(const char *type)
 {
     PyErr_Format(PyExc_NotImplementedError, "PyObject todo: %s", type);
@@ -175,6 +182,11 @@ typedef struct {
 	PyTypeObject *type;
 	const char *name;
 } ModuleType;
+
+typedef struct {
+	const char *mod_name;
+	const char *name;
+} ErrorType;
 
 static ModuleType prelude_types[] = {
 	{ &Context_Type, "Context" },
