@@ -21,6 +21,16 @@ def test_nonexistent():
         assert msg.startswith("File not found:")
         assert msg.endswith("nonexistent.fbx")
 
+def test_geometry():
+    scene = ufbx.load_file(os.path.join(root, "blender-default.fbx"))
+
+    node = ufbx.find_node(scene, "Cube")
+    assert node
+    mesh = node.mesh
+    assert mesh
+    assert len(mesh.vertices) == 8
+    assert abs(mesh.vertices[0].x - 1) <= 0.01
+
 def test_ignore_geometry():
     scene = ufbx.load_file(os.path.join(root, "blender-default.fbx"),
         ignore_geometry=True)
