@@ -25,6 +25,28 @@ static PyObject* Scene_create(ufbx_scene *scene)
     return (PyObject*)obj;
 }
 
+static PyObject* Anim_create(ufbx_anim *anim)
+{
+    Context *ctx = (Context*)PyObject_CallObject((PyObject*)&Context_Type, NULL);
+    if (!ctx) {
+        return NULL;
+    }
+
+    Anim *obj = (Anim*)PyObject_CallObject((PyObject*)&Anim_Type, NULL);
+    if (!obj) {
+        Py_DECREF(ctx);
+        return NULL;
+    }
+
+    ctx->name = PyUnicode_FromString("anim");
+    ctx->anim = anim;
+    ctx->ok = true;
+
+    obj->ctx = ctx;
+    obj->data = anim;
+    return (PyObject*)obj;
+}
+
 static PyObject *UfbxError_raise(ufbx_error *error)
 {
     PyObject *err_typ = error_type_objs[error->type];
@@ -33,6 +55,12 @@ static PyObject *UfbxError_raise(ufbx_error *error)
     } else {
         PyErr_Format(err_typ, "%s", error->description.data);
     }
+    return NULL;
+}
+
+static PyObject *Panic_raise(ufbx_panic *panic)
+{
+    PyErr_Format(PyExc_RuntimeError, "%s", panic->message);
     return NULL;
 }
 

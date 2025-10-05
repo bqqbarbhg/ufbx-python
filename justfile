@@ -1,6 +1,6 @@
 
 parse:
-    python3 bindgen/ufbx_parser.py -i src/ufbx/native/ufbx.h
+    python3 bindgen/ufbx_parser.py -i ufbx/ufbx.h
     python3 bindgen/ufbx_ir.py
 
 generate:

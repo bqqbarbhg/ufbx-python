@@ -733,6 +733,31 @@ static const EnumValue TransformFlags_values[] = {
     { UFBX_TRANSFORM_FLAG_NO_EXTRAPOLATION, "NO_EXTRAPOLATION" },
 };
 
+static PyObject *Edge_from(const ufbx_edge *v);
+static ufbx_edge Edge_to(PyObject *v);
+static PyObject *Face_from(const ufbx_face *v);
+static ufbx_face Face_to(PyObject *v);
+static PyObject *CoordinateAxes_from(const ufbx_coordinate_axes *v);
+static ufbx_coordinate_axes CoordinateAxes_to(PyObject *v);
+static PyObject *LodLevel_from(const ufbx_lod_level *v);
+static ufbx_lod_level LodLevel_to(PyObject *v);
+static PyObject *SkinVertex_from(const ufbx_skin_vertex *v);
+static ufbx_skin_vertex SkinVertex_to(PyObject *v);
+static PyObject *SkinWeight_from(const ufbx_skin_weight *v);
+static ufbx_skin_weight SkinWeight_to(PyObject *v);
+static PyObject *TransformOverride_from(const ufbx_transform_override *v);
+static ufbx_transform_override TransformOverride_to(PyObject *v);
+static PyObject *Tangent_from(const ufbx_tangent *v);
+static ufbx_tangent Tangent_to(PyObject *v);
+static PyObject *Keyframe_from(const ufbx_keyframe *v);
+static ufbx_keyframe Keyframe_to(PyObject *v);
+static PyObject *CurvePoint_from(const ufbx_curve_point *v);
+static ufbx_curve_point CurvePoint_to(PyObject *v);
+static PyObject *SurfacePoint_from(const ufbx_surface_point *v);
+static ufbx_surface_point SurfacePoint_to(PyObject *v);
+static PyObject *TopoEdge_from(const ufbx_topo_edge *v);
+static ufbx_topo_edge TopoEdge_to(PyObject *v);
+
 static PyObject *VoidList_from(ufbx_void_list *data, Context *ctx);
 static PyObject *DomValue_from(ufbx_dom_value *data, Context *ctx);
 static PyObject *DomNode_from(ufbx_dom_node *data, Context *ctx);
@@ -3625,7 +3650,7 @@ static PyObject *EdgeList_item(EdgeList *self, Py_ssize_t index) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
-    return to_pyobject_todo("ufbx_edge");
+    return Edge_from(&self->data.data[index]);
 }
 
 static PySequenceMethods EdgeList_Sequence = {
@@ -3671,7 +3696,7 @@ static PyObject *FaceList_item(FaceList *self, Py_ssize_t index) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
-    return to_pyobject_todo("ufbx_face");
+    return Face_from(&self->data.data[index]);
 }
 
 static PySequenceMethods FaceList_Sequence = {
@@ -3947,7 +3972,7 @@ static PyObject *LodLevelList_item(LodLevelList *self, Py_ssize_t index) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
-    return to_pyobject_todo("ufbx_lod_level");
+    return LodLevel_from(&self->data.data[index]);
 }
 
 static PySequenceMethods LodLevelList_Sequence = {
@@ -3993,7 +4018,7 @@ static PyObject *SkinVertexList_item(SkinVertexList *self, Py_ssize_t index) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
-    return to_pyobject_todo("ufbx_skin_vertex");
+    return SkinVertex_from(&self->data.data[index]);
 }
 
 static PySequenceMethods SkinVertexList_Sequence = {
@@ -4039,7 +4064,7 @@ static PyObject *SkinWeightList_item(SkinWeightList *self, Py_ssize_t index) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
-    return to_pyobject_todo("ufbx_skin_weight");
+    return SkinWeight_from(&self->data.data[index]);
 }
 
 static PySequenceMethods SkinWeightList_Sequence = {
@@ -4499,7 +4524,7 @@ static PyObject *TransformOverrideList_item(TransformOverrideList *self, Py_ssiz
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
-    return to_pyobject_todo("ufbx_transform_override");
+    return TransformOverride_from(&self->data.data[index]);
 }
 
 static PySequenceMethods TransformOverrideList_Sequence = {
@@ -4591,7 +4616,7 @@ static PyObject *KeyframeList_item(KeyframeList *self, Py_ssize_t index) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
-    return to_pyobject_todo("ufbx_keyframe");
+    return Keyframe_from(&self->data.data[index]);
 }
 
 static PySequenceMethods KeyframeList_Sequence = {
@@ -5189,7 +5214,7 @@ static PyObject *ConstTransformOverrideList_item(ConstTransformOverrideList *sel
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
-    return to_pyobject_todo("ufbx_transform_override");
+    return TransformOverride_from(&self->data.data[index]);
 }
 
 static PySequenceMethods ConstTransformOverrideList_Sequence = {
@@ -5215,6 +5240,236 @@ static PyObject *ConstTransformOverrideList_from(ufbx_const_transform_override_l
     obj->count = PyLong_FromSize_t(list.count);
     obj->data = list;
     return (PyObject*)obj;
+}
+
+static PyTypeObject *Edge_Type;
+
+static PyObject *Edge_from(const ufbx_edge *v) {
+    PyObject *r = PyStructSequence_New(Edge_Type);
+    if (!r) return NULL;
+    PyStructSequence_SetItem(r, 0, PyLong_FromUnsignedLong((unsigned long)v->a));
+    PyStructSequence_SetItem(r, 1, PyLong_FromUnsignedLong((unsigned long)v->b));
+    return r;
+}
+
+static ufbx_edge Edge_to(PyObject *v) {
+    ufbx_edge r;
+    r.a = (uint32_t)PyLong_AsUnsignedLong(PyStructSequence_GetItem(v, 0));
+    r.b = (uint32_t)PyLong_AsUnsignedLong(PyStructSequence_GetItem(v, 1));
+    return r;
+}
+
+static PyTypeObject *Face_Type;
+
+static PyObject *Face_from(const ufbx_face *v) {
+    PyObject *r = PyStructSequence_New(Face_Type);
+    if (!r) return NULL;
+    PyStructSequence_SetItem(r, 0, PyLong_FromUnsignedLong((unsigned long)v->index_begin));
+    PyStructSequence_SetItem(r, 1, PyLong_FromUnsignedLong((unsigned long)v->num_indices));
+    return r;
+}
+
+static ufbx_face Face_to(PyObject *v) {
+    ufbx_face r;
+    r.index_begin = (uint32_t)PyLong_AsUnsignedLong(PyStructSequence_GetItem(v, 0));
+    r.num_indices = (uint32_t)PyLong_AsUnsignedLong(PyStructSequence_GetItem(v, 1));
+    return r;
+}
+
+static PyTypeObject *CoordinateAxes_Type;
+
+static PyObject *CoordinateAxes_from(const ufbx_coordinate_axes *v) {
+    PyObject *r = PyStructSequence_New(CoordinateAxes_Type);
+    if (!r) return NULL;
+    PyStructSequence_SetItem(r, 0, PyObject_CallFunction(CoordinateAxis_Enum, "i", (int)v->right));
+    PyStructSequence_SetItem(r, 1, PyObject_CallFunction(CoordinateAxis_Enum, "i", (int)v->up));
+    PyStructSequence_SetItem(r, 2, PyObject_CallFunction(CoordinateAxis_Enum, "i", (int)v->front));
+    return r;
+}
+
+static ufbx_coordinate_axes CoordinateAxes_to(PyObject *v) {
+    ufbx_coordinate_axes r;
+    r.right = (ufbx_coordinate_axis)PyLong_AsLong(PyStructSequence_GetItem(v, 0));
+    r.up = (ufbx_coordinate_axis)PyLong_AsLong(PyStructSequence_GetItem(v, 1));
+    r.front = (ufbx_coordinate_axis)PyLong_AsLong(PyStructSequence_GetItem(v, 2));
+    return r;
+}
+
+static PyTypeObject *LodLevel_Type;
+
+static PyObject *LodLevel_from(const ufbx_lod_level *v) {
+    PyObject *r = PyStructSequence_New(LodLevel_Type);
+    if (!r) return NULL;
+    PyStructSequence_SetItem(r, 0, PyFloat_FromDouble(v->distance));
+    PyStructSequence_SetItem(r, 1, PyObject_CallFunction(LodDisplay_Enum, "i", (int)v->display));
+    return r;
+}
+
+static ufbx_lod_level LodLevel_to(PyObject *v) {
+    ufbx_lod_level r;
+    r.distance = (ufbx_real)PyFloat_AsDouble(PyStructSequence_GetItem(v, 0));
+    r.display = (ufbx_lod_display)PyLong_AsLong(PyStructSequence_GetItem(v, 1));
+    return r;
+}
+
+static PyTypeObject *SkinVertex_Type;
+
+static PyObject *SkinVertex_from(const ufbx_skin_vertex *v) {
+    PyObject *r = PyStructSequence_New(SkinVertex_Type);
+    if (!r) return NULL;
+    PyStructSequence_SetItem(r, 0, PyLong_FromUnsignedLong((unsigned long)v->weight_begin));
+    PyStructSequence_SetItem(r, 1, PyLong_FromUnsignedLong((unsigned long)v->num_weights));
+    PyStructSequence_SetItem(r, 2, PyFloat_FromDouble(v->dq_weight));
+    return r;
+}
+
+static ufbx_skin_vertex SkinVertex_to(PyObject *v) {
+    ufbx_skin_vertex r;
+    r.weight_begin = (uint32_t)PyLong_AsUnsignedLong(PyStructSequence_GetItem(v, 0));
+    r.num_weights = (uint32_t)PyLong_AsUnsignedLong(PyStructSequence_GetItem(v, 1));
+    r.dq_weight = (ufbx_real)PyFloat_AsDouble(PyStructSequence_GetItem(v, 2));
+    return r;
+}
+
+static PyTypeObject *SkinWeight_Type;
+
+static PyObject *SkinWeight_from(const ufbx_skin_weight *v) {
+    PyObject *r = PyStructSequence_New(SkinWeight_Type);
+    if (!r) return NULL;
+    PyStructSequence_SetItem(r, 0, PyLong_FromUnsignedLong((unsigned long)v->cluster_index));
+    PyStructSequence_SetItem(r, 1, PyFloat_FromDouble(v->weight));
+    return r;
+}
+
+static ufbx_skin_weight SkinWeight_to(PyObject *v) {
+    ufbx_skin_weight r;
+    r.cluster_index = (uint32_t)PyLong_AsUnsignedLong(PyStructSequence_GetItem(v, 0));
+    r.weight = (ufbx_real)PyFloat_AsDouble(PyStructSequence_GetItem(v, 1));
+    return r;
+}
+
+static PyTypeObject *TransformOverride_Type;
+
+static PyObject *TransformOverride_from(const ufbx_transform_override *v) {
+    PyObject *r = PyStructSequence_New(TransformOverride_Type);
+    if (!r) return NULL;
+    PyStructSequence_SetItem(r, 0, PyLong_FromUnsignedLong((unsigned long)v->node_id));
+    PyStructSequence_SetItem(r, 1, Transform_from(&v->transform));
+    return r;
+}
+
+static ufbx_transform_override TransformOverride_to(PyObject *v) {
+    ufbx_transform_override r;
+    r.node_id = (uint32_t)PyLong_AsUnsignedLong(PyStructSequence_GetItem(v, 0));
+    r.transform = Transform_to(PyStructSequence_GetItem(v, 1));
+    return r;
+}
+
+static PyTypeObject *Tangent_Type;
+
+static PyObject *Tangent_from(const ufbx_tangent *v) {
+    PyObject *r = PyStructSequence_New(Tangent_Type);
+    if (!r) return NULL;
+    PyStructSequence_SetItem(r, 0, PyFloat_FromDouble(v->dx));
+    PyStructSequence_SetItem(r, 1, PyFloat_FromDouble(v->dy));
+    return r;
+}
+
+static ufbx_tangent Tangent_to(PyObject *v) {
+    ufbx_tangent r;
+    r.dx = (float)PyFloat_AsDouble(PyStructSequence_GetItem(v, 0));
+    r.dy = (float)PyFloat_AsDouble(PyStructSequence_GetItem(v, 1));
+    return r;
+}
+
+static PyTypeObject *Keyframe_Type;
+
+static PyObject *Keyframe_from(const ufbx_keyframe *v) {
+    PyObject *r = PyStructSequence_New(Keyframe_Type);
+    if (!r) return NULL;
+    PyStructSequence_SetItem(r, 0, PyFloat_FromDouble(v->time));
+    PyStructSequence_SetItem(r, 1, PyFloat_FromDouble(v->value));
+    PyStructSequence_SetItem(r, 2, PyObject_CallFunction(Interpolation_Enum, "i", (int)v->interpolation));
+    PyStructSequence_SetItem(r, 3, Tangent_from(&v->left));
+    PyStructSequence_SetItem(r, 4, Tangent_from(&v->right));
+    return r;
+}
+
+static ufbx_keyframe Keyframe_to(PyObject *v) {
+    ufbx_keyframe r;
+    r.time = PyFloat_AsDouble(PyStructSequence_GetItem(v, 0));
+    r.value = (ufbx_real)PyFloat_AsDouble(PyStructSequence_GetItem(v, 1));
+    r.interpolation = (ufbx_interpolation)PyLong_AsLong(PyStructSequence_GetItem(v, 2));
+    r.left = Tangent_to(PyStructSequence_GetItem(v, 3));
+    r.right = Tangent_to(PyStructSequence_GetItem(v, 4));
+    return r;
+}
+
+static PyTypeObject *CurvePoint_Type;
+
+static PyObject *CurvePoint_from(const ufbx_curve_point *v) {
+    PyObject *r = PyStructSequence_New(CurvePoint_Type);
+    if (!r) return NULL;
+    PyStructSequence_SetItem(r, 0, Py_NewRef(v->valid ? Py_True : Py_False));
+    PyStructSequence_SetItem(r, 1, Vec3_from(&v->position));
+    PyStructSequence_SetItem(r, 2, Vec3_from(&v->derivative));
+    return r;
+}
+
+static ufbx_curve_point CurvePoint_to(PyObject *v) {
+    ufbx_curve_point r;
+    r.valid = PyObject_IsTrue(PyStructSequence_GetItem(v, 0));
+    r.position = Vec3_to(PyStructSequence_GetItem(v, 1));
+    r.derivative = Vec3_to(PyStructSequence_GetItem(v, 2));
+    return r;
+}
+
+static PyTypeObject *SurfacePoint_Type;
+
+static PyObject *SurfacePoint_from(const ufbx_surface_point *v) {
+    PyObject *r = PyStructSequence_New(SurfacePoint_Type);
+    if (!r) return NULL;
+    PyStructSequence_SetItem(r, 0, Py_NewRef(v->valid ? Py_True : Py_False));
+    PyStructSequence_SetItem(r, 1, Vec3_from(&v->position));
+    PyStructSequence_SetItem(r, 2, Vec3_from(&v->derivative_u));
+    PyStructSequence_SetItem(r, 3, Vec3_from(&v->derivative_v));
+    return r;
+}
+
+static ufbx_surface_point SurfacePoint_to(PyObject *v) {
+    ufbx_surface_point r;
+    r.valid = PyObject_IsTrue(PyStructSequence_GetItem(v, 0));
+    r.position = Vec3_to(PyStructSequence_GetItem(v, 1));
+    r.derivative_u = Vec3_to(PyStructSequence_GetItem(v, 2));
+    r.derivative_v = Vec3_to(PyStructSequence_GetItem(v, 3));
+    return r;
+}
+
+static PyTypeObject *TopoEdge_Type;
+
+static PyObject *TopoEdge_from(const ufbx_topo_edge *v) {
+    PyObject *r = PyStructSequence_New(TopoEdge_Type);
+    if (!r) return NULL;
+    PyStructSequence_SetItem(r, 0, PyLong_FromUnsignedLong((unsigned long)v->index));
+    PyStructSequence_SetItem(r, 1, PyLong_FromUnsignedLong((unsigned long)v->next));
+    PyStructSequence_SetItem(r, 2, PyLong_FromUnsignedLong((unsigned long)v->prev));
+    PyStructSequence_SetItem(r, 3, PyLong_FromUnsignedLong((unsigned long)v->twin));
+    PyStructSequence_SetItem(r, 4, PyLong_FromUnsignedLong((unsigned long)v->face));
+    PyStructSequence_SetItem(r, 5, PyLong_FromUnsignedLong((unsigned long)v->edge));
+    PyStructSequence_SetItem(r, 6, PyObject_CallFunction(TopoFlags_Enum, "i", (int)v->flags));
+    return r;
+}
+
+static ufbx_topo_edge TopoEdge_to(PyObject *v) {
+    ufbx_topo_edge r;
+    r.index = (uint32_t)PyLong_AsUnsignedLong(PyStructSequence_GetItem(v, 0));
+    r.next = (uint32_t)PyLong_AsUnsignedLong(PyStructSequence_GetItem(v, 1));
+    r.prev = (uint32_t)PyLong_AsUnsignedLong(PyStructSequence_GetItem(v, 2));
+    r.twin = (uint32_t)PyLong_AsUnsignedLong(PyStructSequence_GetItem(v, 3));
+    r.face = (uint32_t)PyLong_AsUnsignedLong(PyStructSequence_GetItem(v, 4));
+    r.edge = (uint32_t)PyLong_AsUnsignedLong(PyStructSequence_GetItem(v, 5));
+    r.flags = (ufbx_topo_flags)PyLong_AsLong(PyStructSequence_GetItem(v, 6));
+    return r;
 }
 
 #define SLOT_COUNT_VOID_LIST 2
@@ -5504,7 +5759,7 @@ static PyObject *DomNode_from(ufbx_dom_node *data, Context *ctx) {
     return (PyObject*)obj;
 }
 
-#define SLOT_COUNT_PROP 6
+#define SLOT_COUNT_PROP 7
 enum {
     SLOT_PROP__NAME,
     SLOT_PROP__TYPE,
@@ -5512,6 +5767,7 @@ enum {
     SLOT_PROP__VALUE_STR,
     SLOT_PROP__VALUE_BLOB,
     SLOT_PROP__VALUE_INT,
+    SLOT_PROP__VALUE_VEC4,
 };
 
 typedef struct {
@@ -5575,6 +5831,15 @@ static PyObject *Prop_get_value_int(Prop *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static PyObject *Prop_get_value_vec4(Prop *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_PROP__VALUE_VEC4];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = Vec4_from(&self->data->value_vec4);
+    self->slots[SLOT_PROP__VALUE_VEC4] = slot;
+    return Py_NewRef(slot);
+}
+
 static int Prop_traverse(Prop *self, visitproc visit, void *arg) {
     Py_VISIT(self->ctx);
     for (size_t i = 0; i < SLOT_COUNT_PROP; i++) {
@@ -5604,6 +5869,7 @@ static PyGetSetDef Prop_getset[] = {
     { "value_str", (getter)Prop_get_value_str, NULL, "value_str" },
     { "value_blob", (getter)Prop_get_value_blob, NULL, "value_blob" },
     { "value_int", (getter)Prop_get_value_int, NULL, "value_int" },
+    { "value_vec4", (getter)Prop_get_value_vec4, NULL, "value_vec4" },
     { NULL },
 };
 
@@ -5985,8 +6251,12 @@ static PyTypeObject Element_Type = {
     .tp_getset = Element_getset,
 };
 
-#define SLOT_COUNT_UNKNOWN 3
+#define SLOT_COUNT_UNKNOWN 7
 enum {
+    SLOT_UNKNOWN__NAME,
+    SLOT_UNKNOWN__PROPS,
+    SLOT_UNKNOWN__ELEMENT_ID,
+    SLOT_UNKNOWN__TYPED_ID,
     SLOT_UNKNOWN__TYPE,
     SLOT_UNKNOWN__SUPER_TYPE,
     SLOT_UNKNOWN__SUB_TYPE,
@@ -6003,6 +6273,42 @@ typedef struct {
     };
     PyObject *slots[SLOT_COUNT_UNKNOWN];
 } Unknown;
+
+static PyObject *Unknown_get_name(Unknown *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_UNKNOWN__NAME];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = String_from(self->data->name);
+    self->slots[SLOT_UNKNOWN__NAME] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Unknown_get_props(Unknown *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_UNKNOWN__PROPS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = Props_from(&self->data->props, self->ctx);
+    self->slots[SLOT_UNKNOWN__PROPS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Unknown_get_element_id(Unknown *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_UNKNOWN__ELEMENT_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->element_id);
+    self->slots[SLOT_UNKNOWN__ELEMENT_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Unknown_get_typed_id(Unknown *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_UNKNOWN__TYPED_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->typed_id);
+    self->slots[SLOT_UNKNOWN__TYPED_ID] = slot;
+    return Py_NewRef(slot);
+}
 
 static PyObject *Unknown_get_type(Unknown *self, void *closure) {
     PyObject *slot = self->slots[SLOT_UNKNOWN__TYPE];
@@ -6054,6 +6360,10 @@ void Unknown_dealloc(Unknown *self) {
 }
 
 static PyGetSetDef Unknown_getset[] = {
+    { "name", (getter)Unknown_get_name, NULL, "name" },
+    { "props", (getter)Unknown_get_props, NULL, "props" },
+    { "element_id", (getter)Unknown_get_element_id, NULL, "element_id" },
+    { "typed_id", (getter)Unknown_get_typed_id, NULL, "typed_id" },
     { "type", (getter)Unknown_get_type, NULL, "type" },
     { "super_type", (getter)Unknown_get_super_type, NULL, "super_type" },
     { "sub_type", (getter)Unknown_get_sub_type, NULL, "sub_type" },
@@ -6075,8 +6385,12 @@ static PyTypeObject Unknown_Type = {
     .tp_base = &Element_Type,
 };
 
-#define SLOT_COUNT_NODE 42
+#define SLOT_COUNT_NODE 46
 enum {
+    SLOT_NODE__NAME,
+    SLOT_NODE__PROPS,
+    SLOT_NODE__ELEMENT_ID,
+    SLOT_NODE__TYPED_ID,
     SLOT_NODE__PARENT,
     SLOT_NODE__CHILDREN,
     SLOT_NODE__MESH,
@@ -6132,6 +6446,42 @@ typedef struct {
     };
     PyObject *slots[SLOT_COUNT_NODE];
 } Node;
+
+static PyObject *Node_get_name(Node *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_NODE__NAME];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = String_from(self->data->name);
+    self->slots[SLOT_NODE__NAME] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Node_get_props(Node *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_NODE__PROPS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = Props_from(&self->data->props, self->ctx);
+    self->slots[SLOT_NODE__PROPS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Node_get_element_id(Node *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_NODE__ELEMENT_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->element_id);
+    self->slots[SLOT_NODE__ELEMENT_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Node_get_typed_id(Node *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_NODE__TYPED_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->typed_id);
+    self->slots[SLOT_NODE__TYPED_ID] = slot;
+    return Py_NewRef(slot);
+}
 
 static PyObject *Node_get_parent(Node *self, void *closure) {
     PyObject *slot = self->slots[SLOT_NODE__PARENT];
@@ -6534,6 +6884,10 @@ void Node_dealloc(Node *self) {
 }
 
 static PyGetSetDef Node_getset[] = {
+    { "name", (getter)Node_get_name, NULL, "name" },
+    { "props", (getter)Node_get_props, NULL, "props" },
+    { "element_id", (getter)Node_get_element_id, NULL, "element_id" },
+    { "typed_id", (getter)Node_get_typed_id, NULL, "typed_id" },
     { "parent", (getter)Node_get_parent, NULL, "parent" },
     { "children", (getter)Node_get_children, NULL, "children" },
     { "mesh", (getter)Node_get_mesh, NULL, "mesh" },
@@ -7951,8 +8305,13 @@ static PyObject *SubdivisionResult_from(ufbx_subdivision_result *data, Context *
     return (PyObject*)obj;
 }
 
-#define SLOT_COUNT_MESH 52
+#define SLOT_COUNT_MESH 57
 enum {
+    SLOT_MESH__NAME,
+    SLOT_MESH__PROPS,
+    SLOT_MESH__ELEMENT_ID,
+    SLOT_MESH__TYPED_ID,
+    SLOT_MESH__INSTANCES,
     SLOT_MESH__NUM_VERTICES,
     SLOT_MESH__NUM_INDICES,
     SLOT_MESH__NUM_FACES,
@@ -8018,6 +8377,51 @@ typedef struct {
     };
     PyObject *slots[SLOT_COUNT_MESH];
 } Mesh;
+
+static PyObject *Mesh_get_name(Mesh *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MESH__NAME];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = String_from(self->data->name);
+    self->slots[SLOT_MESH__NAME] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Mesh_get_props(Mesh *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MESH__PROPS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = Props_from(&self->data->props, self->ctx);
+    self->slots[SLOT_MESH__PROPS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Mesh_get_element_id(Mesh *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MESH__ELEMENT_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->element_id);
+    self->slots[SLOT_MESH__ELEMENT_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Mesh_get_typed_id(Mesh *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MESH__TYPED_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->typed_id);
+    self->slots[SLOT_MESH__TYPED_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Mesh_get_instances(Mesh *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MESH__INSTANCES];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = NodeList_from(self->data->instances, self->ctx);
+    self->slots[SLOT_MESH__INSTANCES] = slot;
+    return Py_NewRef(slot);
+}
 
 static PyObject *Mesh_get_num_vertices(Mesh *self, void *closure) {
     PyObject *slot = self->slots[SLOT_MESH__NUM_VERTICES];
@@ -8510,6 +8914,11 @@ void Mesh_dealloc(Mesh *self) {
 }
 
 static PyGetSetDef Mesh_getset[] = {
+    { "name", (getter)Mesh_get_name, NULL, "name" },
+    { "props", (getter)Mesh_get_props, NULL, "props" },
+    { "element_id", (getter)Mesh_get_element_id, NULL, "element_id" },
+    { "typed_id", (getter)Mesh_get_typed_id, NULL, "typed_id" },
+    { "instances", (getter)Mesh_get_instances, NULL, "instances" },
     { "num_vertices", (getter)Mesh_get_num_vertices, NULL, "num_vertices" },
     { "num_indices", (getter)Mesh_get_num_indices, NULL, "num_indices" },
     { "num_faces", (getter)Mesh_get_num_faces, NULL, "num_faces" },
@@ -8580,8 +8989,13 @@ static PyTypeObject Mesh_Type = {
     .tp_base = &Element_Type,
 };
 
-#define SLOT_COUNT_LIGHT 10
+#define SLOT_COUNT_LIGHT 15
 enum {
+    SLOT_LIGHT__NAME,
+    SLOT_LIGHT__PROPS,
+    SLOT_LIGHT__ELEMENT_ID,
+    SLOT_LIGHT__TYPED_ID,
+    SLOT_LIGHT__INSTANCES,
     SLOT_LIGHT__COLOR,
     SLOT_LIGHT__INTENSITY,
     SLOT_LIGHT__LOCAL_DIRECTION,
@@ -8605,6 +9019,51 @@ typedef struct {
     };
     PyObject *slots[SLOT_COUNT_LIGHT];
 } Light;
+
+static PyObject *Light_get_name(Light *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_LIGHT__NAME];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = String_from(self->data->name);
+    self->slots[SLOT_LIGHT__NAME] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Light_get_props(Light *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_LIGHT__PROPS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = Props_from(&self->data->props, self->ctx);
+    self->slots[SLOT_LIGHT__PROPS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Light_get_element_id(Light *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_LIGHT__ELEMENT_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->element_id);
+    self->slots[SLOT_LIGHT__ELEMENT_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Light_get_typed_id(Light *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_LIGHT__TYPED_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->typed_id);
+    self->slots[SLOT_LIGHT__TYPED_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Light_get_instances(Light *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_LIGHT__INSTANCES];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = NodeList_from(self->data->instances, self->ctx);
+    self->slots[SLOT_LIGHT__INSTANCES] = slot;
+    return Py_NewRef(slot);
+}
 
 static PyObject *Light_get_color(Light *self, void *closure) {
     PyObject *slot = self->slots[SLOT_LIGHT__COLOR];
@@ -8719,6 +9178,11 @@ void Light_dealloc(Light *self) {
 }
 
 static PyGetSetDef Light_getset[] = {
+    { "name", (getter)Light_get_name, NULL, "name" },
+    { "props", (getter)Light_get_props, NULL, "props" },
+    { "element_id", (getter)Light_get_element_id, NULL, "element_id" },
+    { "typed_id", (getter)Light_get_typed_id, NULL, "typed_id" },
+    { "instances", (getter)Light_get_instances, NULL, "instances" },
     { "color", (getter)Light_get_color, NULL, "color" },
     { "intensity", (getter)Light_get_intensity, NULL, "intensity" },
     { "local_direction", (getter)Light_get_local_direction, NULL, "local_direction" },
@@ -8747,8 +9211,13 @@ static PyTypeObject Light_Type = {
     .tp_base = &Element_Type,
 };
 
-#define SLOT_COUNT_CAMERA 20
+#define SLOT_COUNT_CAMERA 25
 enum {
+    SLOT_CAMERA__NAME,
+    SLOT_CAMERA__PROPS,
+    SLOT_CAMERA__ELEMENT_ID,
+    SLOT_CAMERA__TYPED_ID,
+    SLOT_CAMERA__INSTANCES,
     SLOT_CAMERA__PROJECTION_MODE,
     SLOT_CAMERA__RESOLUTION_IS_PIXELS,
     SLOT_CAMERA__RESOLUTION,
@@ -8782,6 +9251,51 @@ typedef struct {
     };
     PyObject *slots[SLOT_COUNT_CAMERA];
 } Camera;
+
+static PyObject *Camera_get_name(Camera *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_CAMERA__NAME];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = String_from(self->data->name);
+    self->slots[SLOT_CAMERA__NAME] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Camera_get_props(Camera *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_CAMERA__PROPS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = Props_from(&self->data->props, self->ctx);
+    self->slots[SLOT_CAMERA__PROPS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Camera_get_element_id(Camera *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_CAMERA__ELEMENT_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->element_id);
+    self->slots[SLOT_CAMERA__ELEMENT_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Camera_get_typed_id(Camera *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_CAMERA__TYPED_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->typed_id);
+    self->slots[SLOT_CAMERA__TYPED_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Camera_get_instances(Camera *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_CAMERA__INSTANCES];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = NodeList_from(self->data->instances, self->ctx);
+    self->slots[SLOT_CAMERA__INSTANCES] = slot;
+    return Py_NewRef(slot);
+}
 
 static PyObject *Camera_get_projection_mode(Camera *self, void *closure) {
     PyObject *slot = self->slots[SLOT_CAMERA__PROJECTION_MODE];
@@ -8886,7 +9400,7 @@ static PyObject *Camera_get_projection_axes(Camera *self, void *closure) {
     PyObject *slot = self->slots[SLOT_CAMERA__PROJECTION_AXES];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_coordinate_axes");
+    slot = CoordinateAxes_from(&self->data->projection_axes);
     self->slots[SLOT_CAMERA__PROJECTION_AXES] = slot;
     return Py_NewRef(slot);
 }
@@ -8986,6 +9500,11 @@ void Camera_dealloc(Camera *self) {
 }
 
 static PyGetSetDef Camera_getset[] = {
+    { "name", (getter)Camera_get_name, NULL, "name" },
+    { "props", (getter)Camera_get_props, NULL, "props" },
+    { "element_id", (getter)Camera_get_element_id, NULL, "element_id" },
+    { "typed_id", (getter)Camera_get_typed_id, NULL, "typed_id" },
+    { "instances", (getter)Camera_get_instances, NULL, "instances" },
     { "projection_mode", (getter)Camera_get_projection_mode, NULL, "projection_mode" },
     { "resolution_is_pixels", (getter)Camera_get_resolution_is_pixels, NULL, "resolution_is_pixels" },
     { "resolution", (getter)Camera_get_resolution, NULL, "resolution" },
@@ -9024,8 +9543,13 @@ static PyTypeObject Camera_Type = {
     .tp_base = &Element_Type,
 };
 
-#define SLOT_COUNT_BONE 3
+#define SLOT_COUNT_BONE 8
 enum {
+    SLOT_BONE__NAME,
+    SLOT_BONE__PROPS,
+    SLOT_BONE__ELEMENT_ID,
+    SLOT_BONE__TYPED_ID,
+    SLOT_BONE__INSTANCES,
     SLOT_BONE__RADIUS,
     SLOT_BONE__RELATIVE_LENGTH,
     SLOT_BONE__IS_ROOT,
@@ -9042,6 +9566,51 @@ typedef struct {
     };
     PyObject *slots[SLOT_COUNT_BONE];
 } Bone;
+
+static PyObject *Bone_get_name(Bone *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_BONE__NAME];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = String_from(self->data->name);
+    self->slots[SLOT_BONE__NAME] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Bone_get_props(Bone *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_BONE__PROPS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = Props_from(&self->data->props, self->ctx);
+    self->slots[SLOT_BONE__PROPS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Bone_get_element_id(Bone *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_BONE__ELEMENT_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->element_id);
+    self->slots[SLOT_BONE__ELEMENT_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Bone_get_typed_id(Bone *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_BONE__TYPED_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->typed_id);
+    self->slots[SLOT_BONE__TYPED_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Bone_get_instances(Bone *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_BONE__INSTANCES];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = NodeList_from(self->data->instances, self->ctx);
+    self->slots[SLOT_BONE__INSTANCES] = slot;
+    return Py_NewRef(slot);
+}
 
 static PyObject *Bone_get_radius(Bone *self, void *closure) {
     PyObject *slot = self->slots[SLOT_BONE__RADIUS];
@@ -9093,6 +9662,11 @@ void Bone_dealloc(Bone *self) {
 }
 
 static PyGetSetDef Bone_getset[] = {
+    { "name", (getter)Bone_get_name, NULL, "name" },
+    { "props", (getter)Bone_get_props, NULL, "props" },
+    { "element_id", (getter)Bone_get_element_id, NULL, "element_id" },
+    { "typed_id", (getter)Bone_get_typed_id, NULL, "typed_id" },
+    { "instances", (getter)Bone_get_instances, NULL, "instances" },
     { "radius", (getter)Bone_get_radius, NULL, "radius" },
     { "relative_length", (getter)Bone_get_relative_length, NULL, "relative_length" },
     { "is_root", (getter)Bone_get_is_root, NULL, "is_root" },
@@ -9114,6 +9688,15 @@ static PyTypeObject Bone_Type = {
     .tp_base = &Element_Type,
 };
 
+#define SLOT_COUNT_EMPTY 5
+enum {
+    SLOT_EMPTY__NAME,
+    SLOT_EMPTY__PROPS,
+    SLOT_EMPTY__ELEMENT_ID,
+    SLOT_EMPTY__TYPED_ID,
+    SLOT_EMPTY__INSTANCES,
+};
+
 typedef struct {
     union {
         Element elem;
@@ -9123,15 +9706,67 @@ typedef struct {
             Context *ctx;
         };
     };
+    PyObject *slots[SLOT_COUNT_EMPTY];
 } Empty;
+
+static PyObject *Empty_get_name(Empty *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_EMPTY__NAME];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = String_from(self->data->name);
+    self->slots[SLOT_EMPTY__NAME] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Empty_get_props(Empty *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_EMPTY__PROPS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = Props_from(&self->data->props, self->ctx);
+    self->slots[SLOT_EMPTY__PROPS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Empty_get_element_id(Empty *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_EMPTY__ELEMENT_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->element_id);
+    self->slots[SLOT_EMPTY__ELEMENT_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Empty_get_typed_id(Empty *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_EMPTY__TYPED_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->typed_id);
+    self->slots[SLOT_EMPTY__TYPED_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Empty_get_instances(Empty *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_EMPTY__INSTANCES];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = NodeList_from(self->data->instances, self->ctx);
+    self->slots[SLOT_EMPTY__INSTANCES] = slot;
+    return Py_NewRef(slot);
+}
 
 static int Empty_traverse(Empty *self, visitproc visit, void *arg) {
     if (Element_traverse((Element*)self, visit, arg) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_EMPTY; i++) {
+        Py_VISIT(self->slots[i]);
+    }
     return 0;
 }
 
 static int Empty_clear(Empty *self) {
     if (Element_clear((Element*)self) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_EMPTY; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
     return 0;
 }
 
@@ -9140,6 +9775,15 @@ void Empty_dealloc(Empty *self) {
     Empty_clear(self);
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
+
+static PyGetSetDef Empty_getset[] = {
+    { "name", (getter)Empty_get_name, NULL, "name" },
+    { "props", (getter)Empty_get_props, NULL, "props" },
+    { "element_id", (getter)Empty_get_element_id, NULL, "element_id" },
+    { "typed_id", (getter)Empty_get_typed_id, NULL, "typed_id" },
+    { "instances", (getter)Empty_get_instances, NULL, "instances" },
+    { NULL },
+};
 
 static PyTypeObject Empty_Type = {
     .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
@@ -9152,6 +9796,7 @@ static PyTypeObject Empty_Type = {
     .tp_dealloc = (destructor)&Empty_dealloc,
     .tp_traverse = (traverseproc)&Empty_traverse,
     .tp_clear = (inquiry)&Empty_clear,
+    .tp_getset = Empty_getset,
     .tp_base = &Element_Type,
 };
 
@@ -9236,8 +9881,13 @@ static PyObject *LineSegment_from(ufbx_line_segment *data, Context *ctx) {
     return (PyObject*)obj;
 }
 
-#define SLOT_COUNT_LINE_CURVE 5
+#define SLOT_COUNT_LINE_CURVE 10
 enum {
+    SLOT_LINE_CURVE__NAME,
+    SLOT_LINE_CURVE__PROPS,
+    SLOT_LINE_CURVE__ELEMENT_ID,
+    SLOT_LINE_CURVE__TYPED_ID,
+    SLOT_LINE_CURVE__INSTANCES,
     SLOT_LINE_CURVE__COLOR,
     SLOT_LINE_CURVE__CONTROL_POINTS,
     SLOT_LINE_CURVE__POINT_INDICES,
@@ -9256,6 +9906,51 @@ typedef struct {
     };
     PyObject *slots[SLOT_COUNT_LINE_CURVE];
 } LineCurve;
+
+static PyObject *LineCurve_get_name(LineCurve *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_LINE_CURVE__NAME];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = String_from(self->data->name);
+    self->slots[SLOT_LINE_CURVE__NAME] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *LineCurve_get_props(LineCurve *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_LINE_CURVE__PROPS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = Props_from(&self->data->props, self->ctx);
+    self->slots[SLOT_LINE_CURVE__PROPS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *LineCurve_get_element_id(LineCurve *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_LINE_CURVE__ELEMENT_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->element_id);
+    self->slots[SLOT_LINE_CURVE__ELEMENT_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *LineCurve_get_typed_id(LineCurve *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_LINE_CURVE__TYPED_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->typed_id);
+    self->slots[SLOT_LINE_CURVE__TYPED_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *LineCurve_get_instances(LineCurve *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_LINE_CURVE__INSTANCES];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = NodeList_from(self->data->instances, self->ctx);
+    self->slots[SLOT_LINE_CURVE__INSTANCES] = slot;
+    return Py_NewRef(slot);
+}
 
 static PyObject *LineCurve_get_color(LineCurve *self, void *closure) {
     PyObject *slot = self->slots[SLOT_LINE_CURVE__COLOR];
@@ -9325,6 +10020,11 @@ void LineCurve_dealloc(LineCurve *self) {
 }
 
 static PyGetSetDef LineCurve_getset[] = {
+    { "name", (getter)LineCurve_get_name, NULL, "name" },
+    { "props", (getter)LineCurve_get_props, NULL, "props" },
+    { "element_id", (getter)LineCurve_get_element_id, NULL, "element_id" },
+    { "typed_id", (getter)LineCurve_get_typed_id, NULL, "typed_id" },
+    { "instances", (getter)LineCurve_get_instances, NULL, "instances" },
     { "color", (getter)LineCurve_get_color, NULL, "color" },
     { "control_points", (getter)LineCurve_get_control_points, NULL, "control_points" },
     { "point_indices", (getter)LineCurve_get_point_indices, NULL, "point_indices" },
@@ -9506,8 +10206,13 @@ static PyObject *NurbsBasis_from(ufbx_nurbs_basis *data, Context *ctx) {
     return (PyObject*)obj;
 }
 
-#define SLOT_COUNT_NURBS_CURVE 2
+#define SLOT_COUNT_NURBS_CURVE 7
 enum {
+    SLOT_NURBS_CURVE__NAME,
+    SLOT_NURBS_CURVE__PROPS,
+    SLOT_NURBS_CURVE__ELEMENT_ID,
+    SLOT_NURBS_CURVE__TYPED_ID,
+    SLOT_NURBS_CURVE__INSTANCES,
     SLOT_NURBS_CURVE__BASIS,
     SLOT_NURBS_CURVE__CONTROL_POINTS,
 };
@@ -9523,6 +10228,51 @@ typedef struct {
     };
     PyObject *slots[SLOT_COUNT_NURBS_CURVE];
 } NurbsCurve;
+
+static PyObject *NurbsCurve_get_name(NurbsCurve *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_NURBS_CURVE__NAME];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = String_from(self->data->name);
+    self->slots[SLOT_NURBS_CURVE__NAME] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *NurbsCurve_get_props(NurbsCurve *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_NURBS_CURVE__PROPS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = Props_from(&self->data->props, self->ctx);
+    self->slots[SLOT_NURBS_CURVE__PROPS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *NurbsCurve_get_element_id(NurbsCurve *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_NURBS_CURVE__ELEMENT_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->element_id);
+    self->slots[SLOT_NURBS_CURVE__ELEMENT_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *NurbsCurve_get_typed_id(NurbsCurve *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_NURBS_CURVE__TYPED_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->typed_id);
+    self->slots[SLOT_NURBS_CURVE__TYPED_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *NurbsCurve_get_instances(NurbsCurve *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_NURBS_CURVE__INSTANCES];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = NodeList_from(self->data->instances, self->ctx);
+    self->slots[SLOT_NURBS_CURVE__INSTANCES] = slot;
+    return Py_NewRef(slot);
+}
 
 static PyObject *NurbsCurve_get_basis(NurbsCurve *self, void *closure) {
     PyObject *slot = self->slots[SLOT_NURBS_CURVE__BASIS];
@@ -9565,6 +10315,11 @@ void NurbsCurve_dealloc(NurbsCurve *self) {
 }
 
 static PyGetSetDef NurbsCurve_getset[] = {
+    { "name", (getter)NurbsCurve_get_name, NULL, "name" },
+    { "props", (getter)NurbsCurve_get_props, NULL, "props" },
+    { "element_id", (getter)NurbsCurve_get_element_id, NULL, "element_id" },
+    { "typed_id", (getter)NurbsCurve_get_typed_id, NULL, "typed_id" },
+    { "instances", (getter)NurbsCurve_get_instances, NULL, "instances" },
     { "basis", (getter)NurbsCurve_get_basis, NULL, "basis" },
     { "control_points", (getter)NurbsCurve_get_control_points, NULL, "control_points" },
     { NULL },
@@ -9585,8 +10340,13 @@ static PyTypeObject NurbsCurve_Type = {
     .tp_base = &Element_Type,
 };
 
-#define SLOT_COUNT_NURBS_SURFACE 9
+#define SLOT_COUNT_NURBS_SURFACE 14
 enum {
+    SLOT_NURBS_SURFACE__NAME,
+    SLOT_NURBS_SURFACE__PROPS,
+    SLOT_NURBS_SURFACE__ELEMENT_ID,
+    SLOT_NURBS_SURFACE__TYPED_ID,
+    SLOT_NURBS_SURFACE__INSTANCES,
     SLOT_NURBS_SURFACE__BASIS_U,
     SLOT_NURBS_SURFACE__BASIS_V,
     SLOT_NURBS_SURFACE__NUM_CONTROL_POINTS_U,
@@ -9609,6 +10369,51 @@ typedef struct {
     };
     PyObject *slots[SLOT_COUNT_NURBS_SURFACE];
 } NurbsSurface;
+
+static PyObject *NurbsSurface_get_name(NurbsSurface *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_NURBS_SURFACE__NAME];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = String_from(self->data->name);
+    self->slots[SLOT_NURBS_SURFACE__NAME] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *NurbsSurface_get_props(NurbsSurface *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_NURBS_SURFACE__PROPS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = Props_from(&self->data->props, self->ctx);
+    self->slots[SLOT_NURBS_SURFACE__PROPS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *NurbsSurface_get_element_id(NurbsSurface *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_NURBS_SURFACE__ELEMENT_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->element_id);
+    self->slots[SLOT_NURBS_SURFACE__ELEMENT_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *NurbsSurface_get_typed_id(NurbsSurface *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_NURBS_SURFACE__TYPED_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->typed_id);
+    self->slots[SLOT_NURBS_SURFACE__TYPED_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *NurbsSurface_get_instances(NurbsSurface *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_NURBS_SURFACE__INSTANCES];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = NodeList_from(self->data->instances, self->ctx);
+    self->slots[SLOT_NURBS_SURFACE__INSTANCES] = slot;
+    return Py_NewRef(slot);
+}
 
 static PyObject *NurbsSurface_get_basis_u(NurbsSurface *self, void *closure) {
     PyObject *slot = self->slots[SLOT_NURBS_SURFACE__BASIS_U];
@@ -9714,6 +10519,11 @@ void NurbsSurface_dealloc(NurbsSurface *self) {
 }
 
 static PyGetSetDef NurbsSurface_getset[] = {
+    { "name", (getter)NurbsSurface_get_name, NULL, "name" },
+    { "props", (getter)NurbsSurface_get_props, NULL, "props" },
+    { "element_id", (getter)NurbsSurface_get_element_id, NULL, "element_id" },
+    { "typed_id", (getter)NurbsSurface_get_typed_id, NULL, "typed_id" },
+    { "instances", (getter)NurbsSurface_get_instances, NULL, "instances" },
     { "basis_u", (getter)NurbsSurface_get_basis_u, NULL, "basis_u" },
     { "basis_v", (getter)NurbsSurface_get_basis_v, NULL, "basis_v" },
     { "num_control_points_u", (getter)NurbsSurface_get_num_control_points_u, NULL, "num_control_points_u" },
@@ -9741,6 +10551,15 @@ static PyTypeObject NurbsSurface_Type = {
     .tp_base = &Element_Type,
 };
 
+#define SLOT_COUNT_NURBS_TRIM_SURFACE 5
+enum {
+    SLOT_NURBS_TRIM_SURFACE__NAME,
+    SLOT_NURBS_TRIM_SURFACE__PROPS,
+    SLOT_NURBS_TRIM_SURFACE__ELEMENT_ID,
+    SLOT_NURBS_TRIM_SURFACE__TYPED_ID,
+    SLOT_NURBS_TRIM_SURFACE__INSTANCES,
+};
+
 typedef struct {
     union {
         Element elem;
@@ -9750,15 +10569,67 @@ typedef struct {
             Context *ctx;
         };
     };
+    PyObject *slots[SLOT_COUNT_NURBS_TRIM_SURFACE];
 } NurbsTrimSurface;
+
+static PyObject *NurbsTrimSurface_get_name(NurbsTrimSurface *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_NURBS_TRIM_SURFACE__NAME];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = String_from(self->data->name);
+    self->slots[SLOT_NURBS_TRIM_SURFACE__NAME] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *NurbsTrimSurface_get_props(NurbsTrimSurface *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_NURBS_TRIM_SURFACE__PROPS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = Props_from(&self->data->props, self->ctx);
+    self->slots[SLOT_NURBS_TRIM_SURFACE__PROPS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *NurbsTrimSurface_get_element_id(NurbsTrimSurface *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_NURBS_TRIM_SURFACE__ELEMENT_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->element_id);
+    self->slots[SLOT_NURBS_TRIM_SURFACE__ELEMENT_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *NurbsTrimSurface_get_typed_id(NurbsTrimSurface *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_NURBS_TRIM_SURFACE__TYPED_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->typed_id);
+    self->slots[SLOT_NURBS_TRIM_SURFACE__TYPED_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *NurbsTrimSurface_get_instances(NurbsTrimSurface *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_NURBS_TRIM_SURFACE__INSTANCES];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = NodeList_from(self->data->instances, self->ctx);
+    self->slots[SLOT_NURBS_TRIM_SURFACE__INSTANCES] = slot;
+    return Py_NewRef(slot);
+}
 
 static int NurbsTrimSurface_traverse(NurbsTrimSurface *self, visitproc visit, void *arg) {
     if (Element_traverse((Element*)self, visit, arg) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_NURBS_TRIM_SURFACE; i++) {
+        Py_VISIT(self->slots[i]);
+    }
     return 0;
 }
 
 static int NurbsTrimSurface_clear(NurbsTrimSurface *self) {
     if (Element_clear((Element*)self) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_NURBS_TRIM_SURFACE; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
     return 0;
 }
 
@@ -9767,6 +10638,15 @@ void NurbsTrimSurface_dealloc(NurbsTrimSurface *self) {
     NurbsTrimSurface_clear(self);
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
+
+static PyGetSetDef NurbsTrimSurface_getset[] = {
+    { "name", (getter)NurbsTrimSurface_get_name, NULL, "name" },
+    { "props", (getter)NurbsTrimSurface_get_props, NULL, "props" },
+    { "element_id", (getter)NurbsTrimSurface_get_element_id, NULL, "element_id" },
+    { "typed_id", (getter)NurbsTrimSurface_get_typed_id, NULL, "typed_id" },
+    { "instances", (getter)NurbsTrimSurface_get_instances, NULL, "instances" },
+    { NULL },
+};
 
 static PyTypeObject NurbsTrimSurface_Type = {
     .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
@@ -9779,7 +10659,17 @@ static PyTypeObject NurbsTrimSurface_Type = {
     .tp_dealloc = (destructor)&NurbsTrimSurface_dealloc,
     .tp_traverse = (traverseproc)&NurbsTrimSurface_traverse,
     .tp_clear = (inquiry)&NurbsTrimSurface_clear,
+    .tp_getset = NurbsTrimSurface_getset,
     .tp_base = &Element_Type,
+};
+
+#define SLOT_COUNT_NURBS_TRIM_BOUNDARY 5
+enum {
+    SLOT_NURBS_TRIM_BOUNDARY__NAME,
+    SLOT_NURBS_TRIM_BOUNDARY__PROPS,
+    SLOT_NURBS_TRIM_BOUNDARY__ELEMENT_ID,
+    SLOT_NURBS_TRIM_BOUNDARY__TYPED_ID,
+    SLOT_NURBS_TRIM_BOUNDARY__INSTANCES,
 };
 
 typedef struct {
@@ -9791,15 +10681,67 @@ typedef struct {
             Context *ctx;
         };
     };
+    PyObject *slots[SLOT_COUNT_NURBS_TRIM_BOUNDARY];
 } NurbsTrimBoundary;
+
+static PyObject *NurbsTrimBoundary_get_name(NurbsTrimBoundary *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_NURBS_TRIM_BOUNDARY__NAME];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = String_from(self->data->name);
+    self->slots[SLOT_NURBS_TRIM_BOUNDARY__NAME] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *NurbsTrimBoundary_get_props(NurbsTrimBoundary *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_NURBS_TRIM_BOUNDARY__PROPS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = Props_from(&self->data->props, self->ctx);
+    self->slots[SLOT_NURBS_TRIM_BOUNDARY__PROPS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *NurbsTrimBoundary_get_element_id(NurbsTrimBoundary *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_NURBS_TRIM_BOUNDARY__ELEMENT_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->element_id);
+    self->slots[SLOT_NURBS_TRIM_BOUNDARY__ELEMENT_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *NurbsTrimBoundary_get_typed_id(NurbsTrimBoundary *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_NURBS_TRIM_BOUNDARY__TYPED_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->typed_id);
+    self->slots[SLOT_NURBS_TRIM_BOUNDARY__TYPED_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *NurbsTrimBoundary_get_instances(NurbsTrimBoundary *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_NURBS_TRIM_BOUNDARY__INSTANCES];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = NodeList_from(self->data->instances, self->ctx);
+    self->slots[SLOT_NURBS_TRIM_BOUNDARY__INSTANCES] = slot;
+    return Py_NewRef(slot);
+}
 
 static int NurbsTrimBoundary_traverse(NurbsTrimBoundary *self, visitproc visit, void *arg) {
     if (Element_traverse((Element*)self, visit, arg) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_NURBS_TRIM_BOUNDARY; i++) {
+        Py_VISIT(self->slots[i]);
+    }
     return 0;
 }
 
 static int NurbsTrimBoundary_clear(NurbsTrimBoundary *self) {
     if (Element_clear((Element*)self) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_NURBS_TRIM_BOUNDARY; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
     return 0;
 }
 
@@ -9808,6 +10750,15 @@ void NurbsTrimBoundary_dealloc(NurbsTrimBoundary *self) {
     NurbsTrimBoundary_clear(self);
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
+
+static PyGetSetDef NurbsTrimBoundary_getset[] = {
+    { "name", (getter)NurbsTrimBoundary_get_name, NULL, "name" },
+    { "props", (getter)NurbsTrimBoundary_get_props, NULL, "props" },
+    { "element_id", (getter)NurbsTrimBoundary_get_element_id, NULL, "element_id" },
+    { "typed_id", (getter)NurbsTrimBoundary_get_typed_id, NULL, "typed_id" },
+    { "instances", (getter)NurbsTrimBoundary_get_instances, NULL, "instances" },
+    { NULL },
+};
 
 static PyTypeObject NurbsTrimBoundary_Type = {
     .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
@@ -9820,7 +10771,17 @@ static PyTypeObject NurbsTrimBoundary_Type = {
     .tp_dealloc = (destructor)&NurbsTrimBoundary_dealloc,
     .tp_traverse = (traverseproc)&NurbsTrimBoundary_traverse,
     .tp_clear = (inquiry)&NurbsTrimBoundary_clear,
+    .tp_getset = NurbsTrimBoundary_getset,
     .tp_base = &Element_Type,
+};
+
+#define SLOT_COUNT_PROCEDURAL_GEOMETRY 5
+enum {
+    SLOT_PROCEDURAL_GEOMETRY__NAME,
+    SLOT_PROCEDURAL_GEOMETRY__PROPS,
+    SLOT_PROCEDURAL_GEOMETRY__ELEMENT_ID,
+    SLOT_PROCEDURAL_GEOMETRY__TYPED_ID,
+    SLOT_PROCEDURAL_GEOMETRY__INSTANCES,
 };
 
 typedef struct {
@@ -9832,15 +10793,67 @@ typedef struct {
             Context *ctx;
         };
     };
+    PyObject *slots[SLOT_COUNT_PROCEDURAL_GEOMETRY];
 } ProceduralGeometry;
+
+static PyObject *ProceduralGeometry_get_name(ProceduralGeometry *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_PROCEDURAL_GEOMETRY__NAME];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = String_from(self->data->name);
+    self->slots[SLOT_PROCEDURAL_GEOMETRY__NAME] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *ProceduralGeometry_get_props(ProceduralGeometry *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_PROCEDURAL_GEOMETRY__PROPS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = Props_from(&self->data->props, self->ctx);
+    self->slots[SLOT_PROCEDURAL_GEOMETRY__PROPS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *ProceduralGeometry_get_element_id(ProceduralGeometry *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_PROCEDURAL_GEOMETRY__ELEMENT_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->element_id);
+    self->slots[SLOT_PROCEDURAL_GEOMETRY__ELEMENT_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *ProceduralGeometry_get_typed_id(ProceduralGeometry *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_PROCEDURAL_GEOMETRY__TYPED_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->typed_id);
+    self->slots[SLOT_PROCEDURAL_GEOMETRY__TYPED_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *ProceduralGeometry_get_instances(ProceduralGeometry *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_PROCEDURAL_GEOMETRY__INSTANCES];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = NodeList_from(self->data->instances, self->ctx);
+    self->slots[SLOT_PROCEDURAL_GEOMETRY__INSTANCES] = slot;
+    return Py_NewRef(slot);
+}
 
 static int ProceduralGeometry_traverse(ProceduralGeometry *self, visitproc visit, void *arg) {
     if (Element_traverse((Element*)self, visit, arg) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_PROCEDURAL_GEOMETRY; i++) {
+        Py_VISIT(self->slots[i]);
+    }
     return 0;
 }
 
 static int ProceduralGeometry_clear(ProceduralGeometry *self) {
     if (Element_clear((Element*)self) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_PROCEDURAL_GEOMETRY; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
     return 0;
 }
 
@@ -9849,6 +10862,15 @@ void ProceduralGeometry_dealloc(ProceduralGeometry *self) {
     ProceduralGeometry_clear(self);
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
+
+static PyGetSetDef ProceduralGeometry_getset[] = {
+    { "name", (getter)ProceduralGeometry_get_name, NULL, "name" },
+    { "props", (getter)ProceduralGeometry_get_props, NULL, "props" },
+    { "element_id", (getter)ProceduralGeometry_get_element_id, NULL, "element_id" },
+    { "typed_id", (getter)ProceduralGeometry_get_typed_id, NULL, "typed_id" },
+    { "instances", (getter)ProceduralGeometry_get_instances, NULL, "instances" },
+    { NULL },
+};
 
 static PyTypeObject ProceduralGeometry_Type = {
     .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
@@ -9861,11 +10883,17 @@ static PyTypeObject ProceduralGeometry_Type = {
     .tp_dealloc = (destructor)&ProceduralGeometry_dealloc,
     .tp_traverse = (traverseproc)&ProceduralGeometry_traverse,
     .tp_clear = (inquiry)&ProceduralGeometry_clear,
+    .tp_getset = ProceduralGeometry_getset,
     .tp_base = &Element_Type,
 };
 
-#define SLOT_COUNT_STEREO_CAMERA 2
+#define SLOT_COUNT_STEREO_CAMERA 7
 enum {
+    SLOT_STEREO_CAMERA__NAME,
+    SLOT_STEREO_CAMERA__PROPS,
+    SLOT_STEREO_CAMERA__ELEMENT_ID,
+    SLOT_STEREO_CAMERA__TYPED_ID,
+    SLOT_STEREO_CAMERA__INSTANCES,
     SLOT_STEREO_CAMERA__LEFT,
     SLOT_STEREO_CAMERA__RIGHT,
 };
@@ -9881,6 +10909,51 @@ typedef struct {
     };
     PyObject *slots[SLOT_COUNT_STEREO_CAMERA];
 } StereoCamera;
+
+static PyObject *StereoCamera_get_name(StereoCamera *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_STEREO_CAMERA__NAME];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = String_from(self->data->name);
+    self->slots[SLOT_STEREO_CAMERA__NAME] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *StereoCamera_get_props(StereoCamera *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_STEREO_CAMERA__PROPS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = Props_from(&self->data->props, self->ctx);
+    self->slots[SLOT_STEREO_CAMERA__PROPS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *StereoCamera_get_element_id(StereoCamera *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_STEREO_CAMERA__ELEMENT_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->element_id);
+    self->slots[SLOT_STEREO_CAMERA__ELEMENT_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *StereoCamera_get_typed_id(StereoCamera *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_STEREO_CAMERA__TYPED_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->typed_id);
+    self->slots[SLOT_STEREO_CAMERA__TYPED_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *StereoCamera_get_instances(StereoCamera *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_STEREO_CAMERA__INSTANCES];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = NodeList_from(self->data->instances, self->ctx);
+    self->slots[SLOT_STEREO_CAMERA__INSTANCES] = slot;
+    return Py_NewRef(slot);
+}
 
 static PyObject *StereoCamera_get_left(StereoCamera *self, void *closure) {
     PyObject *slot = self->slots[SLOT_STEREO_CAMERA__LEFT];
@@ -9923,6 +10996,11 @@ void StereoCamera_dealloc(StereoCamera *self) {
 }
 
 static PyGetSetDef StereoCamera_getset[] = {
+    { "name", (getter)StereoCamera_get_name, NULL, "name" },
+    { "props", (getter)StereoCamera_get_props, NULL, "props" },
+    { "element_id", (getter)StereoCamera_get_element_id, NULL, "element_id" },
+    { "typed_id", (getter)StereoCamera_get_typed_id, NULL, "typed_id" },
+    { "instances", (getter)StereoCamera_get_instances, NULL, "instances" },
     { "left", (getter)StereoCamera_get_left, NULL, "left" },
     { "right", (getter)StereoCamera_get_right, NULL, "right" },
     { NULL },
@@ -9943,6 +11021,15 @@ static PyTypeObject StereoCamera_Type = {
     .tp_base = &Element_Type,
 };
 
+#define SLOT_COUNT_CAMERA_SWITCHER 5
+enum {
+    SLOT_CAMERA_SWITCHER__NAME,
+    SLOT_CAMERA_SWITCHER__PROPS,
+    SLOT_CAMERA_SWITCHER__ELEMENT_ID,
+    SLOT_CAMERA_SWITCHER__TYPED_ID,
+    SLOT_CAMERA_SWITCHER__INSTANCES,
+};
+
 typedef struct {
     union {
         Element elem;
@@ -9952,15 +11039,67 @@ typedef struct {
             Context *ctx;
         };
     };
+    PyObject *slots[SLOT_COUNT_CAMERA_SWITCHER];
 } CameraSwitcher;
+
+static PyObject *CameraSwitcher_get_name(CameraSwitcher *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_CAMERA_SWITCHER__NAME];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = String_from(self->data->name);
+    self->slots[SLOT_CAMERA_SWITCHER__NAME] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *CameraSwitcher_get_props(CameraSwitcher *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_CAMERA_SWITCHER__PROPS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = Props_from(&self->data->props, self->ctx);
+    self->slots[SLOT_CAMERA_SWITCHER__PROPS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *CameraSwitcher_get_element_id(CameraSwitcher *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_CAMERA_SWITCHER__ELEMENT_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->element_id);
+    self->slots[SLOT_CAMERA_SWITCHER__ELEMENT_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *CameraSwitcher_get_typed_id(CameraSwitcher *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_CAMERA_SWITCHER__TYPED_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->typed_id);
+    self->slots[SLOT_CAMERA_SWITCHER__TYPED_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *CameraSwitcher_get_instances(CameraSwitcher *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_CAMERA_SWITCHER__INSTANCES];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = NodeList_from(self->data->instances, self->ctx);
+    self->slots[SLOT_CAMERA_SWITCHER__INSTANCES] = slot;
+    return Py_NewRef(slot);
+}
 
 static int CameraSwitcher_traverse(CameraSwitcher *self, visitproc visit, void *arg) {
     if (Element_traverse((Element*)self, visit, arg) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_CAMERA_SWITCHER; i++) {
+        Py_VISIT(self->slots[i]);
+    }
     return 0;
 }
 
 static int CameraSwitcher_clear(CameraSwitcher *self) {
     if (Element_clear((Element*)self) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_CAMERA_SWITCHER; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
     return 0;
 }
 
@@ -9969,6 +11108,15 @@ void CameraSwitcher_dealloc(CameraSwitcher *self) {
     CameraSwitcher_clear(self);
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
+
+static PyGetSetDef CameraSwitcher_getset[] = {
+    { "name", (getter)CameraSwitcher_get_name, NULL, "name" },
+    { "props", (getter)CameraSwitcher_get_props, NULL, "props" },
+    { "element_id", (getter)CameraSwitcher_get_element_id, NULL, "element_id" },
+    { "typed_id", (getter)CameraSwitcher_get_typed_id, NULL, "typed_id" },
+    { "instances", (getter)CameraSwitcher_get_instances, NULL, "instances" },
+    { NULL },
+};
 
 static PyTypeObject CameraSwitcher_Type = {
     .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
@@ -9981,11 +11129,17 @@ static PyTypeObject CameraSwitcher_Type = {
     .tp_dealloc = (destructor)&CameraSwitcher_dealloc,
     .tp_traverse = (traverseproc)&CameraSwitcher_traverse,
     .tp_clear = (inquiry)&CameraSwitcher_clear,
+    .tp_getset = CameraSwitcher_getset,
     .tp_base = &Element_Type,
 };
 
-#define SLOT_COUNT_MARKER 1
+#define SLOT_COUNT_MARKER 6
 enum {
+    SLOT_MARKER__NAME,
+    SLOT_MARKER__PROPS,
+    SLOT_MARKER__ELEMENT_ID,
+    SLOT_MARKER__TYPED_ID,
+    SLOT_MARKER__INSTANCES,
     SLOT_MARKER__TYPE,
 };
 
@@ -10000,6 +11154,51 @@ typedef struct {
     };
     PyObject *slots[SLOT_COUNT_MARKER];
 } Marker;
+
+static PyObject *Marker_get_name(Marker *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MARKER__NAME];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = String_from(self->data->name);
+    self->slots[SLOT_MARKER__NAME] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Marker_get_props(Marker *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MARKER__PROPS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = Props_from(&self->data->props, self->ctx);
+    self->slots[SLOT_MARKER__PROPS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Marker_get_element_id(Marker *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MARKER__ELEMENT_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->element_id);
+    self->slots[SLOT_MARKER__ELEMENT_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Marker_get_typed_id(Marker *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MARKER__TYPED_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->typed_id);
+    self->slots[SLOT_MARKER__TYPED_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Marker_get_instances(Marker *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MARKER__INSTANCES];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = NodeList_from(self->data->instances, self->ctx);
+    self->slots[SLOT_MARKER__INSTANCES] = slot;
+    return Py_NewRef(slot);
+}
 
 static PyObject *Marker_get_type(Marker *self, void *closure) {
     PyObject *slot = self->slots[SLOT_MARKER__TYPE];
@@ -10033,6 +11232,11 @@ void Marker_dealloc(Marker *self) {
 }
 
 static PyGetSetDef Marker_getset[] = {
+    { "name", (getter)Marker_get_name, NULL, "name" },
+    { "props", (getter)Marker_get_props, NULL, "props" },
+    { "element_id", (getter)Marker_get_element_id, NULL, "element_id" },
+    { "typed_id", (getter)Marker_get_typed_id, NULL, "typed_id" },
+    { "instances", (getter)Marker_get_instances, NULL, "instances" },
     { "type", (getter)Marker_get_type, NULL, "type" },
     { NULL },
 };
@@ -10052,8 +11256,13 @@ static PyTypeObject Marker_Type = {
     .tp_base = &Element_Type,
 };
 
-#define SLOT_COUNT_LOD_GROUP 6
+#define SLOT_COUNT_LOD_GROUP 11
 enum {
+    SLOT_LOD_GROUP__NAME,
+    SLOT_LOD_GROUP__PROPS,
+    SLOT_LOD_GROUP__ELEMENT_ID,
+    SLOT_LOD_GROUP__TYPED_ID,
+    SLOT_LOD_GROUP__INSTANCES,
     SLOT_LOD_GROUP__RELATIVE_DISTANCES,
     SLOT_LOD_GROUP__LOD_LEVELS,
     SLOT_LOD_GROUP__IGNORE_PARENT_TRANSFORM,
@@ -10073,6 +11282,51 @@ typedef struct {
     };
     PyObject *slots[SLOT_COUNT_LOD_GROUP];
 } LodGroup;
+
+static PyObject *LodGroup_get_name(LodGroup *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_LOD_GROUP__NAME];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = String_from(self->data->name);
+    self->slots[SLOT_LOD_GROUP__NAME] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *LodGroup_get_props(LodGroup *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_LOD_GROUP__PROPS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = Props_from(&self->data->props, self->ctx);
+    self->slots[SLOT_LOD_GROUP__PROPS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *LodGroup_get_element_id(LodGroup *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_LOD_GROUP__ELEMENT_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->element_id);
+    self->slots[SLOT_LOD_GROUP__ELEMENT_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *LodGroup_get_typed_id(LodGroup *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_LOD_GROUP__TYPED_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->typed_id);
+    self->slots[SLOT_LOD_GROUP__TYPED_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *LodGroup_get_instances(LodGroup *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_LOD_GROUP__INSTANCES];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = NodeList_from(self->data->instances, self->ctx);
+    self->slots[SLOT_LOD_GROUP__INSTANCES] = slot;
+    return Py_NewRef(slot);
+}
 
 static PyObject *LodGroup_get_relative_distances(LodGroup *self, void *closure) {
     PyObject *slot = self->slots[SLOT_LOD_GROUP__RELATIVE_DISTANCES];
@@ -10151,6 +11405,11 @@ void LodGroup_dealloc(LodGroup *self) {
 }
 
 static PyGetSetDef LodGroup_getset[] = {
+    { "name", (getter)LodGroup_get_name, NULL, "name" },
+    { "props", (getter)LodGroup_get_props, NULL, "props" },
+    { "element_id", (getter)LodGroup_get_element_id, NULL, "element_id" },
+    { "typed_id", (getter)LodGroup_get_typed_id, NULL, "typed_id" },
+    { "instances", (getter)LodGroup_get_instances, NULL, "instances" },
     { "relative_distances", (getter)LodGroup_get_relative_distances, NULL, "relative_distances" },
     { "lod_levels", (getter)LodGroup_get_lod_levels, NULL, "lod_levels" },
     { "ignore_parent_transform", (getter)LodGroup_get_ignore_parent_transform, NULL, "ignore_parent_transform" },
@@ -10175,8 +11434,12 @@ static PyTypeObject LodGroup_Type = {
     .tp_base = &Element_Type,
 };
 
-#define SLOT_COUNT_SKIN_DEFORMER 8
+#define SLOT_COUNT_SKIN_DEFORMER 12
 enum {
+    SLOT_SKIN_DEFORMER__NAME,
+    SLOT_SKIN_DEFORMER__PROPS,
+    SLOT_SKIN_DEFORMER__ELEMENT_ID,
+    SLOT_SKIN_DEFORMER__TYPED_ID,
     SLOT_SKIN_DEFORMER__SKINNING_METHOD,
     SLOT_SKIN_DEFORMER__CLUSTERS,
     SLOT_SKIN_DEFORMER__VERTICES,
@@ -10198,6 +11461,42 @@ typedef struct {
     };
     PyObject *slots[SLOT_COUNT_SKIN_DEFORMER];
 } SkinDeformer;
+
+static PyObject *SkinDeformer_get_name(SkinDeformer *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SKIN_DEFORMER__NAME];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = String_from(self->data->name);
+    self->slots[SLOT_SKIN_DEFORMER__NAME] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *SkinDeformer_get_props(SkinDeformer *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SKIN_DEFORMER__PROPS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = Props_from(&self->data->props, self->ctx);
+    self->slots[SLOT_SKIN_DEFORMER__PROPS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *SkinDeformer_get_element_id(SkinDeformer *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SKIN_DEFORMER__ELEMENT_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->element_id);
+    self->slots[SLOT_SKIN_DEFORMER__ELEMENT_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *SkinDeformer_get_typed_id(SkinDeformer *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SKIN_DEFORMER__TYPED_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->typed_id);
+    self->slots[SLOT_SKIN_DEFORMER__TYPED_ID] = slot;
+    return Py_NewRef(slot);
+}
 
 static PyObject *SkinDeformer_get_skinning_method(SkinDeformer *self, void *closure) {
     PyObject *slot = self->slots[SLOT_SKIN_DEFORMER__SKINNING_METHOD];
@@ -10294,6 +11593,10 @@ void SkinDeformer_dealloc(SkinDeformer *self) {
 }
 
 static PyGetSetDef SkinDeformer_getset[] = {
+    { "name", (getter)SkinDeformer_get_name, NULL, "name" },
+    { "props", (getter)SkinDeformer_get_props, NULL, "props" },
+    { "element_id", (getter)SkinDeformer_get_element_id, NULL, "element_id" },
+    { "typed_id", (getter)SkinDeformer_get_typed_id, NULL, "typed_id" },
     { "skinning_method", (getter)SkinDeformer_get_skinning_method, NULL, "skinning_method" },
     { "clusters", (getter)SkinDeformer_get_clusters, NULL, "clusters" },
     { "vertices", (getter)SkinDeformer_get_vertices, NULL, "vertices" },
@@ -10320,8 +11623,12 @@ static PyTypeObject SkinDeformer_Type = {
     .tp_base = &Element_Type,
 };
 
-#define SLOT_COUNT_SKIN_CLUSTER 9
+#define SLOT_COUNT_SKIN_CLUSTER 13
 enum {
+    SLOT_SKIN_CLUSTER__NAME,
+    SLOT_SKIN_CLUSTER__PROPS,
+    SLOT_SKIN_CLUSTER__ELEMENT_ID,
+    SLOT_SKIN_CLUSTER__TYPED_ID,
     SLOT_SKIN_CLUSTER__BONE_NODE,
     SLOT_SKIN_CLUSTER__GEOMETRY_TO_BONE,
     SLOT_SKIN_CLUSTER__MESH_NODE_TO_BONE,
@@ -10344,6 +11651,42 @@ typedef struct {
     };
     PyObject *slots[SLOT_COUNT_SKIN_CLUSTER];
 } SkinCluster;
+
+static PyObject *SkinCluster_get_name(SkinCluster *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SKIN_CLUSTER__NAME];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = String_from(self->data->name);
+    self->slots[SLOT_SKIN_CLUSTER__NAME] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *SkinCluster_get_props(SkinCluster *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SKIN_CLUSTER__PROPS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = Props_from(&self->data->props, self->ctx);
+    self->slots[SLOT_SKIN_CLUSTER__PROPS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *SkinCluster_get_element_id(SkinCluster *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SKIN_CLUSTER__ELEMENT_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->element_id);
+    self->slots[SLOT_SKIN_CLUSTER__ELEMENT_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *SkinCluster_get_typed_id(SkinCluster *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SKIN_CLUSTER__TYPED_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->typed_id);
+    self->slots[SLOT_SKIN_CLUSTER__TYPED_ID] = slot;
+    return Py_NewRef(slot);
+}
 
 static PyObject *SkinCluster_get_bone_node(SkinCluster *self, void *closure) {
     PyObject *slot = self->slots[SLOT_SKIN_CLUSTER__BONE_NODE];
@@ -10449,6 +11792,10 @@ void SkinCluster_dealloc(SkinCluster *self) {
 }
 
 static PyGetSetDef SkinCluster_getset[] = {
+    { "name", (getter)SkinCluster_get_name, NULL, "name" },
+    { "props", (getter)SkinCluster_get_props, NULL, "props" },
+    { "element_id", (getter)SkinCluster_get_element_id, NULL, "element_id" },
+    { "typed_id", (getter)SkinCluster_get_typed_id, NULL, "typed_id" },
     { "bone_node", (getter)SkinCluster_get_bone_node, NULL, "bone_node" },
     { "geometry_to_bone", (getter)SkinCluster_get_geometry_to_bone, NULL, "geometry_to_bone" },
     { "mesh_node_to_bone", (getter)SkinCluster_get_mesh_node_to_bone, NULL, "mesh_node_to_bone" },
@@ -10476,8 +11823,12 @@ static PyTypeObject SkinCluster_Type = {
     .tp_base = &Element_Type,
 };
 
-#define SLOT_COUNT_BLEND_DEFORMER 1
+#define SLOT_COUNT_BLEND_DEFORMER 5
 enum {
+    SLOT_BLEND_DEFORMER__NAME,
+    SLOT_BLEND_DEFORMER__PROPS,
+    SLOT_BLEND_DEFORMER__ELEMENT_ID,
+    SLOT_BLEND_DEFORMER__TYPED_ID,
     SLOT_BLEND_DEFORMER__CHANNELS,
 };
 
@@ -10492,6 +11843,42 @@ typedef struct {
     };
     PyObject *slots[SLOT_COUNT_BLEND_DEFORMER];
 } BlendDeformer;
+
+static PyObject *BlendDeformer_get_name(BlendDeformer *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_BLEND_DEFORMER__NAME];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = String_from(self->data->name);
+    self->slots[SLOT_BLEND_DEFORMER__NAME] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *BlendDeformer_get_props(BlendDeformer *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_BLEND_DEFORMER__PROPS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = Props_from(&self->data->props, self->ctx);
+    self->slots[SLOT_BLEND_DEFORMER__PROPS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *BlendDeformer_get_element_id(BlendDeformer *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_BLEND_DEFORMER__ELEMENT_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->element_id);
+    self->slots[SLOT_BLEND_DEFORMER__ELEMENT_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *BlendDeformer_get_typed_id(BlendDeformer *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_BLEND_DEFORMER__TYPED_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->typed_id);
+    self->slots[SLOT_BLEND_DEFORMER__TYPED_ID] = slot;
+    return Py_NewRef(slot);
+}
 
 static PyObject *BlendDeformer_get_channels(BlendDeformer *self, void *closure) {
     PyObject *slot = self->slots[SLOT_BLEND_DEFORMER__CHANNELS];
@@ -10525,6 +11912,10 @@ void BlendDeformer_dealloc(BlendDeformer *self) {
 }
 
 static PyGetSetDef BlendDeformer_getset[] = {
+    { "name", (getter)BlendDeformer_get_name, NULL, "name" },
+    { "props", (getter)BlendDeformer_get_props, NULL, "props" },
+    { "element_id", (getter)BlendDeformer_get_element_id, NULL, "element_id" },
+    { "typed_id", (getter)BlendDeformer_get_typed_id, NULL, "typed_id" },
     { "channels", (getter)BlendDeformer_get_channels, NULL, "channels" },
     { NULL },
 };
@@ -10636,8 +12027,12 @@ static PyObject *BlendKeyframe_from(ufbx_blend_keyframe *data, Context *ctx) {
     return (PyObject*)obj;
 }
 
-#define SLOT_COUNT_BLEND_CHANNEL 3
+#define SLOT_COUNT_BLEND_CHANNEL 7
 enum {
+    SLOT_BLEND_CHANNEL__NAME,
+    SLOT_BLEND_CHANNEL__PROPS,
+    SLOT_BLEND_CHANNEL__ELEMENT_ID,
+    SLOT_BLEND_CHANNEL__TYPED_ID,
     SLOT_BLEND_CHANNEL__WEIGHT,
     SLOT_BLEND_CHANNEL__KEYFRAMES,
     SLOT_BLEND_CHANNEL__TARGET_SHAPE,
@@ -10654,6 +12049,42 @@ typedef struct {
     };
     PyObject *slots[SLOT_COUNT_BLEND_CHANNEL];
 } BlendChannel;
+
+static PyObject *BlendChannel_get_name(BlendChannel *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_BLEND_CHANNEL__NAME];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = String_from(self->data->name);
+    self->slots[SLOT_BLEND_CHANNEL__NAME] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *BlendChannel_get_props(BlendChannel *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_BLEND_CHANNEL__PROPS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = Props_from(&self->data->props, self->ctx);
+    self->slots[SLOT_BLEND_CHANNEL__PROPS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *BlendChannel_get_element_id(BlendChannel *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_BLEND_CHANNEL__ELEMENT_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->element_id);
+    self->slots[SLOT_BLEND_CHANNEL__ELEMENT_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *BlendChannel_get_typed_id(BlendChannel *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_BLEND_CHANNEL__TYPED_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->typed_id);
+    self->slots[SLOT_BLEND_CHANNEL__TYPED_ID] = slot;
+    return Py_NewRef(slot);
+}
 
 static PyObject *BlendChannel_get_weight(BlendChannel *self, void *closure) {
     PyObject *slot = self->slots[SLOT_BLEND_CHANNEL__WEIGHT];
@@ -10705,6 +12136,10 @@ void BlendChannel_dealloc(BlendChannel *self) {
 }
 
 static PyGetSetDef BlendChannel_getset[] = {
+    { "name", (getter)BlendChannel_get_name, NULL, "name" },
+    { "props", (getter)BlendChannel_get_props, NULL, "props" },
+    { "element_id", (getter)BlendChannel_get_element_id, NULL, "element_id" },
+    { "typed_id", (getter)BlendChannel_get_typed_id, NULL, "typed_id" },
     { "weight", (getter)BlendChannel_get_weight, NULL, "weight" },
     { "keyframes", (getter)BlendChannel_get_keyframes, NULL, "keyframes" },
     { "target_shape", (getter)BlendChannel_get_target_shape, NULL, "target_shape" },
@@ -10726,8 +12161,12 @@ static PyTypeObject BlendChannel_Type = {
     .tp_base = &Element_Type,
 };
 
-#define SLOT_COUNT_BLEND_SHAPE 5
+#define SLOT_COUNT_BLEND_SHAPE 9
 enum {
+    SLOT_BLEND_SHAPE__NAME,
+    SLOT_BLEND_SHAPE__PROPS,
+    SLOT_BLEND_SHAPE__ELEMENT_ID,
+    SLOT_BLEND_SHAPE__TYPED_ID,
     SLOT_BLEND_SHAPE__NUM_OFFSETS,
     SLOT_BLEND_SHAPE__OFFSET_VERTICES,
     SLOT_BLEND_SHAPE__POSITION_OFFSETS,
@@ -10746,6 +12185,42 @@ typedef struct {
     };
     PyObject *slots[SLOT_COUNT_BLEND_SHAPE];
 } BlendShape;
+
+static PyObject *BlendShape_get_name(BlendShape *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_BLEND_SHAPE__NAME];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = String_from(self->data->name);
+    self->slots[SLOT_BLEND_SHAPE__NAME] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *BlendShape_get_props(BlendShape *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_BLEND_SHAPE__PROPS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = Props_from(&self->data->props, self->ctx);
+    self->slots[SLOT_BLEND_SHAPE__PROPS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *BlendShape_get_element_id(BlendShape *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_BLEND_SHAPE__ELEMENT_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->element_id);
+    self->slots[SLOT_BLEND_SHAPE__ELEMENT_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *BlendShape_get_typed_id(BlendShape *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_BLEND_SHAPE__TYPED_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->typed_id);
+    self->slots[SLOT_BLEND_SHAPE__TYPED_ID] = slot;
+    return Py_NewRef(slot);
+}
 
 static PyObject *BlendShape_get_num_offsets(BlendShape *self, void *closure) {
     PyObject *slot = self->slots[SLOT_BLEND_SHAPE__NUM_OFFSETS];
@@ -10815,6 +12290,10 @@ void BlendShape_dealloc(BlendShape *self) {
 }
 
 static PyGetSetDef BlendShape_getset[] = {
+    { "name", (getter)BlendShape_get_name, NULL, "name" },
+    { "props", (getter)BlendShape_get_props, NULL, "props" },
+    { "element_id", (getter)BlendShape_get_element_id, NULL, "element_id" },
+    { "typed_id", (getter)BlendShape_get_typed_id, NULL, "typed_id" },
     { "num_offsets", (getter)BlendShape_get_num_offsets, NULL, "num_offsets" },
     { "offset_vertices", (getter)BlendShape_get_offset_vertices, NULL, "offset_vertices" },
     { "position_offsets", (getter)BlendShape_get_position_offsets, NULL, "position_offsets" },
@@ -11257,8 +12736,12 @@ static PyObject *GeometryCache_from(ufbx_geometry_cache *data, Context *ctx) {
     return (PyObject*)obj;
 }
 
-#define SLOT_COUNT_CACHE_DEFORMER 4
+#define SLOT_COUNT_CACHE_DEFORMER 8
 enum {
+    SLOT_CACHE_DEFORMER__NAME,
+    SLOT_CACHE_DEFORMER__PROPS,
+    SLOT_CACHE_DEFORMER__ELEMENT_ID,
+    SLOT_CACHE_DEFORMER__TYPED_ID,
     SLOT_CACHE_DEFORMER__CHANNEL,
     SLOT_CACHE_DEFORMER__FILE,
     SLOT_CACHE_DEFORMER__EXTERNAL_CACHE,
@@ -11276,6 +12759,42 @@ typedef struct {
     };
     PyObject *slots[SLOT_COUNT_CACHE_DEFORMER];
 } CacheDeformer;
+
+static PyObject *CacheDeformer_get_name(CacheDeformer *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_CACHE_DEFORMER__NAME];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = String_from(self->data->name);
+    self->slots[SLOT_CACHE_DEFORMER__NAME] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *CacheDeformer_get_props(CacheDeformer *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_CACHE_DEFORMER__PROPS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = Props_from(&self->data->props, self->ctx);
+    self->slots[SLOT_CACHE_DEFORMER__PROPS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *CacheDeformer_get_element_id(CacheDeformer *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_CACHE_DEFORMER__ELEMENT_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->element_id);
+    self->slots[SLOT_CACHE_DEFORMER__ELEMENT_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *CacheDeformer_get_typed_id(CacheDeformer *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_CACHE_DEFORMER__TYPED_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->typed_id);
+    self->slots[SLOT_CACHE_DEFORMER__TYPED_ID] = slot;
+    return Py_NewRef(slot);
+}
 
 static PyObject *CacheDeformer_get_channel(CacheDeformer *self, void *closure) {
     PyObject *slot = self->slots[SLOT_CACHE_DEFORMER__CHANNEL];
@@ -11336,6 +12855,10 @@ void CacheDeformer_dealloc(CacheDeformer *self) {
 }
 
 static PyGetSetDef CacheDeformer_getset[] = {
+    { "name", (getter)CacheDeformer_get_name, NULL, "name" },
+    { "props", (getter)CacheDeformer_get_props, NULL, "props" },
+    { "element_id", (getter)CacheDeformer_get_element_id, NULL, "element_id" },
+    { "typed_id", (getter)CacheDeformer_get_typed_id, NULL, "typed_id" },
     { "channel", (getter)CacheDeformer_get_channel, NULL, "channel" },
     { "file", (getter)CacheDeformer_get_file, NULL, "file" },
     { "external_cache", (getter)CacheDeformer_get_external_cache, NULL, "external_cache" },
@@ -11358,8 +12881,12 @@ static PyTypeObject CacheDeformer_Type = {
     .tp_base = &Element_Type,
 };
 
-#define SLOT_COUNT_CACHE_FILE 8
+#define SLOT_COUNT_CACHE_FILE 12
 enum {
+    SLOT_CACHE_FILE__NAME,
+    SLOT_CACHE_FILE__PROPS,
+    SLOT_CACHE_FILE__ELEMENT_ID,
+    SLOT_CACHE_FILE__TYPED_ID,
     SLOT_CACHE_FILE__FILENAME,
     SLOT_CACHE_FILE__ABSOLUTE_FILENAME,
     SLOT_CACHE_FILE__RELATIVE_FILENAME,
@@ -11381,6 +12908,42 @@ typedef struct {
     };
     PyObject *slots[SLOT_COUNT_CACHE_FILE];
 } CacheFile;
+
+static PyObject *CacheFile_get_name(CacheFile *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_CACHE_FILE__NAME];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = String_from(self->data->name);
+    self->slots[SLOT_CACHE_FILE__NAME] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *CacheFile_get_props(CacheFile *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_CACHE_FILE__PROPS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = Props_from(&self->data->props, self->ctx);
+    self->slots[SLOT_CACHE_FILE__PROPS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *CacheFile_get_element_id(CacheFile *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_CACHE_FILE__ELEMENT_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->element_id);
+    self->slots[SLOT_CACHE_FILE__ELEMENT_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *CacheFile_get_typed_id(CacheFile *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_CACHE_FILE__TYPED_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->typed_id);
+    self->slots[SLOT_CACHE_FILE__TYPED_ID] = slot;
+    return Py_NewRef(slot);
+}
 
 static PyObject *CacheFile_get_filename(CacheFile *self, void *closure) {
     PyObject *slot = self->slots[SLOT_CACHE_FILE__FILENAME];
@@ -11477,6 +13040,10 @@ void CacheFile_dealloc(CacheFile *self) {
 }
 
 static PyGetSetDef CacheFile_getset[] = {
+    { "name", (getter)CacheFile_get_name, NULL, "name" },
+    { "props", (getter)CacheFile_get_props, NULL, "props" },
+    { "element_id", (getter)CacheFile_get_element_id, NULL, "element_id" },
+    { "typed_id", (getter)CacheFile_get_typed_id, NULL, "typed_id" },
     { "filename", (getter)CacheFile_get_filename, NULL, "filename" },
     { "absolute_filename", (getter)CacheFile_get_absolute_filename, NULL, "absolute_filename" },
     { "relative_filename", (getter)CacheFile_get_relative_filename, NULL, "relative_filename" },
@@ -11503,8 +13070,9 @@ static PyTypeObject CacheFile_Type = {
     .tp_base = &Element_Type,
 };
 
-#define SLOT_COUNT_MATERIAL_MAP 6
+#define SLOT_COUNT_MATERIAL_MAP 7
 enum {
+    SLOT_MATERIAL_MAP__VALUE_VEC4,
     SLOT_MATERIAL_MAP__VALUE_INT,
     SLOT_MATERIAL_MAP__TEXTURE,
     SLOT_MATERIAL_MAP__HAS_VALUE,
@@ -11519,6 +13087,15 @@ typedef struct {
     Context *ctx;
     PyObject *slots[SLOT_COUNT_MATERIAL_MAP];
 } MaterialMap;
+
+static PyObject *MaterialMap_get_value_vec4(MaterialMap *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_MAP__VALUE_VEC4];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = Vec4_from(&self->data->value_vec4);
+    self->slots[SLOT_MATERIAL_MAP__VALUE_VEC4] = slot;
+    return Py_NewRef(slot);
+}
 
 static PyObject *MaterialMap_get_value_int(MaterialMap *self, void *closure) {
     PyObject *slot = self->slots[SLOT_MATERIAL_MAP__VALUE_INT];
@@ -11597,6 +13174,7 @@ void MaterialMap_dealloc(MaterialMap *self) {
 }
 
 static PyGetSetDef MaterialMap_getset[] = {
+    { "value_vec4", (getter)MaterialMap_get_value_vec4, NULL, "value_vec4" },
     { "value_int", (getter)MaterialMap_get_value_int, NULL, "value_int" },
     { "texture", (getter)MaterialMap_get_texture, NULL, "texture" },
     { "has_value", (getter)MaterialMap_get_has_value, NULL, "has_value" },
@@ -11801,19 +13379,230 @@ static PyObject *MaterialTexture_from(ufbx_material_texture *data, Context *ctx)
     return (PyObject*)obj;
 }
 
+#define SLOT_COUNT_MATERIAL_FBX_MAPS 20
+enum {
+    SLOT_MATERIAL_FBX_MAPS__DIFFUSE_FACTOR,
+    SLOT_MATERIAL_FBX_MAPS__DIFFUSE_COLOR,
+    SLOT_MATERIAL_FBX_MAPS__SPECULAR_FACTOR,
+    SLOT_MATERIAL_FBX_MAPS__SPECULAR_COLOR,
+    SLOT_MATERIAL_FBX_MAPS__SPECULAR_EXPONENT,
+    SLOT_MATERIAL_FBX_MAPS__REFLECTION_FACTOR,
+    SLOT_MATERIAL_FBX_MAPS__REFLECTION_COLOR,
+    SLOT_MATERIAL_FBX_MAPS__TRANSPARENCY_FACTOR,
+    SLOT_MATERIAL_FBX_MAPS__TRANSPARENCY_COLOR,
+    SLOT_MATERIAL_FBX_MAPS__EMISSION_FACTOR,
+    SLOT_MATERIAL_FBX_MAPS__EMISSION_COLOR,
+    SLOT_MATERIAL_FBX_MAPS__AMBIENT_FACTOR,
+    SLOT_MATERIAL_FBX_MAPS__AMBIENT_COLOR,
+    SLOT_MATERIAL_FBX_MAPS__NORMAL_MAP,
+    SLOT_MATERIAL_FBX_MAPS__BUMP,
+    SLOT_MATERIAL_FBX_MAPS__BUMP_FACTOR,
+    SLOT_MATERIAL_FBX_MAPS__DISPLACEMENT_FACTOR,
+    SLOT_MATERIAL_FBX_MAPS__DISPLACEMENT,
+    SLOT_MATERIAL_FBX_MAPS__VECTOR_DISPLACEMENT_FACTOR,
+    SLOT_MATERIAL_FBX_MAPS__VECTOR_DISPLACEMENT,
+};
+
 typedef struct {
     PyObject_HEAD
     ufbx_material_fbx_maps *data;
     Context *ctx;
+    PyObject *slots[SLOT_COUNT_MATERIAL_FBX_MAPS];
 } MaterialFbxMaps;
+
+static PyObject *MaterialFbxMaps_get_diffuse_factor(MaterialFbxMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_FBX_MAPS__DIFFUSE_FACTOR];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->diffuse_factor, self->ctx);
+    self->slots[SLOT_MATERIAL_FBX_MAPS__DIFFUSE_FACTOR] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialFbxMaps_get_diffuse_color(MaterialFbxMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_FBX_MAPS__DIFFUSE_COLOR];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->diffuse_color, self->ctx);
+    self->slots[SLOT_MATERIAL_FBX_MAPS__DIFFUSE_COLOR] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialFbxMaps_get_specular_factor(MaterialFbxMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_FBX_MAPS__SPECULAR_FACTOR];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->specular_factor, self->ctx);
+    self->slots[SLOT_MATERIAL_FBX_MAPS__SPECULAR_FACTOR] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialFbxMaps_get_specular_color(MaterialFbxMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_FBX_MAPS__SPECULAR_COLOR];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->specular_color, self->ctx);
+    self->slots[SLOT_MATERIAL_FBX_MAPS__SPECULAR_COLOR] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialFbxMaps_get_specular_exponent(MaterialFbxMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_FBX_MAPS__SPECULAR_EXPONENT];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->specular_exponent, self->ctx);
+    self->slots[SLOT_MATERIAL_FBX_MAPS__SPECULAR_EXPONENT] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialFbxMaps_get_reflection_factor(MaterialFbxMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_FBX_MAPS__REFLECTION_FACTOR];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->reflection_factor, self->ctx);
+    self->slots[SLOT_MATERIAL_FBX_MAPS__REFLECTION_FACTOR] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialFbxMaps_get_reflection_color(MaterialFbxMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_FBX_MAPS__REFLECTION_COLOR];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->reflection_color, self->ctx);
+    self->slots[SLOT_MATERIAL_FBX_MAPS__REFLECTION_COLOR] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialFbxMaps_get_transparency_factor(MaterialFbxMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_FBX_MAPS__TRANSPARENCY_FACTOR];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->transparency_factor, self->ctx);
+    self->slots[SLOT_MATERIAL_FBX_MAPS__TRANSPARENCY_FACTOR] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialFbxMaps_get_transparency_color(MaterialFbxMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_FBX_MAPS__TRANSPARENCY_COLOR];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->transparency_color, self->ctx);
+    self->slots[SLOT_MATERIAL_FBX_MAPS__TRANSPARENCY_COLOR] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialFbxMaps_get_emission_factor(MaterialFbxMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_FBX_MAPS__EMISSION_FACTOR];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->emission_factor, self->ctx);
+    self->slots[SLOT_MATERIAL_FBX_MAPS__EMISSION_FACTOR] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialFbxMaps_get_emission_color(MaterialFbxMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_FBX_MAPS__EMISSION_COLOR];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->emission_color, self->ctx);
+    self->slots[SLOT_MATERIAL_FBX_MAPS__EMISSION_COLOR] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialFbxMaps_get_ambient_factor(MaterialFbxMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_FBX_MAPS__AMBIENT_FACTOR];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->ambient_factor, self->ctx);
+    self->slots[SLOT_MATERIAL_FBX_MAPS__AMBIENT_FACTOR] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialFbxMaps_get_ambient_color(MaterialFbxMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_FBX_MAPS__AMBIENT_COLOR];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->ambient_color, self->ctx);
+    self->slots[SLOT_MATERIAL_FBX_MAPS__AMBIENT_COLOR] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialFbxMaps_get_normal_map(MaterialFbxMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_FBX_MAPS__NORMAL_MAP];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->normal_map, self->ctx);
+    self->slots[SLOT_MATERIAL_FBX_MAPS__NORMAL_MAP] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialFbxMaps_get_bump(MaterialFbxMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_FBX_MAPS__BUMP];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->bump, self->ctx);
+    self->slots[SLOT_MATERIAL_FBX_MAPS__BUMP] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialFbxMaps_get_bump_factor(MaterialFbxMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_FBX_MAPS__BUMP_FACTOR];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->bump_factor, self->ctx);
+    self->slots[SLOT_MATERIAL_FBX_MAPS__BUMP_FACTOR] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialFbxMaps_get_displacement_factor(MaterialFbxMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_FBX_MAPS__DISPLACEMENT_FACTOR];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->displacement_factor, self->ctx);
+    self->slots[SLOT_MATERIAL_FBX_MAPS__DISPLACEMENT_FACTOR] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialFbxMaps_get_displacement(MaterialFbxMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_FBX_MAPS__DISPLACEMENT];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->displacement, self->ctx);
+    self->slots[SLOT_MATERIAL_FBX_MAPS__DISPLACEMENT] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialFbxMaps_get_vector_displacement_factor(MaterialFbxMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_FBX_MAPS__VECTOR_DISPLACEMENT_FACTOR];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->vector_displacement_factor, self->ctx);
+    self->slots[SLOT_MATERIAL_FBX_MAPS__VECTOR_DISPLACEMENT_FACTOR] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialFbxMaps_get_vector_displacement(MaterialFbxMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_FBX_MAPS__VECTOR_DISPLACEMENT];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->vector_displacement, self->ctx);
+    self->slots[SLOT_MATERIAL_FBX_MAPS__VECTOR_DISPLACEMENT] = slot;
+    return Py_NewRef(slot);
+}
 
 static int MaterialFbxMaps_traverse(MaterialFbxMaps *self, visitproc visit, void *arg) {
     Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_MATERIAL_FBX_MAPS; i++) {
+        Py_VISIT(self->slots[i]);
+    }
     return 0;
 }
 
 static int MaterialFbxMaps_clear(MaterialFbxMaps *self) {
     Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_MATERIAL_FBX_MAPS; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
     return 0;
 }
 
@@ -11822,6 +13611,30 @@ void MaterialFbxMaps_dealloc(MaterialFbxMaps *self) {
     MaterialFbxMaps_clear(self);
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
+
+static PyGetSetDef MaterialFbxMaps_getset[] = {
+    { "diffuse_factor", (getter)MaterialFbxMaps_get_diffuse_factor, NULL, "diffuse_factor" },
+    { "diffuse_color", (getter)MaterialFbxMaps_get_diffuse_color, NULL, "diffuse_color" },
+    { "specular_factor", (getter)MaterialFbxMaps_get_specular_factor, NULL, "specular_factor" },
+    { "specular_color", (getter)MaterialFbxMaps_get_specular_color, NULL, "specular_color" },
+    { "specular_exponent", (getter)MaterialFbxMaps_get_specular_exponent, NULL, "specular_exponent" },
+    { "reflection_factor", (getter)MaterialFbxMaps_get_reflection_factor, NULL, "reflection_factor" },
+    { "reflection_color", (getter)MaterialFbxMaps_get_reflection_color, NULL, "reflection_color" },
+    { "transparency_factor", (getter)MaterialFbxMaps_get_transparency_factor, NULL, "transparency_factor" },
+    { "transparency_color", (getter)MaterialFbxMaps_get_transparency_color, NULL, "transparency_color" },
+    { "emission_factor", (getter)MaterialFbxMaps_get_emission_factor, NULL, "emission_factor" },
+    { "emission_color", (getter)MaterialFbxMaps_get_emission_color, NULL, "emission_color" },
+    { "ambient_factor", (getter)MaterialFbxMaps_get_ambient_factor, NULL, "ambient_factor" },
+    { "ambient_color", (getter)MaterialFbxMaps_get_ambient_color, NULL, "ambient_color" },
+    { "normal_map", (getter)MaterialFbxMaps_get_normal_map, NULL, "normal_map" },
+    { "bump", (getter)MaterialFbxMaps_get_bump, NULL, "bump" },
+    { "bump_factor", (getter)MaterialFbxMaps_get_bump_factor, NULL, "bump_factor" },
+    { "displacement_factor", (getter)MaterialFbxMaps_get_displacement_factor, NULL, "displacement_factor" },
+    { "displacement", (getter)MaterialFbxMaps_get_displacement, NULL, "displacement" },
+    { "vector_displacement_factor", (getter)MaterialFbxMaps_get_vector_displacement_factor, NULL, "vector_displacement_factor" },
+    { "vector_displacement", (getter)MaterialFbxMaps_get_vector_displacement, NULL, "vector_displacement" },
+    { NULL },
+};
 
 static PyTypeObject MaterialFbxMaps_Type = {
     .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
@@ -11834,6 +13647,7 @@ static PyTypeObject MaterialFbxMaps_Type = {
     .tp_dealloc = (destructor)&MaterialFbxMaps_dealloc,
     .tp_traverse = (traverseproc)&MaterialFbxMaps_traverse,
     .tp_clear = (inquiry)&MaterialFbxMaps_clear,
+    .tp_getset = MaterialFbxMaps_getset,
 };
 
 static PyObject *MaterialFbxMaps_from(ufbx_material_fbx_maps *data, Context *ctx) {
@@ -11844,19 +13658,590 @@ static PyObject *MaterialFbxMaps_from(ufbx_material_fbx_maps *data, Context *ctx
     return (PyObject*)obj;
 }
 
+#define SLOT_COUNT_MATERIAL_PBR_MAPS 56
+enum {
+    SLOT_MATERIAL_PBR_MAPS__BASE_FACTOR,
+    SLOT_MATERIAL_PBR_MAPS__BASE_COLOR,
+    SLOT_MATERIAL_PBR_MAPS__ROUGHNESS,
+    SLOT_MATERIAL_PBR_MAPS__METALNESS,
+    SLOT_MATERIAL_PBR_MAPS__DIFFUSE_ROUGHNESS,
+    SLOT_MATERIAL_PBR_MAPS__SPECULAR_FACTOR,
+    SLOT_MATERIAL_PBR_MAPS__SPECULAR_COLOR,
+    SLOT_MATERIAL_PBR_MAPS__SPECULAR_IOR,
+    SLOT_MATERIAL_PBR_MAPS__SPECULAR_ANISOTROPY,
+    SLOT_MATERIAL_PBR_MAPS__SPECULAR_ROTATION,
+    SLOT_MATERIAL_PBR_MAPS__TRANSMISSION_FACTOR,
+    SLOT_MATERIAL_PBR_MAPS__TRANSMISSION_COLOR,
+    SLOT_MATERIAL_PBR_MAPS__TRANSMISSION_DEPTH,
+    SLOT_MATERIAL_PBR_MAPS__TRANSMISSION_SCATTER,
+    SLOT_MATERIAL_PBR_MAPS__TRANSMISSION_SCATTER_ANISOTROPY,
+    SLOT_MATERIAL_PBR_MAPS__TRANSMISSION_DISPERSION,
+    SLOT_MATERIAL_PBR_MAPS__TRANSMISSION_ROUGHNESS,
+    SLOT_MATERIAL_PBR_MAPS__TRANSMISSION_EXTRA_ROUGHNESS,
+    SLOT_MATERIAL_PBR_MAPS__TRANSMISSION_PRIORITY,
+    SLOT_MATERIAL_PBR_MAPS__TRANSMISSION_ENABLE_IN_AOV,
+    SLOT_MATERIAL_PBR_MAPS__SUBSURFACE_FACTOR,
+    SLOT_MATERIAL_PBR_MAPS__SUBSURFACE_COLOR,
+    SLOT_MATERIAL_PBR_MAPS__SUBSURFACE_RADIUS,
+    SLOT_MATERIAL_PBR_MAPS__SUBSURFACE_SCALE,
+    SLOT_MATERIAL_PBR_MAPS__SUBSURFACE_ANISOTROPY,
+    SLOT_MATERIAL_PBR_MAPS__SUBSURFACE_TINT_COLOR,
+    SLOT_MATERIAL_PBR_MAPS__SUBSURFACE_TYPE,
+    SLOT_MATERIAL_PBR_MAPS__SHEEN_FACTOR,
+    SLOT_MATERIAL_PBR_MAPS__SHEEN_COLOR,
+    SLOT_MATERIAL_PBR_MAPS__SHEEN_ROUGHNESS,
+    SLOT_MATERIAL_PBR_MAPS__COAT_FACTOR,
+    SLOT_MATERIAL_PBR_MAPS__COAT_COLOR,
+    SLOT_MATERIAL_PBR_MAPS__COAT_ROUGHNESS,
+    SLOT_MATERIAL_PBR_MAPS__COAT_IOR,
+    SLOT_MATERIAL_PBR_MAPS__COAT_ANISOTROPY,
+    SLOT_MATERIAL_PBR_MAPS__COAT_ROTATION,
+    SLOT_MATERIAL_PBR_MAPS__COAT_NORMAL,
+    SLOT_MATERIAL_PBR_MAPS__COAT_AFFECT_BASE_COLOR,
+    SLOT_MATERIAL_PBR_MAPS__COAT_AFFECT_BASE_ROUGHNESS,
+    SLOT_MATERIAL_PBR_MAPS__THIN_FILM_FACTOR,
+    SLOT_MATERIAL_PBR_MAPS__THIN_FILM_THICKNESS,
+    SLOT_MATERIAL_PBR_MAPS__THIN_FILM_IOR,
+    SLOT_MATERIAL_PBR_MAPS__EMISSION_FACTOR,
+    SLOT_MATERIAL_PBR_MAPS__EMISSION_COLOR,
+    SLOT_MATERIAL_PBR_MAPS__OPACITY,
+    SLOT_MATERIAL_PBR_MAPS__INDIRECT_DIFFUSE,
+    SLOT_MATERIAL_PBR_MAPS__INDIRECT_SPECULAR,
+    SLOT_MATERIAL_PBR_MAPS__NORMAL_MAP,
+    SLOT_MATERIAL_PBR_MAPS__TANGENT_MAP,
+    SLOT_MATERIAL_PBR_MAPS__DISPLACEMENT_MAP,
+    SLOT_MATERIAL_PBR_MAPS__MATTE_FACTOR,
+    SLOT_MATERIAL_PBR_MAPS__MATTE_COLOR,
+    SLOT_MATERIAL_PBR_MAPS__AMBIENT_OCCLUSION,
+    SLOT_MATERIAL_PBR_MAPS__GLOSSINESS,
+    SLOT_MATERIAL_PBR_MAPS__COAT_GLOSSINESS,
+    SLOT_MATERIAL_PBR_MAPS__TRANSMISSION_GLOSSINESS,
+};
+
 typedef struct {
     PyObject_HEAD
     ufbx_material_pbr_maps *data;
     Context *ctx;
+    PyObject *slots[SLOT_COUNT_MATERIAL_PBR_MAPS];
 } MaterialPbrMaps;
+
+static PyObject *MaterialPbrMaps_get_base_factor(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__BASE_FACTOR];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->base_factor, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__BASE_FACTOR] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_base_color(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__BASE_COLOR];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->base_color, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__BASE_COLOR] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_roughness(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__ROUGHNESS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->roughness, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__ROUGHNESS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_metalness(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__METALNESS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->metalness, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__METALNESS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_diffuse_roughness(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__DIFFUSE_ROUGHNESS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->diffuse_roughness, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__DIFFUSE_ROUGHNESS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_specular_factor(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__SPECULAR_FACTOR];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->specular_factor, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__SPECULAR_FACTOR] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_specular_color(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__SPECULAR_COLOR];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->specular_color, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__SPECULAR_COLOR] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_specular_ior(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__SPECULAR_IOR];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->specular_ior, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__SPECULAR_IOR] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_specular_anisotropy(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__SPECULAR_ANISOTROPY];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->specular_anisotropy, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__SPECULAR_ANISOTROPY] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_specular_rotation(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__SPECULAR_ROTATION];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->specular_rotation, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__SPECULAR_ROTATION] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_transmission_factor(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__TRANSMISSION_FACTOR];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->transmission_factor, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__TRANSMISSION_FACTOR] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_transmission_color(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__TRANSMISSION_COLOR];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->transmission_color, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__TRANSMISSION_COLOR] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_transmission_depth(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__TRANSMISSION_DEPTH];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->transmission_depth, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__TRANSMISSION_DEPTH] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_transmission_scatter(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__TRANSMISSION_SCATTER];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->transmission_scatter, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__TRANSMISSION_SCATTER] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_transmission_scatter_anisotropy(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__TRANSMISSION_SCATTER_ANISOTROPY];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->transmission_scatter_anisotropy, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__TRANSMISSION_SCATTER_ANISOTROPY] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_transmission_dispersion(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__TRANSMISSION_DISPERSION];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->transmission_dispersion, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__TRANSMISSION_DISPERSION] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_transmission_roughness(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__TRANSMISSION_ROUGHNESS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->transmission_roughness, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__TRANSMISSION_ROUGHNESS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_transmission_extra_roughness(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__TRANSMISSION_EXTRA_ROUGHNESS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->transmission_extra_roughness, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__TRANSMISSION_EXTRA_ROUGHNESS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_transmission_priority(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__TRANSMISSION_PRIORITY];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->transmission_priority, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__TRANSMISSION_PRIORITY] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_transmission_enable_in_aov(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__TRANSMISSION_ENABLE_IN_AOV];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->transmission_enable_in_aov, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__TRANSMISSION_ENABLE_IN_AOV] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_subsurface_factor(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__SUBSURFACE_FACTOR];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->subsurface_factor, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__SUBSURFACE_FACTOR] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_subsurface_color(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__SUBSURFACE_COLOR];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->subsurface_color, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__SUBSURFACE_COLOR] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_subsurface_radius(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__SUBSURFACE_RADIUS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->subsurface_radius, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__SUBSURFACE_RADIUS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_subsurface_scale(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__SUBSURFACE_SCALE];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->subsurface_scale, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__SUBSURFACE_SCALE] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_subsurface_anisotropy(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__SUBSURFACE_ANISOTROPY];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->subsurface_anisotropy, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__SUBSURFACE_ANISOTROPY] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_subsurface_tint_color(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__SUBSURFACE_TINT_COLOR];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->subsurface_tint_color, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__SUBSURFACE_TINT_COLOR] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_subsurface_type(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__SUBSURFACE_TYPE];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->subsurface_type, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__SUBSURFACE_TYPE] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_sheen_factor(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__SHEEN_FACTOR];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->sheen_factor, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__SHEEN_FACTOR] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_sheen_color(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__SHEEN_COLOR];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->sheen_color, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__SHEEN_COLOR] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_sheen_roughness(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__SHEEN_ROUGHNESS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->sheen_roughness, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__SHEEN_ROUGHNESS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_coat_factor(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__COAT_FACTOR];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->coat_factor, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__COAT_FACTOR] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_coat_color(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__COAT_COLOR];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->coat_color, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__COAT_COLOR] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_coat_roughness(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__COAT_ROUGHNESS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->coat_roughness, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__COAT_ROUGHNESS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_coat_ior(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__COAT_IOR];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->coat_ior, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__COAT_IOR] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_coat_anisotropy(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__COAT_ANISOTROPY];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->coat_anisotropy, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__COAT_ANISOTROPY] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_coat_rotation(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__COAT_ROTATION];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->coat_rotation, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__COAT_ROTATION] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_coat_normal(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__COAT_NORMAL];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->coat_normal, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__COAT_NORMAL] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_coat_affect_base_color(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__COAT_AFFECT_BASE_COLOR];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->coat_affect_base_color, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__COAT_AFFECT_BASE_COLOR] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_coat_affect_base_roughness(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__COAT_AFFECT_BASE_ROUGHNESS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->coat_affect_base_roughness, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__COAT_AFFECT_BASE_ROUGHNESS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_thin_film_factor(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__THIN_FILM_FACTOR];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->thin_film_factor, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__THIN_FILM_FACTOR] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_thin_film_thickness(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__THIN_FILM_THICKNESS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->thin_film_thickness, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__THIN_FILM_THICKNESS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_thin_film_ior(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__THIN_FILM_IOR];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->thin_film_ior, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__THIN_FILM_IOR] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_emission_factor(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__EMISSION_FACTOR];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->emission_factor, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__EMISSION_FACTOR] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_emission_color(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__EMISSION_COLOR];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->emission_color, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__EMISSION_COLOR] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_opacity(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__OPACITY];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->opacity, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__OPACITY] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_indirect_diffuse(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__INDIRECT_DIFFUSE];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->indirect_diffuse, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__INDIRECT_DIFFUSE] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_indirect_specular(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__INDIRECT_SPECULAR];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->indirect_specular, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__INDIRECT_SPECULAR] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_normal_map(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__NORMAL_MAP];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->normal_map, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__NORMAL_MAP] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_tangent_map(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__TANGENT_MAP];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->tangent_map, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__TANGENT_MAP] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_displacement_map(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__DISPLACEMENT_MAP];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->displacement_map, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__DISPLACEMENT_MAP] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_matte_factor(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__MATTE_FACTOR];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->matte_factor, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__MATTE_FACTOR] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_matte_color(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__MATTE_COLOR];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->matte_color, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__MATTE_COLOR] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_ambient_occlusion(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__AMBIENT_OCCLUSION];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->ambient_occlusion, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__AMBIENT_OCCLUSION] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_glossiness(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__GLOSSINESS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->glossiness, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__GLOSSINESS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_coat_glossiness(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__COAT_GLOSSINESS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->coat_glossiness, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__COAT_GLOSSINESS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialPbrMaps_get_transmission_glossiness(MaterialPbrMaps *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_PBR_MAPS__TRANSMISSION_GLOSSINESS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialMap_from(&self->data->transmission_glossiness, self->ctx);
+    self->slots[SLOT_MATERIAL_PBR_MAPS__TRANSMISSION_GLOSSINESS] = slot;
+    return Py_NewRef(slot);
+}
 
 static int MaterialPbrMaps_traverse(MaterialPbrMaps *self, visitproc visit, void *arg) {
     Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_MATERIAL_PBR_MAPS; i++) {
+        Py_VISIT(self->slots[i]);
+    }
     return 0;
 }
 
 static int MaterialPbrMaps_clear(MaterialPbrMaps *self) {
     Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_MATERIAL_PBR_MAPS; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
     return 0;
 }
 
@@ -11865,6 +14250,66 @@ void MaterialPbrMaps_dealloc(MaterialPbrMaps *self) {
     MaterialPbrMaps_clear(self);
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
+
+static PyGetSetDef MaterialPbrMaps_getset[] = {
+    { "base_factor", (getter)MaterialPbrMaps_get_base_factor, NULL, "base_factor" },
+    { "base_color", (getter)MaterialPbrMaps_get_base_color, NULL, "base_color" },
+    { "roughness", (getter)MaterialPbrMaps_get_roughness, NULL, "roughness" },
+    { "metalness", (getter)MaterialPbrMaps_get_metalness, NULL, "metalness" },
+    { "diffuse_roughness", (getter)MaterialPbrMaps_get_diffuse_roughness, NULL, "diffuse_roughness" },
+    { "specular_factor", (getter)MaterialPbrMaps_get_specular_factor, NULL, "specular_factor" },
+    { "specular_color", (getter)MaterialPbrMaps_get_specular_color, NULL, "specular_color" },
+    { "specular_ior", (getter)MaterialPbrMaps_get_specular_ior, NULL, "specular_ior" },
+    { "specular_anisotropy", (getter)MaterialPbrMaps_get_specular_anisotropy, NULL, "specular_anisotropy" },
+    { "specular_rotation", (getter)MaterialPbrMaps_get_specular_rotation, NULL, "specular_rotation" },
+    { "transmission_factor", (getter)MaterialPbrMaps_get_transmission_factor, NULL, "transmission_factor" },
+    { "transmission_color", (getter)MaterialPbrMaps_get_transmission_color, NULL, "transmission_color" },
+    { "transmission_depth", (getter)MaterialPbrMaps_get_transmission_depth, NULL, "transmission_depth" },
+    { "transmission_scatter", (getter)MaterialPbrMaps_get_transmission_scatter, NULL, "transmission_scatter" },
+    { "transmission_scatter_anisotropy", (getter)MaterialPbrMaps_get_transmission_scatter_anisotropy, NULL, "transmission_scatter_anisotropy" },
+    { "transmission_dispersion", (getter)MaterialPbrMaps_get_transmission_dispersion, NULL, "transmission_dispersion" },
+    { "transmission_roughness", (getter)MaterialPbrMaps_get_transmission_roughness, NULL, "transmission_roughness" },
+    { "transmission_extra_roughness", (getter)MaterialPbrMaps_get_transmission_extra_roughness, NULL, "transmission_extra_roughness" },
+    { "transmission_priority", (getter)MaterialPbrMaps_get_transmission_priority, NULL, "transmission_priority" },
+    { "transmission_enable_in_aov", (getter)MaterialPbrMaps_get_transmission_enable_in_aov, NULL, "transmission_enable_in_aov" },
+    { "subsurface_factor", (getter)MaterialPbrMaps_get_subsurface_factor, NULL, "subsurface_factor" },
+    { "subsurface_color", (getter)MaterialPbrMaps_get_subsurface_color, NULL, "subsurface_color" },
+    { "subsurface_radius", (getter)MaterialPbrMaps_get_subsurface_radius, NULL, "subsurface_radius" },
+    { "subsurface_scale", (getter)MaterialPbrMaps_get_subsurface_scale, NULL, "subsurface_scale" },
+    { "subsurface_anisotropy", (getter)MaterialPbrMaps_get_subsurface_anisotropy, NULL, "subsurface_anisotropy" },
+    { "subsurface_tint_color", (getter)MaterialPbrMaps_get_subsurface_tint_color, NULL, "subsurface_tint_color" },
+    { "subsurface_type", (getter)MaterialPbrMaps_get_subsurface_type, NULL, "subsurface_type" },
+    { "sheen_factor", (getter)MaterialPbrMaps_get_sheen_factor, NULL, "sheen_factor" },
+    { "sheen_color", (getter)MaterialPbrMaps_get_sheen_color, NULL, "sheen_color" },
+    { "sheen_roughness", (getter)MaterialPbrMaps_get_sheen_roughness, NULL, "sheen_roughness" },
+    { "coat_factor", (getter)MaterialPbrMaps_get_coat_factor, NULL, "coat_factor" },
+    { "coat_color", (getter)MaterialPbrMaps_get_coat_color, NULL, "coat_color" },
+    { "coat_roughness", (getter)MaterialPbrMaps_get_coat_roughness, NULL, "coat_roughness" },
+    { "coat_ior", (getter)MaterialPbrMaps_get_coat_ior, NULL, "coat_ior" },
+    { "coat_anisotropy", (getter)MaterialPbrMaps_get_coat_anisotropy, NULL, "coat_anisotropy" },
+    { "coat_rotation", (getter)MaterialPbrMaps_get_coat_rotation, NULL, "coat_rotation" },
+    { "coat_normal", (getter)MaterialPbrMaps_get_coat_normal, NULL, "coat_normal" },
+    { "coat_affect_base_color", (getter)MaterialPbrMaps_get_coat_affect_base_color, NULL, "coat_affect_base_color" },
+    { "coat_affect_base_roughness", (getter)MaterialPbrMaps_get_coat_affect_base_roughness, NULL, "coat_affect_base_roughness" },
+    { "thin_film_factor", (getter)MaterialPbrMaps_get_thin_film_factor, NULL, "thin_film_factor" },
+    { "thin_film_thickness", (getter)MaterialPbrMaps_get_thin_film_thickness, NULL, "thin_film_thickness" },
+    { "thin_film_ior", (getter)MaterialPbrMaps_get_thin_film_ior, NULL, "thin_film_ior" },
+    { "emission_factor", (getter)MaterialPbrMaps_get_emission_factor, NULL, "emission_factor" },
+    { "emission_color", (getter)MaterialPbrMaps_get_emission_color, NULL, "emission_color" },
+    { "opacity", (getter)MaterialPbrMaps_get_opacity, NULL, "opacity" },
+    { "indirect_diffuse", (getter)MaterialPbrMaps_get_indirect_diffuse, NULL, "indirect_diffuse" },
+    { "indirect_specular", (getter)MaterialPbrMaps_get_indirect_specular, NULL, "indirect_specular" },
+    { "normal_map", (getter)MaterialPbrMaps_get_normal_map, NULL, "normal_map" },
+    { "tangent_map", (getter)MaterialPbrMaps_get_tangent_map, NULL, "tangent_map" },
+    { "displacement_map", (getter)MaterialPbrMaps_get_displacement_map, NULL, "displacement_map" },
+    { "matte_factor", (getter)MaterialPbrMaps_get_matte_factor, NULL, "matte_factor" },
+    { "matte_color", (getter)MaterialPbrMaps_get_matte_color, NULL, "matte_color" },
+    { "ambient_occlusion", (getter)MaterialPbrMaps_get_ambient_occlusion, NULL, "ambient_occlusion" },
+    { "glossiness", (getter)MaterialPbrMaps_get_glossiness, NULL, "glossiness" },
+    { "coat_glossiness", (getter)MaterialPbrMaps_get_coat_glossiness, NULL, "coat_glossiness" },
+    { "transmission_glossiness", (getter)MaterialPbrMaps_get_transmission_glossiness, NULL, "transmission_glossiness" },
+    { NULL },
+};
 
 static PyTypeObject MaterialPbrMaps_Type = {
     .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
@@ -11877,6 +14322,7 @@ static PyTypeObject MaterialPbrMaps_Type = {
     .tp_dealloc = (destructor)&MaterialPbrMaps_dealloc,
     .tp_traverse = (traverseproc)&MaterialPbrMaps_traverse,
     .tp_clear = (inquiry)&MaterialPbrMaps_clear,
+    .tp_getset = MaterialPbrMaps_getset,
 };
 
 static PyObject *MaterialPbrMaps_from(ufbx_material_pbr_maps *data, Context *ctx) {
@@ -11887,19 +14333,260 @@ static PyObject *MaterialPbrMaps_from(ufbx_material_pbr_maps *data, Context *ctx
     return (PyObject*)obj;
 }
 
+#define SLOT_COUNT_MATERIAL_FEATURES 23
+enum {
+    SLOT_MATERIAL_FEATURES__PBR,
+    SLOT_MATERIAL_FEATURES__METALNESS,
+    SLOT_MATERIAL_FEATURES__DIFFUSE,
+    SLOT_MATERIAL_FEATURES__SPECULAR,
+    SLOT_MATERIAL_FEATURES__EMISSION,
+    SLOT_MATERIAL_FEATURES__TRANSMISSION,
+    SLOT_MATERIAL_FEATURES__COAT,
+    SLOT_MATERIAL_FEATURES__SHEEN,
+    SLOT_MATERIAL_FEATURES__OPACITY,
+    SLOT_MATERIAL_FEATURES__AMBIENT_OCCLUSION,
+    SLOT_MATERIAL_FEATURES__MATTE,
+    SLOT_MATERIAL_FEATURES__UNLIT,
+    SLOT_MATERIAL_FEATURES__IOR,
+    SLOT_MATERIAL_FEATURES__DIFFUSE_ROUGHNESS,
+    SLOT_MATERIAL_FEATURES__TRANSMISSION_ROUGHNESS,
+    SLOT_MATERIAL_FEATURES__THIN_WALLED,
+    SLOT_MATERIAL_FEATURES__CAUSTICS,
+    SLOT_MATERIAL_FEATURES__EXIT_TO_BACKGROUND,
+    SLOT_MATERIAL_FEATURES__INTERNAL_REFLECTIONS,
+    SLOT_MATERIAL_FEATURES__DOUBLE_SIDED,
+    SLOT_MATERIAL_FEATURES__ROUGHNESS_AS_GLOSSINESS,
+    SLOT_MATERIAL_FEATURES__COAT_ROUGHNESS_AS_GLOSSINESS,
+    SLOT_MATERIAL_FEATURES__TRANSMISSION_ROUGHNESS_AS_GLOSSINESS,
+};
+
 typedef struct {
     PyObject_HEAD
     ufbx_material_features *data;
     Context *ctx;
+    PyObject *slots[SLOT_COUNT_MATERIAL_FEATURES];
 } MaterialFeatures;
+
+static PyObject *MaterialFeatures_get_pbr(MaterialFeatures *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_FEATURES__PBR];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialFeatureInfo_from(&self->data->pbr, self->ctx);
+    self->slots[SLOT_MATERIAL_FEATURES__PBR] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialFeatures_get_metalness(MaterialFeatures *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_FEATURES__METALNESS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialFeatureInfo_from(&self->data->metalness, self->ctx);
+    self->slots[SLOT_MATERIAL_FEATURES__METALNESS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialFeatures_get_diffuse(MaterialFeatures *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_FEATURES__DIFFUSE];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialFeatureInfo_from(&self->data->diffuse, self->ctx);
+    self->slots[SLOT_MATERIAL_FEATURES__DIFFUSE] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialFeatures_get_specular(MaterialFeatures *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_FEATURES__SPECULAR];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialFeatureInfo_from(&self->data->specular, self->ctx);
+    self->slots[SLOT_MATERIAL_FEATURES__SPECULAR] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialFeatures_get_emission(MaterialFeatures *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_FEATURES__EMISSION];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialFeatureInfo_from(&self->data->emission, self->ctx);
+    self->slots[SLOT_MATERIAL_FEATURES__EMISSION] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialFeatures_get_transmission(MaterialFeatures *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_FEATURES__TRANSMISSION];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialFeatureInfo_from(&self->data->transmission, self->ctx);
+    self->slots[SLOT_MATERIAL_FEATURES__TRANSMISSION] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialFeatures_get_coat(MaterialFeatures *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_FEATURES__COAT];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialFeatureInfo_from(&self->data->coat, self->ctx);
+    self->slots[SLOT_MATERIAL_FEATURES__COAT] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialFeatures_get_sheen(MaterialFeatures *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_FEATURES__SHEEN];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialFeatureInfo_from(&self->data->sheen, self->ctx);
+    self->slots[SLOT_MATERIAL_FEATURES__SHEEN] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialFeatures_get_opacity(MaterialFeatures *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_FEATURES__OPACITY];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialFeatureInfo_from(&self->data->opacity, self->ctx);
+    self->slots[SLOT_MATERIAL_FEATURES__OPACITY] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialFeatures_get_ambient_occlusion(MaterialFeatures *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_FEATURES__AMBIENT_OCCLUSION];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialFeatureInfo_from(&self->data->ambient_occlusion, self->ctx);
+    self->slots[SLOT_MATERIAL_FEATURES__AMBIENT_OCCLUSION] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialFeatures_get_matte(MaterialFeatures *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_FEATURES__MATTE];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialFeatureInfo_from(&self->data->matte, self->ctx);
+    self->slots[SLOT_MATERIAL_FEATURES__MATTE] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialFeatures_get_unlit(MaterialFeatures *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_FEATURES__UNLIT];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialFeatureInfo_from(&self->data->unlit, self->ctx);
+    self->slots[SLOT_MATERIAL_FEATURES__UNLIT] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialFeatures_get_ior(MaterialFeatures *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_FEATURES__IOR];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialFeatureInfo_from(&self->data->ior, self->ctx);
+    self->slots[SLOT_MATERIAL_FEATURES__IOR] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialFeatures_get_diffuse_roughness(MaterialFeatures *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_FEATURES__DIFFUSE_ROUGHNESS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialFeatureInfo_from(&self->data->diffuse_roughness, self->ctx);
+    self->slots[SLOT_MATERIAL_FEATURES__DIFFUSE_ROUGHNESS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialFeatures_get_transmission_roughness(MaterialFeatures *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_FEATURES__TRANSMISSION_ROUGHNESS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialFeatureInfo_from(&self->data->transmission_roughness, self->ctx);
+    self->slots[SLOT_MATERIAL_FEATURES__TRANSMISSION_ROUGHNESS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialFeatures_get_thin_walled(MaterialFeatures *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_FEATURES__THIN_WALLED];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialFeatureInfo_from(&self->data->thin_walled, self->ctx);
+    self->slots[SLOT_MATERIAL_FEATURES__THIN_WALLED] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialFeatures_get_caustics(MaterialFeatures *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_FEATURES__CAUSTICS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialFeatureInfo_from(&self->data->caustics, self->ctx);
+    self->slots[SLOT_MATERIAL_FEATURES__CAUSTICS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialFeatures_get_exit_to_background(MaterialFeatures *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_FEATURES__EXIT_TO_BACKGROUND];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialFeatureInfo_from(&self->data->exit_to_background, self->ctx);
+    self->slots[SLOT_MATERIAL_FEATURES__EXIT_TO_BACKGROUND] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialFeatures_get_internal_reflections(MaterialFeatures *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_FEATURES__INTERNAL_REFLECTIONS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialFeatureInfo_from(&self->data->internal_reflections, self->ctx);
+    self->slots[SLOT_MATERIAL_FEATURES__INTERNAL_REFLECTIONS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialFeatures_get_double_sided(MaterialFeatures *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_FEATURES__DOUBLE_SIDED];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialFeatureInfo_from(&self->data->double_sided, self->ctx);
+    self->slots[SLOT_MATERIAL_FEATURES__DOUBLE_SIDED] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialFeatures_get_roughness_as_glossiness(MaterialFeatures *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_FEATURES__ROUGHNESS_AS_GLOSSINESS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialFeatureInfo_from(&self->data->roughness_as_glossiness, self->ctx);
+    self->slots[SLOT_MATERIAL_FEATURES__ROUGHNESS_AS_GLOSSINESS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialFeatures_get_coat_roughness_as_glossiness(MaterialFeatures *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_FEATURES__COAT_ROUGHNESS_AS_GLOSSINESS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialFeatureInfo_from(&self->data->coat_roughness_as_glossiness, self->ctx);
+    self->slots[SLOT_MATERIAL_FEATURES__COAT_ROUGHNESS_AS_GLOSSINESS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MaterialFeatures_get_transmission_roughness_as_glossiness(MaterialFeatures *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL_FEATURES__TRANSMISSION_ROUGHNESS_AS_GLOSSINESS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialFeatureInfo_from(&self->data->transmission_roughness_as_glossiness, self->ctx);
+    self->slots[SLOT_MATERIAL_FEATURES__TRANSMISSION_ROUGHNESS_AS_GLOSSINESS] = slot;
+    return Py_NewRef(slot);
+}
 
 static int MaterialFeatures_traverse(MaterialFeatures *self, visitproc visit, void *arg) {
     Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_MATERIAL_FEATURES; i++) {
+        Py_VISIT(self->slots[i]);
+    }
     return 0;
 }
 
 static int MaterialFeatures_clear(MaterialFeatures *self) {
     Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_MATERIAL_FEATURES; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
     return 0;
 }
 
@@ -11908,6 +14595,33 @@ void MaterialFeatures_dealloc(MaterialFeatures *self) {
     MaterialFeatures_clear(self);
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
+
+static PyGetSetDef MaterialFeatures_getset[] = {
+    { "pbr", (getter)MaterialFeatures_get_pbr, NULL, "pbr" },
+    { "metalness", (getter)MaterialFeatures_get_metalness, NULL, "metalness" },
+    { "diffuse", (getter)MaterialFeatures_get_diffuse, NULL, "diffuse" },
+    { "specular", (getter)MaterialFeatures_get_specular, NULL, "specular" },
+    { "emission", (getter)MaterialFeatures_get_emission, NULL, "emission" },
+    { "transmission", (getter)MaterialFeatures_get_transmission, NULL, "transmission" },
+    { "coat", (getter)MaterialFeatures_get_coat, NULL, "coat" },
+    { "sheen", (getter)MaterialFeatures_get_sheen, NULL, "sheen" },
+    { "opacity", (getter)MaterialFeatures_get_opacity, NULL, "opacity" },
+    { "ambient_occlusion", (getter)MaterialFeatures_get_ambient_occlusion, NULL, "ambient_occlusion" },
+    { "matte", (getter)MaterialFeatures_get_matte, NULL, "matte" },
+    { "unlit", (getter)MaterialFeatures_get_unlit, NULL, "unlit" },
+    { "ior", (getter)MaterialFeatures_get_ior, NULL, "ior" },
+    { "diffuse_roughness", (getter)MaterialFeatures_get_diffuse_roughness, NULL, "diffuse_roughness" },
+    { "transmission_roughness", (getter)MaterialFeatures_get_transmission_roughness, NULL, "transmission_roughness" },
+    { "thin_walled", (getter)MaterialFeatures_get_thin_walled, NULL, "thin_walled" },
+    { "caustics", (getter)MaterialFeatures_get_caustics, NULL, "caustics" },
+    { "exit_to_background", (getter)MaterialFeatures_get_exit_to_background, NULL, "exit_to_background" },
+    { "internal_reflections", (getter)MaterialFeatures_get_internal_reflections, NULL, "internal_reflections" },
+    { "double_sided", (getter)MaterialFeatures_get_double_sided, NULL, "double_sided" },
+    { "roughness_as_glossiness", (getter)MaterialFeatures_get_roughness_as_glossiness, NULL, "roughness_as_glossiness" },
+    { "coat_roughness_as_glossiness", (getter)MaterialFeatures_get_coat_roughness_as_glossiness, NULL, "coat_roughness_as_glossiness" },
+    { "transmission_roughness_as_glossiness", (getter)MaterialFeatures_get_transmission_roughness_as_glossiness, NULL, "transmission_roughness_as_glossiness" },
+    { NULL },
+};
 
 static PyTypeObject MaterialFeatures_Type = {
     .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
@@ -11920,6 +14634,7 @@ static PyTypeObject MaterialFeatures_Type = {
     .tp_dealloc = (destructor)&MaterialFeatures_dealloc,
     .tp_traverse = (traverseproc)&MaterialFeatures_traverse,
     .tp_clear = (inquiry)&MaterialFeatures_clear,
+    .tp_getset = MaterialFeatures_getset,
 };
 
 static PyObject *MaterialFeatures_from(ufbx_material_features *data, Context *ctx) {
@@ -11930,8 +14645,12 @@ static PyObject *MaterialFeatures_from(ufbx_material_features *data, Context *ct
     return (PyObject*)obj;
 }
 
-#define SLOT_COUNT_MATERIAL 8
+#define SLOT_COUNT_MATERIAL 12
 enum {
+    SLOT_MATERIAL__NAME,
+    SLOT_MATERIAL__PROPS,
+    SLOT_MATERIAL__ELEMENT_ID,
+    SLOT_MATERIAL__TYPED_ID,
     SLOT_MATERIAL__FBX,
     SLOT_MATERIAL__PBR,
     SLOT_MATERIAL__FEATURES,
@@ -11953,6 +14672,42 @@ typedef struct {
     };
     PyObject *slots[SLOT_COUNT_MATERIAL];
 } Material;
+
+static PyObject *Material_get_name(Material *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL__NAME];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = String_from(self->data->name);
+    self->slots[SLOT_MATERIAL__NAME] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Material_get_props(Material *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL__PROPS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = Props_from(&self->data->props, self->ctx);
+    self->slots[SLOT_MATERIAL__PROPS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Material_get_element_id(Material *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL__ELEMENT_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->element_id);
+    self->slots[SLOT_MATERIAL__ELEMENT_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Material_get_typed_id(Material *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_MATERIAL__TYPED_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->typed_id);
+    self->slots[SLOT_MATERIAL__TYPED_ID] = slot;
+    return Py_NewRef(slot);
+}
 
 static PyObject *Material_get_fbx(Material *self, void *closure) {
     PyObject *slot = self->slots[SLOT_MATERIAL__FBX];
@@ -12049,6 +14804,10 @@ void Material_dealloc(Material *self) {
 }
 
 static PyGetSetDef Material_getset[] = {
+    { "name", (getter)Material_get_name, NULL, "name" },
+    { "props", (getter)Material_get_props, NULL, "props" },
+    { "element_id", (getter)Material_get_element_id, NULL, "element_id" },
+    { "typed_id", (getter)Material_get_typed_id, NULL, "typed_id" },
     { "fbx", (getter)Material_get_fbx, NULL, "fbx" },
     { "pbr", (getter)Material_get_pbr, NULL, "pbr" },
     { "features", (getter)Material_get_features, NULL, "features" },
@@ -12167,9 +14926,10 @@ static PyObject *TextureLayer_from(ufbx_texture_layer *data, Context *ctx) {
     return (PyObject*)obj;
 }
 
-#define SLOT_COUNT_SHADER_TEXTURE_INPUT 10
+#define SLOT_COUNT_SHADER_TEXTURE_INPUT 11
 enum {
     SLOT_SHADER_TEXTURE_INPUT__NAME,
+    SLOT_SHADER_TEXTURE_INPUT__VALUE_VEC4,
     SLOT_SHADER_TEXTURE_INPUT__VALUE_INT,
     SLOT_SHADER_TEXTURE_INPUT__VALUE_STR,
     SLOT_SHADER_TEXTURE_INPUT__VALUE_BLOB,
@@ -12194,6 +14954,15 @@ static PyObject *ShaderTextureInput_get_name(ShaderTextureInput *self, void *clo
     if (!self->ctx->ok) return Context_error(self->ctx);
     slot = String_from(self->data->name);
     self->slots[SLOT_SHADER_TEXTURE_INPUT__NAME] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *ShaderTextureInput_get_value_vec4(ShaderTextureInput *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SHADER_TEXTURE_INPUT__VALUE_VEC4];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = Vec4_from(&self->data->value_vec4);
+    self->slots[SLOT_SHADER_TEXTURE_INPUT__VALUE_VEC4] = slot;
     return Py_NewRef(slot);
 }
 
@@ -12302,6 +15071,7 @@ void ShaderTextureInput_dealloc(ShaderTextureInput *self) {
 
 static PyGetSetDef ShaderTextureInput_getset[] = {
     { "name", (getter)ShaderTextureInput_get_name, NULL, "name" },
+    { "value_vec4", (getter)ShaderTextureInput_get_value_vec4, NULL, "value_vec4" },
     { "value_int", (getter)ShaderTextureInput_get_value_int, NULL, "value_int" },
     { "value_str", (getter)ShaderTextureInput_get_value_str, NULL, "value_str" },
     { "value_blob", (getter)ShaderTextureInput_get_value_blob, NULL, "value_blob" },
@@ -12641,8 +15411,12 @@ static PyObject *TextureFile_from(ufbx_texture_file *data, Context *ctx) {
     return (PyObject*)obj;
 }
 
-#define SLOT_COUNT_TEXTURE 21
+#define SLOT_COUNT_TEXTURE 25
 enum {
+    SLOT_TEXTURE__NAME,
+    SLOT_TEXTURE__PROPS,
+    SLOT_TEXTURE__ELEMENT_ID,
+    SLOT_TEXTURE__TYPED_ID,
     SLOT_TEXTURE__TYPE,
     SLOT_TEXTURE__FILENAME,
     SLOT_TEXTURE__ABSOLUTE_FILENAME,
@@ -12677,6 +15451,42 @@ typedef struct {
     };
     PyObject *slots[SLOT_COUNT_TEXTURE];
 } Texture;
+
+static PyObject *Texture_get_name(Texture *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_TEXTURE__NAME];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = String_from(self->data->name);
+    self->slots[SLOT_TEXTURE__NAME] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Texture_get_props(Texture *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_TEXTURE__PROPS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = Props_from(&self->data->props, self->ctx);
+    self->slots[SLOT_TEXTURE__PROPS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Texture_get_element_id(Texture *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_TEXTURE__ELEMENT_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->element_id);
+    self->slots[SLOT_TEXTURE__ELEMENT_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Texture_get_typed_id(Texture *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_TEXTURE__TYPED_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->typed_id);
+    self->slots[SLOT_TEXTURE__TYPED_ID] = slot;
+    return Py_NewRef(slot);
+}
 
 static PyObject *Texture_get_type(Texture *self, void *closure) {
     PyObject *slot = self->slots[SLOT_TEXTURE__TYPE];
@@ -12890,6 +15700,10 @@ void Texture_dealloc(Texture *self) {
 }
 
 static PyGetSetDef Texture_getset[] = {
+    { "name", (getter)Texture_get_name, NULL, "name" },
+    { "props", (getter)Texture_get_props, NULL, "props" },
+    { "element_id", (getter)Texture_get_element_id, NULL, "element_id" },
+    { "typed_id", (getter)Texture_get_typed_id, NULL, "typed_id" },
     { "type", (getter)Texture_get_type, NULL, "type" },
     { "filename", (getter)Texture_get_filename, NULL, "filename" },
     { "absolute_filename", (getter)Texture_get_absolute_filename, NULL, "absolute_filename" },
@@ -12929,8 +15743,12 @@ static PyTypeObject Texture_Type = {
     .tp_base = &Element_Type,
 };
 
-#define SLOT_COUNT_VIDEO 7
+#define SLOT_COUNT_VIDEO 11
 enum {
+    SLOT_VIDEO__NAME,
+    SLOT_VIDEO__PROPS,
+    SLOT_VIDEO__ELEMENT_ID,
+    SLOT_VIDEO__TYPED_ID,
     SLOT_VIDEO__FILENAME,
     SLOT_VIDEO__ABSOLUTE_FILENAME,
     SLOT_VIDEO__RELATIVE_FILENAME,
@@ -12951,6 +15769,42 @@ typedef struct {
     };
     PyObject *slots[SLOT_COUNT_VIDEO];
 } Video;
+
+static PyObject *Video_get_name(Video *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_VIDEO__NAME];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = String_from(self->data->name);
+    self->slots[SLOT_VIDEO__NAME] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Video_get_props(Video *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_VIDEO__PROPS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = Props_from(&self->data->props, self->ctx);
+    self->slots[SLOT_VIDEO__PROPS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Video_get_element_id(Video *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_VIDEO__ELEMENT_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->element_id);
+    self->slots[SLOT_VIDEO__ELEMENT_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Video_get_typed_id(Video *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_VIDEO__TYPED_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->typed_id);
+    self->slots[SLOT_VIDEO__TYPED_ID] = slot;
+    return Py_NewRef(slot);
+}
 
 static PyObject *Video_get_filename(Video *self, void *closure) {
     PyObject *slot = self->slots[SLOT_VIDEO__FILENAME];
@@ -13038,6 +15892,10 @@ void Video_dealloc(Video *self) {
 }
 
 static PyGetSetDef Video_getset[] = {
+    { "name", (getter)Video_get_name, NULL, "name" },
+    { "props", (getter)Video_get_props, NULL, "props" },
+    { "element_id", (getter)Video_get_element_id, NULL, "element_id" },
+    { "typed_id", (getter)Video_get_typed_id, NULL, "typed_id" },
     { "filename", (getter)Video_get_filename, NULL, "filename" },
     { "absolute_filename", (getter)Video_get_absolute_filename, NULL, "absolute_filename" },
     { "relative_filename", (getter)Video_get_relative_filename, NULL, "relative_filename" },
@@ -13063,8 +15921,12 @@ static PyTypeObject Video_Type = {
     .tp_base = &Element_Type,
 };
 
-#define SLOT_COUNT_SHADER 2
+#define SLOT_COUNT_SHADER 6
 enum {
+    SLOT_SHADER__NAME,
+    SLOT_SHADER__PROPS,
+    SLOT_SHADER__ELEMENT_ID,
+    SLOT_SHADER__TYPED_ID,
     SLOT_SHADER__TYPE,
     SLOT_SHADER__BINDINGS,
 };
@@ -13080,6 +15942,42 @@ typedef struct {
     };
     PyObject *slots[SLOT_COUNT_SHADER];
 } Shader;
+
+static PyObject *Shader_get_name(Shader *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SHADER__NAME];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = String_from(self->data->name);
+    self->slots[SLOT_SHADER__NAME] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Shader_get_props(Shader *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SHADER__PROPS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = Props_from(&self->data->props, self->ctx);
+    self->slots[SLOT_SHADER__PROPS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Shader_get_element_id(Shader *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SHADER__ELEMENT_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->element_id);
+    self->slots[SLOT_SHADER__ELEMENT_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Shader_get_typed_id(Shader *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SHADER__TYPED_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->typed_id);
+    self->slots[SLOT_SHADER__TYPED_ID] = slot;
+    return Py_NewRef(slot);
+}
 
 static PyObject *Shader_get_type(Shader *self, void *closure) {
     PyObject *slot = self->slots[SLOT_SHADER__TYPE];
@@ -13122,6 +16020,10 @@ void Shader_dealloc(Shader *self) {
 }
 
 static PyGetSetDef Shader_getset[] = {
+    { "name", (getter)Shader_get_name, NULL, "name" },
+    { "props", (getter)Shader_get_props, NULL, "props" },
+    { "element_id", (getter)Shader_get_element_id, NULL, "element_id" },
+    { "typed_id", (getter)Shader_get_typed_id, NULL, "typed_id" },
     { "type", (getter)Shader_get_type, NULL, "type" },
     { "bindings", (getter)Shader_get_bindings, NULL, "bindings" },
     { NULL },
@@ -13223,8 +16125,12 @@ static PyObject *ShaderPropBinding_from(ufbx_shader_prop_binding *data, Context 
     return (PyObject*)obj;
 }
 
-#define SLOT_COUNT_SHADER_BINDING 1
+#define SLOT_COUNT_SHADER_BINDING 5
 enum {
+    SLOT_SHADER_BINDING__NAME,
+    SLOT_SHADER_BINDING__PROPS,
+    SLOT_SHADER_BINDING__ELEMENT_ID,
+    SLOT_SHADER_BINDING__TYPED_ID,
     SLOT_SHADER_BINDING__PROP_BINDINGS,
 };
 
@@ -13239,6 +16145,42 @@ typedef struct {
     };
     PyObject *slots[SLOT_COUNT_SHADER_BINDING];
 } ShaderBinding;
+
+static PyObject *ShaderBinding_get_name(ShaderBinding *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SHADER_BINDING__NAME];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = String_from(self->data->name);
+    self->slots[SLOT_SHADER_BINDING__NAME] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *ShaderBinding_get_props(ShaderBinding *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SHADER_BINDING__PROPS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = Props_from(&self->data->props, self->ctx);
+    self->slots[SLOT_SHADER_BINDING__PROPS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *ShaderBinding_get_element_id(ShaderBinding *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SHADER_BINDING__ELEMENT_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->element_id);
+    self->slots[SLOT_SHADER_BINDING__ELEMENT_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *ShaderBinding_get_typed_id(ShaderBinding *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SHADER_BINDING__TYPED_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->typed_id);
+    self->slots[SLOT_SHADER_BINDING__TYPED_ID] = slot;
+    return Py_NewRef(slot);
+}
 
 static PyObject *ShaderBinding_get_prop_bindings(ShaderBinding *self, void *closure) {
     PyObject *slot = self->slots[SLOT_SHADER_BINDING__PROP_BINDINGS];
@@ -13272,6 +16214,10 @@ void ShaderBinding_dealloc(ShaderBinding *self) {
 }
 
 static PyGetSetDef ShaderBinding_getset[] = {
+    { "name", (getter)ShaderBinding_get_name, NULL, "name" },
+    { "props", (getter)ShaderBinding_get_props, NULL, "props" },
+    { "element_id", (getter)ShaderBinding_get_element_id, NULL, "element_id" },
+    { "typed_id", (getter)ShaderBinding_get_typed_id, NULL, "typed_id" },
     { "prop_bindings", (getter)ShaderBinding_get_prop_bindings, NULL, "prop_bindings" },
     { NULL },
 };
@@ -13552,8 +16498,12 @@ static PyObject *Anim_from(ufbx_anim *data, Context *ctx) {
     return (PyObject*)obj;
 }
 
-#define SLOT_COUNT_ANIM_STACK 4
+#define SLOT_COUNT_ANIM_STACK 8
 enum {
+    SLOT_ANIM_STACK__NAME,
+    SLOT_ANIM_STACK__PROPS,
+    SLOT_ANIM_STACK__ELEMENT_ID,
+    SLOT_ANIM_STACK__TYPED_ID,
     SLOT_ANIM_STACK__TIME_BEGIN,
     SLOT_ANIM_STACK__TIME_END,
     SLOT_ANIM_STACK__LAYERS,
@@ -13571,6 +16521,42 @@ typedef struct {
     };
     PyObject *slots[SLOT_COUNT_ANIM_STACK];
 } AnimStack;
+
+static PyObject *AnimStack_get_name(AnimStack *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_ANIM_STACK__NAME];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = String_from(self->data->name);
+    self->slots[SLOT_ANIM_STACK__NAME] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *AnimStack_get_props(AnimStack *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_ANIM_STACK__PROPS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = Props_from(&self->data->props, self->ctx);
+    self->slots[SLOT_ANIM_STACK__PROPS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *AnimStack_get_element_id(AnimStack *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_ANIM_STACK__ELEMENT_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->element_id);
+    self->slots[SLOT_ANIM_STACK__ELEMENT_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *AnimStack_get_typed_id(AnimStack *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_ANIM_STACK__TYPED_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->typed_id);
+    self->slots[SLOT_ANIM_STACK__TYPED_ID] = slot;
+    return Py_NewRef(slot);
+}
 
 static PyObject *AnimStack_get_time_begin(AnimStack *self, void *closure) {
     PyObject *slot = self->slots[SLOT_ANIM_STACK__TIME_BEGIN];
@@ -13631,6 +16617,10 @@ void AnimStack_dealloc(AnimStack *self) {
 }
 
 static PyGetSetDef AnimStack_getset[] = {
+    { "name", (getter)AnimStack_get_name, NULL, "name" },
+    { "props", (getter)AnimStack_get_props, NULL, "props" },
+    { "element_id", (getter)AnimStack_get_element_id, NULL, "element_id" },
+    { "typed_id", (getter)AnimStack_get_typed_id, NULL, "typed_id" },
     { "time_begin", (getter)AnimStack_get_time_begin, NULL, "time_begin" },
     { "time_end", (getter)AnimStack_get_time_end, NULL, "time_end" },
     { "layers", (getter)AnimStack_get_layers, NULL, "layers" },
@@ -13745,8 +16735,12 @@ static PyObject *AnimProp_from(ufbx_anim_prop *data, Context *ctx) {
     return (PyObject*)obj;
 }
 
-#define SLOT_COUNT_ANIM_LAYER 9
+#define SLOT_COUNT_ANIM_LAYER 13
 enum {
+    SLOT_ANIM_LAYER__NAME,
+    SLOT_ANIM_LAYER__PROPS,
+    SLOT_ANIM_LAYER__ELEMENT_ID,
+    SLOT_ANIM_LAYER__TYPED_ID,
     SLOT_ANIM_LAYER__WEIGHT,
     SLOT_ANIM_LAYER__WEIGHT_IS_ANIMATED,
     SLOT_ANIM_LAYER__BLENDED,
@@ -13769,6 +16763,42 @@ typedef struct {
     };
     PyObject *slots[SLOT_COUNT_ANIM_LAYER];
 } AnimLayer;
+
+static PyObject *AnimLayer_get_name(AnimLayer *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_ANIM_LAYER__NAME];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = String_from(self->data->name);
+    self->slots[SLOT_ANIM_LAYER__NAME] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *AnimLayer_get_props(AnimLayer *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_ANIM_LAYER__PROPS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = Props_from(&self->data->props, self->ctx);
+    self->slots[SLOT_ANIM_LAYER__PROPS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *AnimLayer_get_element_id(AnimLayer *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_ANIM_LAYER__ELEMENT_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->element_id);
+    self->slots[SLOT_ANIM_LAYER__ELEMENT_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *AnimLayer_get_typed_id(AnimLayer *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_ANIM_LAYER__TYPED_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->typed_id);
+    self->slots[SLOT_ANIM_LAYER__TYPED_ID] = slot;
+    return Py_NewRef(slot);
+}
 
 static PyObject *AnimLayer_get_weight(AnimLayer *self, void *closure) {
     PyObject *slot = self->slots[SLOT_ANIM_LAYER__WEIGHT];
@@ -13874,6 +16904,10 @@ void AnimLayer_dealloc(AnimLayer *self) {
 }
 
 static PyGetSetDef AnimLayer_getset[] = {
+    { "name", (getter)AnimLayer_get_name, NULL, "name" },
+    { "props", (getter)AnimLayer_get_props, NULL, "props" },
+    { "element_id", (getter)AnimLayer_get_element_id, NULL, "element_id" },
+    { "typed_id", (getter)AnimLayer_get_typed_id, NULL, "typed_id" },
     { "weight", (getter)AnimLayer_get_weight, NULL, "weight" },
     { "weight_is_animated", (getter)AnimLayer_get_weight_is_animated, NULL, "weight_is_animated" },
     { "blended", (getter)AnimLayer_get_blended, NULL, "blended" },
@@ -13901,8 +16935,12 @@ static PyTypeObject AnimLayer_Type = {
     .tp_base = &Element_Type,
 };
 
-#define SLOT_COUNT_ANIM_VALUE 2
+#define SLOT_COUNT_ANIM_VALUE 6
 enum {
+    SLOT_ANIM_VALUE__NAME,
+    SLOT_ANIM_VALUE__PROPS,
+    SLOT_ANIM_VALUE__ELEMENT_ID,
+    SLOT_ANIM_VALUE__TYPED_ID,
     SLOT_ANIM_VALUE__DEFAULT_VALUE,
     SLOT_ANIM_VALUE__CURVES,
 };
@@ -13918,6 +16956,42 @@ typedef struct {
     };
     PyObject *slots[SLOT_COUNT_ANIM_VALUE];
 } AnimValue;
+
+static PyObject *AnimValue_get_name(AnimValue *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_ANIM_VALUE__NAME];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = String_from(self->data->name);
+    self->slots[SLOT_ANIM_VALUE__NAME] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *AnimValue_get_props(AnimValue *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_ANIM_VALUE__PROPS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = Props_from(&self->data->props, self->ctx);
+    self->slots[SLOT_ANIM_VALUE__PROPS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *AnimValue_get_element_id(AnimValue *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_ANIM_VALUE__ELEMENT_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->element_id);
+    self->slots[SLOT_ANIM_VALUE__ELEMENT_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *AnimValue_get_typed_id(AnimValue *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_ANIM_VALUE__TYPED_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->typed_id);
+    self->slots[SLOT_ANIM_VALUE__TYPED_ID] = slot;
+    return Py_NewRef(slot);
+}
 
 static PyObject *AnimValue_get_default_value(AnimValue *self, void *closure) {
     PyObject *slot = self->slots[SLOT_ANIM_VALUE__DEFAULT_VALUE];
@@ -13960,6 +17034,10 @@ void AnimValue_dealloc(AnimValue *self) {
 }
 
 static PyGetSetDef AnimValue_getset[] = {
+    { "name", (getter)AnimValue_get_name, NULL, "name" },
+    { "props", (getter)AnimValue_get_props, NULL, "props" },
+    { "element_id", (getter)AnimValue_get_element_id, NULL, "element_id" },
+    { "typed_id", (getter)AnimValue_get_typed_id, NULL, "typed_id" },
     { "default_value", (getter)AnimValue_get_default_value, NULL, "default_value" },
     { "curves", (getter)AnimValue_get_curves, NULL, "curves" },
     { NULL },
@@ -14061,8 +17139,12 @@ static PyObject *Extrapolation_from(ufbx_extrapolation *data, Context *ctx) {
     return (PyObject*)obj;
 }
 
-#define SLOT_COUNT_ANIM_CURVE 7
+#define SLOT_COUNT_ANIM_CURVE 11
 enum {
+    SLOT_ANIM_CURVE__NAME,
+    SLOT_ANIM_CURVE__PROPS,
+    SLOT_ANIM_CURVE__ELEMENT_ID,
+    SLOT_ANIM_CURVE__TYPED_ID,
     SLOT_ANIM_CURVE__KEYFRAMES,
     SLOT_ANIM_CURVE__PRE_EXTRAPOLATION,
     SLOT_ANIM_CURVE__POST_EXTRAPOLATION,
@@ -14083,6 +17165,42 @@ typedef struct {
     };
     PyObject *slots[SLOT_COUNT_ANIM_CURVE];
 } AnimCurve;
+
+static PyObject *AnimCurve_get_name(AnimCurve *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_ANIM_CURVE__NAME];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = String_from(self->data->name);
+    self->slots[SLOT_ANIM_CURVE__NAME] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *AnimCurve_get_props(AnimCurve *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_ANIM_CURVE__PROPS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = Props_from(&self->data->props, self->ctx);
+    self->slots[SLOT_ANIM_CURVE__PROPS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *AnimCurve_get_element_id(AnimCurve *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_ANIM_CURVE__ELEMENT_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->element_id);
+    self->slots[SLOT_ANIM_CURVE__ELEMENT_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *AnimCurve_get_typed_id(AnimCurve *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_ANIM_CURVE__TYPED_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->typed_id);
+    self->slots[SLOT_ANIM_CURVE__TYPED_ID] = slot;
+    return Py_NewRef(slot);
+}
 
 static PyObject *AnimCurve_get_keyframes(AnimCurve *self, void *closure) {
     PyObject *slot = self->slots[SLOT_ANIM_CURVE__KEYFRAMES];
@@ -14170,6 +17288,10 @@ void AnimCurve_dealloc(AnimCurve *self) {
 }
 
 static PyGetSetDef AnimCurve_getset[] = {
+    { "name", (getter)AnimCurve_get_name, NULL, "name" },
+    { "props", (getter)AnimCurve_get_props, NULL, "props" },
+    { "element_id", (getter)AnimCurve_get_element_id, NULL, "element_id" },
+    { "typed_id", (getter)AnimCurve_get_typed_id, NULL, "typed_id" },
     { "keyframes", (getter)AnimCurve_get_keyframes, NULL, "keyframes" },
     { "pre_extrapolation", (getter)AnimCurve_get_pre_extrapolation, NULL, "pre_extrapolation" },
     { "post_extrapolation", (getter)AnimCurve_get_post_extrapolation, NULL, "post_extrapolation" },
@@ -14195,8 +17317,12 @@ static PyTypeObject AnimCurve_Type = {
     .tp_base = &Element_Type,
 };
 
-#define SLOT_COUNT_DISPLAY_LAYER 4
+#define SLOT_COUNT_DISPLAY_LAYER 8
 enum {
+    SLOT_DISPLAY_LAYER__NAME,
+    SLOT_DISPLAY_LAYER__PROPS,
+    SLOT_DISPLAY_LAYER__ELEMENT_ID,
+    SLOT_DISPLAY_LAYER__TYPED_ID,
     SLOT_DISPLAY_LAYER__NODES,
     SLOT_DISPLAY_LAYER__VISIBLE,
     SLOT_DISPLAY_LAYER__FROZEN,
@@ -14214,6 +17340,42 @@ typedef struct {
     };
     PyObject *slots[SLOT_COUNT_DISPLAY_LAYER];
 } DisplayLayer;
+
+static PyObject *DisplayLayer_get_name(DisplayLayer *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_DISPLAY_LAYER__NAME];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = String_from(self->data->name);
+    self->slots[SLOT_DISPLAY_LAYER__NAME] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *DisplayLayer_get_props(DisplayLayer *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_DISPLAY_LAYER__PROPS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = Props_from(&self->data->props, self->ctx);
+    self->slots[SLOT_DISPLAY_LAYER__PROPS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *DisplayLayer_get_element_id(DisplayLayer *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_DISPLAY_LAYER__ELEMENT_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->element_id);
+    self->slots[SLOT_DISPLAY_LAYER__ELEMENT_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *DisplayLayer_get_typed_id(DisplayLayer *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_DISPLAY_LAYER__TYPED_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->typed_id);
+    self->slots[SLOT_DISPLAY_LAYER__TYPED_ID] = slot;
+    return Py_NewRef(slot);
+}
 
 static PyObject *DisplayLayer_get_nodes(DisplayLayer *self, void *closure) {
     PyObject *slot = self->slots[SLOT_DISPLAY_LAYER__NODES];
@@ -14274,6 +17436,10 @@ void DisplayLayer_dealloc(DisplayLayer *self) {
 }
 
 static PyGetSetDef DisplayLayer_getset[] = {
+    { "name", (getter)DisplayLayer_get_name, NULL, "name" },
+    { "props", (getter)DisplayLayer_get_props, NULL, "props" },
+    { "element_id", (getter)DisplayLayer_get_element_id, NULL, "element_id" },
+    { "typed_id", (getter)DisplayLayer_get_typed_id, NULL, "typed_id" },
     { "nodes", (getter)DisplayLayer_get_nodes, NULL, "nodes" },
     { "visible", (getter)DisplayLayer_get_visible, NULL, "visible" },
     { "frozen", (getter)DisplayLayer_get_frozen, NULL, "frozen" },
@@ -14296,8 +17462,12 @@ static PyTypeObject DisplayLayer_Type = {
     .tp_base = &Element_Type,
 };
 
-#define SLOT_COUNT_SELECTION_SET 1
+#define SLOT_COUNT_SELECTION_SET 5
 enum {
+    SLOT_SELECTION_SET__NAME,
+    SLOT_SELECTION_SET__PROPS,
+    SLOT_SELECTION_SET__ELEMENT_ID,
+    SLOT_SELECTION_SET__TYPED_ID,
     SLOT_SELECTION_SET__NODES,
 };
 
@@ -14312,6 +17482,42 @@ typedef struct {
     };
     PyObject *slots[SLOT_COUNT_SELECTION_SET];
 } SelectionSet;
+
+static PyObject *SelectionSet_get_name(SelectionSet *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SELECTION_SET__NAME];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = String_from(self->data->name);
+    self->slots[SLOT_SELECTION_SET__NAME] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *SelectionSet_get_props(SelectionSet *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SELECTION_SET__PROPS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = Props_from(&self->data->props, self->ctx);
+    self->slots[SLOT_SELECTION_SET__PROPS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *SelectionSet_get_element_id(SelectionSet *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SELECTION_SET__ELEMENT_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->element_id);
+    self->slots[SLOT_SELECTION_SET__ELEMENT_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *SelectionSet_get_typed_id(SelectionSet *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SELECTION_SET__TYPED_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->typed_id);
+    self->slots[SLOT_SELECTION_SET__TYPED_ID] = slot;
+    return Py_NewRef(slot);
+}
 
 static PyObject *SelectionSet_get_nodes(SelectionSet *self, void *closure) {
     PyObject *slot = self->slots[SLOT_SELECTION_SET__NODES];
@@ -14345,6 +17551,10 @@ void SelectionSet_dealloc(SelectionSet *self) {
 }
 
 static PyGetSetDef SelectionSet_getset[] = {
+    { "name", (getter)SelectionSet_get_name, NULL, "name" },
+    { "props", (getter)SelectionSet_get_props, NULL, "props" },
+    { "element_id", (getter)SelectionSet_get_element_id, NULL, "element_id" },
+    { "typed_id", (getter)SelectionSet_get_typed_id, NULL, "typed_id" },
     { "nodes", (getter)SelectionSet_get_nodes, NULL, "nodes" },
     { NULL },
 };
@@ -14364,8 +17574,12 @@ static PyTypeObject SelectionSet_Type = {
     .tp_base = &Element_Type,
 };
 
-#define SLOT_COUNT_SELECTION_NODE 6
+#define SLOT_COUNT_SELECTION_NODE 10
 enum {
+    SLOT_SELECTION_NODE__NAME,
+    SLOT_SELECTION_NODE__PROPS,
+    SLOT_SELECTION_NODE__ELEMENT_ID,
+    SLOT_SELECTION_NODE__TYPED_ID,
     SLOT_SELECTION_NODE__TARGET_NODE,
     SLOT_SELECTION_NODE__TARGET_MESH,
     SLOT_SELECTION_NODE__INCLUDE_NODE,
@@ -14385,6 +17599,42 @@ typedef struct {
     };
     PyObject *slots[SLOT_COUNT_SELECTION_NODE];
 } SelectionNode;
+
+static PyObject *SelectionNode_get_name(SelectionNode *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SELECTION_NODE__NAME];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = String_from(self->data->name);
+    self->slots[SLOT_SELECTION_NODE__NAME] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *SelectionNode_get_props(SelectionNode *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SELECTION_NODE__PROPS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = Props_from(&self->data->props, self->ctx);
+    self->slots[SLOT_SELECTION_NODE__PROPS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *SelectionNode_get_element_id(SelectionNode *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SELECTION_NODE__ELEMENT_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->element_id);
+    self->slots[SLOT_SELECTION_NODE__ELEMENT_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *SelectionNode_get_typed_id(SelectionNode *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SELECTION_NODE__TYPED_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->typed_id);
+    self->slots[SLOT_SELECTION_NODE__TYPED_ID] = slot;
+    return Py_NewRef(slot);
+}
 
 static PyObject *SelectionNode_get_target_node(SelectionNode *self, void *closure) {
     PyObject *slot = self->slots[SLOT_SELECTION_NODE__TARGET_NODE];
@@ -14463,6 +17713,10 @@ void SelectionNode_dealloc(SelectionNode *self) {
 }
 
 static PyGetSetDef SelectionNode_getset[] = {
+    { "name", (getter)SelectionNode_get_name, NULL, "name" },
+    { "props", (getter)SelectionNode_get_props, NULL, "props" },
+    { "element_id", (getter)SelectionNode_get_element_id, NULL, "element_id" },
+    { "typed_id", (getter)SelectionNode_get_typed_id, NULL, "typed_id" },
     { "target_node", (getter)SelectionNode_get_target_node, NULL, "target_node" },
     { "target_mesh", (getter)SelectionNode_get_target_mesh, NULL, "target_mesh" },
     { "include_node", (getter)SelectionNode_get_include_node, NULL, "include_node" },
@@ -14487,6 +17741,14 @@ static PyTypeObject SelectionNode_Type = {
     .tp_base = &Element_Type,
 };
 
+#define SLOT_COUNT_CHARACTER 4
+enum {
+    SLOT_CHARACTER__NAME,
+    SLOT_CHARACTER__PROPS,
+    SLOT_CHARACTER__ELEMENT_ID,
+    SLOT_CHARACTER__TYPED_ID,
+};
+
 typedef struct {
     union {
         Element elem;
@@ -14496,15 +17758,58 @@ typedef struct {
             Context *ctx;
         };
     };
+    PyObject *slots[SLOT_COUNT_CHARACTER];
 } Character;
+
+static PyObject *Character_get_name(Character *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_CHARACTER__NAME];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = String_from(self->data->name);
+    self->slots[SLOT_CHARACTER__NAME] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Character_get_props(Character *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_CHARACTER__PROPS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = Props_from(&self->data->props, self->ctx);
+    self->slots[SLOT_CHARACTER__PROPS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Character_get_element_id(Character *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_CHARACTER__ELEMENT_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->element_id);
+    self->slots[SLOT_CHARACTER__ELEMENT_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Character_get_typed_id(Character *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_CHARACTER__TYPED_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->typed_id);
+    self->slots[SLOT_CHARACTER__TYPED_ID] = slot;
+    return Py_NewRef(slot);
+}
 
 static int Character_traverse(Character *self, visitproc visit, void *arg) {
     if (Element_traverse((Element*)self, visit, arg) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_CHARACTER; i++) {
+        Py_VISIT(self->slots[i]);
+    }
     return 0;
 }
 
 static int Character_clear(Character *self) {
     if (Element_clear((Element*)self) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_CHARACTER; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
     return 0;
 }
 
@@ -14513,6 +17818,14 @@ void Character_dealloc(Character *self) {
     Character_clear(self);
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
+
+static PyGetSetDef Character_getset[] = {
+    { "name", (getter)Character_get_name, NULL, "name" },
+    { "props", (getter)Character_get_props, NULL, "props" },
+    { "element_id", (getter)Character_get_element_id, NULL, "element_id" },
+    { "typed_id", (getter)Character_get_typed_id, NULL, "typed_id" },
+    { NULL },
+};
 
 static PyTypeObject Character_Type = {
     .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
@@ -14525,6 +17838,7 @@ static PyTypeObject Character_Type = {
     .tp_dealloc = (destructor)&Character_dealloc,
     .tp_traverse = (traverseproc)&Character_traverse,
     .tp_clear = (inquiry)&Character_clear,
+    .tp_getset = Character_getset,
     .tp_base = &Element_Type,
 };
 
@@ -14620,8 +17934,12 @@ static PyObject *ConstraintTarget_from(ufbx_constraint_target *data, Context *ct
     return (PyObject*)obj;
 }
 
-#define SLOT_COUNT_CONSTRAINT 17
+#define SLOT_COUNT_CONSTRAINT 21
 enum {
+    SLOT_CONSTRAINT__NAME,
+    SLOT_CONSTRAINT__PROPS,
+    SLOT_CONSTRAINT__ELEMENT_ID,
+    SLOT_CONSTRAINT__TYPED_ID,
     SLOT_CONSTRAINT__TYPE,
     SLOT_CONSTRAINT__TYPE_NAME,
     SLOT_CONSTRAINT__NODE,
@@ -14652,6 +17970,42 @@ typedef struct {
     };
     PyObject *slots[SLOT_COUNT_CONSTRAINT];
 } Constraint;
+
+static PyObject *Constraint_get_name(Constraint *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_CONSTRAINT__NAME];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = String_from(self->data->name);
+    self->slots[SLOT_CONSTRAINT__NAME] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Constraint_get_props(Constraint *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_CONSTRAINT__PROPS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = Props_from(&self->data->props, self->ctx);
+    self->slots[SLOT_CONSTRAINT__PROPS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Constraint_get_element_id(Constraint *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_CONSTRAINT__ELEMENT_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->element_id);
+    self->slots[SLOT_CONSTRAINT__ELEMENT_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Constraint_get_typed_id(Constraint *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_CONSTRAINT__TYPED_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->typed_id);
+    self->slots[SLOT_CONSTRAINT__TYPED_ID] = slot;
+    return Py_NewRef(slot);
+}
 
 static PyObject *Constraint_get_type(Constraint *self, void *closure) {
     PyObject *slot = self->slots[SLOT_CONSTRAINT__TYPE];
@@ -14829,6 +18183,10 @@ void Constraint_dealloc(Constraint *self) {
 }
 
 static PyGetSetDef Constraint_getset[] = {
+    { "name", (getter)Constraint_get_name, NULL, "name" },
+    { "props", (getter)Constraint_get_props, NULL, "props" },
+    { "element_id", (getter)Constraint_get_element_id, NULL, "element_id" },
+    { "typed_id", (getter)Constraint_get_typed_id, NULL, "typed_id" },
     { "type", (getter)Constraint_get_type, NULL, "type" },
     { "type_name", (getter)Constraint_get_type_name, NULL, "type_name" },
     { "node", (getter)Constraint_get_node, NULL, "node" },
@@ -14864,8 +18222,12 @@ static PyTypeObject Constraint_Type = {
     .tp_base = &Element_Type,
 };
 
-#define SLOT_COUNT_AUDIO_LAYER 1
+#define SLOT_COUNT_AUDIO_LAYER 5
 enum {
+    SLOT_AUDIO_LAYER__NAME,
+    SLOT_AUDIO_LAYER__PROPS,
+    SLOT_AUDIO_LAYER__ELEMENT_ID,
+    SLOT_AUDIO_LAYER__TYPED_ID,
     SLOT_AUDIO_LAYER__CLIPS,
 };
 
@@ -14880,6 +18242,42 @@ typedef struct {
     };
     PyObject *slots[SLOT_COUNT_AUDIO_LAYER];
 } AudioLayer;
+
+static PyObject *AudioLayer_get_name(AudioLayer *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_AUDIO_LAYER__NAME];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = String_from(self->data->name);
+    self->slots[SLOT_AUDIO_LAYER__NAME] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *AudioLayer_get_props(AudioLayer *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_AUDIO_LAYER__PROPS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = Props_from(&self->data->props, self->ctx);
+    self->slots[SLOT_AUDIO_LAYER__PROPS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *AudioLayer_get_element_id(AudioLayer *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_AUDIO_LAYER__ELEMENT_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->element_id);
+    self->slots[SLOT_AUDIO_LAYER__ELEMENT_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *AudioLayer_get_typed_id(AudioLayer *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_AUDIO_LAYER__TYPED_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->typed_id);
+    self->slots[SLOT_AUDIO_LAYER__TYPED_ID] = slot;
+    return Py_NewRef(slot);
+}
 
 static PyObject *AudioLayer_get_clips(AudioLayer *self, void *closure) {
     PyObject *slot = self->slots[SLOT_AUDIO_LAYER__CLIPS];
@@ -14913,6 +18311,10 @@ void AudioLayer_dealloc(AudioLayer *self) {
 }
 
 static PyGetSetDef AudioLayer_getset[] = {
+    { "name", (getter)AudioLayer_get_name, NULL, "name" },
+    { "props", (getter)AudioLayer_get_props, NULL, "props" },
+    { "element_id", (getter)AudioLayer_get_element_id, NULL, "element_id" },
+    { "typed_id", (getter)AudioLayer_get_typed_id, NULL, "typed_id" },
     { "clips", (getter)AudioLayer_get_clips, NULL, "clips" },
     { NULL },
 };
@@ -14932,8 +18334,12 @@ static PyTypeObject AudioLayer_Type = {
     .tp_base = &Element_Type,
 };
 
-#define SLOT_COUNT_AUDIO_CLIP 7
+#define SLOT_COUNT_AUDIO_CLIP 11
 enum {
+    SLOT_AUDIO_CLIP__NAME,
+    SLOT_AUDIO_CLIP__PROPS,
+    SLOT_AUDIO_CLIP__ELEMENT_ID,
+    SLOT_AUDIO_CLIP__TYPED_ID,
     SLOT_AUDIO_CLIP__FILENAME,
     SLOT_AUDIO_CLIP__ABSOLUTE_FILENAME,
     SLOT_AUDIO_CLIP__RELATIVE_FILENAME,
@@ -14954,6 +18360,42 @@ typedef struct {
     };
     PyObject *slots[SLOT_COUNT_AUDIO_CLIP];
 } AudioClip;
+
+static PyObject *AudioClip_get_name(AudioClip *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_AUDIO_CLIP__NAME];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = String_from(self->data->name);
+    self->slots[SLOT_AUDIO_CLIP__NAME] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *AudioClip_get_props(AudioClip *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_AUDIO_CLIP__PROPS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = Props_from(&self->data->props, self->ctx);
+    self->slots[SLOT_AUDIO_CLIP__PROPS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *AudioClip_get_element_id(AudioClip *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_AUDIO_CLIP__ELEMENT_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->element_id);
+    self->slots[SLOT_AUDIO_CLIP__ELEMENT_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *AudioClip_get_typed_id(AudioClip *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_AUDIO_CLIP__TYPED_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->typed_id);
+    self->slots[SLOT_AUDIO_CLIP__TYPED_ID] = slot;
+    return Py_NewRef(slot);
+}
 
 static PyObject *AudioClip_get_filename(AudioClip *self, void *closure) {
     PyObject *slot = self->slots[SLOT_AUDIO_CLIP__FILENAME];
@@ -15041,6 +18483,10 @@ void AudioClip_dealloc(AudioClip *self) {
 }
 
 static PyGetSetDef AudioClip_getset[] = {
+    { "name", (getter)AudioClip_get_name, NULL, "name" },
+    { "props", (getter)AudioClip_get_props, NULL, "props" },
+    { "element_id", (getter)AudioClip_get_element_id, NULL, "element_id" },
+    { "typed_id", (getter)AudioClip_get_typed_id, NULL, "typed_id" },
     { "filename", (getter)AudioClip_get_filename, NULL, "filename" },
     { "absolute_filename", (getter)AudioClip_get_absolute_filename, NULL, "absolute_filename" },
     { "relative_filename", (getter)AudioClip_get_relative_filename, NULL, "relative_filename" },
@@ -15158,8 +18604,12 @@ static PyObject *BonePose_from(ufbx_bone_pose *data, Context *ctx) {
     return (PyObject*)obj;
 }
 
-#define SLOT_COUNT_POSE 2
+#define SLOT_COUNT_POSE 6
 enum {
+    SLOT_POSE__NAME,
+    SLOT_POSE__PROPS,
+    SLOT_POSE__ELEMENT_ID,
+    SLOT_POSE__TYPED_ID,
     SLOT_POSE__IS_BIND_POSE,
     SLOT_POSE__BONE_POSES,
 };
@@ -15175,6 +18625,42 @@ typedef struct {
     };
     PyObject *slots[SLOT_COUNT_POSE];
 } Pose;
+
+static PyObject *Pose_get_name(Pose *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_POSE__NAME];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = String_from(self->data->name);
+    self->slots[SLOT_POSE__NAME] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Pose_get_props(Pose *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_POSE__PROPS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = Props_from(&self->data->props, self->ctx);
+    self->slots[SLOT_POSE__PROPS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Pose_get_element_id(Pose *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_POSE__ELEMENT_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->element_id);
+    self->slots[SLOT_POSE__ELEMENT_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Pose_get_typed_id(Pose *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_POSE__TYPED_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->typed_id);
+    self->slots[SLOT_POSE__TYPED_ID] = slot;
+    return Py_NewRef(slot);
+}
 
 static PyObject *Pose_get_is_bind_pose(Pose *self, void *closure) {
     PyObject *slot = self->slots[SLOT_POSE__IS_BIND_POSE];
@@ -15217,6 +18703,10 @@ void Pose_dealloc(Pose *self) {
 }
 
 static PyGetSetDef Pose_getset[] = {
+    { "name", (getter)Pose_get_name, NULL, "name" },
+    { "props", (getter)Pose_get_props, NULL, "props" },
+    { "element_id", (getter)Pose_get_element_id, NULL, "element_id" },
+    { "typed_id", (getter)Pose_get_typed_id, NULL, "typed_id" },
     { "is_bind_pose", (getter)Pose_get_is_bind_pose, NULL, "is_bind_pose" },
     { "bone_poses", (getter)Pose_get_bone_poses, NULL, "bone_poses" },
     { NULL },
@@ -15237,6 +18727,14 @@ static PyTypeObject Pose_Type = {
     .tp_base = &Element_Type,
 };
 
+#define SLOT_COUNT_METADATA_OBJECT 4
+enum {
+    SLOT_METADATA_OBJECT__NAME,
+    SLOT_METADATA_OBJECT__PROPS,
+    SLOT_METADATA_OBJECT__ELEMENT_ID,
+    SLOT_METADATA_OBJECT__TYPED_ID,
+};
+
 typedef struct {
     union {
         Element elem;
@@ -15246,15 +18744,58 @@ typedef struct {
             Context *ctx;
         };
     };
+    PyObject *slots[SLOT_COUNT_METADATA_OBJECT];
 } MetadataObject;
+
+static PyObject *MetadataObject_get_name(MetadataObject *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_METADATA_OBJECT__NAME];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = String_from(self->data->name);
+    self->slots[SLOT_METADATA_OBJECT__NAME] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MetadataObject_get_props(MetadataObject *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_METADATA_OBJECT__PROPS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = Props_from(&self->data->props, self->ctx);
+    self->slots[SLOT_METADATA_OBJECT__PROPS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MetadataObject_get_element_id(MetadataObject *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_METADATA_OBJECT__ELEMENT_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->element_id);
+    self->slots[SLOT_METADATA_OBJECT__ELEMENT_ID] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *MetadataObject_get_typed_id(MetadataObject *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_METADATA_OBJECT__TYPED_ID];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PyLong_FromUnsignedLong((unsigned long)self->data->typed_id);
+    self->slots[SLOT_METADATA_OBJECT__TYPED_ID] = slot;
+    return Py_NewRef(slot);
+}
 
 static int MetadataObject_traverse(MetadataObject *self, visitproc visit, void *arg) {
     if (Element_traverse((Element*)self, visit, arg) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_METADATA_OBJECT; i++) {
+        Py_VISIT(self->slots[i]);
+    }
     return 0;
 }
 
 static int MetadataObject_clear(MetadataObject *self) {
     if (Element_clear((Element*)self) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_METADATA_OBJECT; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
     return 0;
 }
 
@@ -15263,6 +18804,14 @@ void MetadataObject_dealloc(MetadataObject *self) {
     MetadataObject_clear(self);
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
+
+static PyGetSetDef MetadataObject_getset[] = {
+    { "name", (getter)MetadataObject_get_name, NULL, "name" },
+    { "props", (getter)MetadataObject_get_props, NULL, "props" },
+    { "element_id", (getter)MetadataObject_get_element_id, NULL, "element_id" },
+    { "typed_id", (getter)MetadataObject_get_typed_id, NULL, "typed_id" },
+    { NULL },
+};
 
 static PyTypeObject MetadataObject_Type = {
     .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
@@ -15275,6 +18824,7 @@ static PyTypeObject MetadataObject_Type = {
     .tp_dealloc = (destructor)&MetadataObject_dealloc,
     .tp_traverse = (traverseproc)&MetadataObject_traverse,
     .tp_clear = (inquiry)&MetadataObject_clear,
+    .tp_getset = MetadataObject_getset,
     .tp_base = &Element_Type,
 };
 
@@ -16279,7 +19829,7 @@ static PyObject *SceneSettings_get_axes(SceneSettings *self, void *closure) {
     PyObject *slot = self->slots[SLOT_SCENE_SETTINGS__AXES];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_coordinate_axes");
+    slot = CoordinateAxes_from(&self->data->axes);
     self->slots[SLOT_SCENE_SETTINGS__AXES] = slot;
     return Py_NewRef(slot);
 }
@@ -16424,12 +19974,54 @@ static PyObject *SceneSettings_from(ufbx_scene_settings *data, Context *ctx) {
     return (PyObject*)obj;
 }
 
-#define SLOT_COUNT_SCENE 10
+#define SLOT_COUNT_SCENE 52
 enum {
     SLOT_SCENE__METADATA,
     SLOT_SCENE__SETTINGS,
     SLOT_SCENE__ROOT_NODE,
     SLOT_SCENE__ANIM,
+    SLOT_SCENE__UNKNOWNS,
+    SLOT_SCENE__NODES,
+    SLOT_SCENE__MESHES,
+    SLOT_SCENE__LIGHTS,
+    SLOT_SCENE__CAMERAS,
+    SLOT_SCENE__BONES,
+    SLOT_SCENE__EMPTIES,
+    SLOT_SCENE__LINE_CURVES,
+    SLOT_SCENE__NURBS_CURVES,
+    SLOT_SCENE__NURBS_SURFACES,
+    SLOT_SCENE__NURBS_TRIM_SURFACES,
+    SLOT_SCENE__NURBS_TRIM_BOUNDARIES,
+    SLOT_SCENE__PROCEDURAL_GEOMETRIES,
+    SLOT_SCENE__STEREO_CAMERAS,
+    SLOT_SCENE__CAMERA_SWITCHERS,
+    SLOT_SCENE__MARKERS,
+    SLOT_SCENE__LOD_GROUPS,
+    SLOT_SCENE__SKIN_DEFORMERS,
+    SLOT_SCENE__SKIN_CLUSTERS,
+    SLOT_SCENE__BLEND_DEFORMERS,
+    SLOT_SCENE__BLEND_CHANNELS,
+    SLOT_SCENE__BLEND_SHAPES,
+    SLOT_SCENE__CACHE_DEFORMERS,
+    SLOT_SCENE__CACHE_FILES,
+    SLOT_SCENE__MATERIALS,
+    SLOT_SCENE__TEXTURES,
+    SLOT_SCENE__VIDEOS,
+    SLOT_SCENE__SHADERS,
+    SLOT_SCENE__SHADER_BINDINGS,
+    SLOT_SCENE__ANIM_STACKS,
+    SLOT_SCENE__ANIM_LAYERS,
+    SLOT_SCENE__ANIM_VALUES,
+    SLOT_SCENE__ANIM_CURVES,
+    SLOT_SCENE__DISPLAY_LAYERS,
+    SLOT_SCENE__SELECTION_SETS,
+    SLOT_SCENE__SELECTION_NODES,
+    SLOT_SCENE__CHARACTERS,
+    SLOT_SCENE__CONSTRAINTS,
+    SLOT_SCENE__AUDIO_LAYERS,
+    SLOT_SCENE__AUDIO_CLIPS,
+    SLOT_SCENE__POSES,
+    SLOT_SCENE__METADATA_OBJECTS,
     SLOT_SCENE__TEXTURE_FILES,
     SLOT_SCENE__ELEMENTS,
     SLOT_SCENE__CONNECTIONS_SRC,
@@ -16478,6 +20070,384 @@ static PyObject *Scene_get_anim(Scene *self, void *closure) {
     if (!self->ctx->ok) return Context_error(self->ctx);
     slot = to_pyobject_todo("ufbx_anim*");
     self->slots[SLOT_SCENE__ANIM] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Scene_get_unknowns(Scene *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SCENE__UNKNOWNS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = UnknownList_from(self->data->unknowns, self->ctx);
+    self->slots[SLOT_SCENE__UNKNOWNS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Scene_get_nodes(Scene *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SCENE__NODES];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = NodeList_from(self->data->nodes, self->ctx);
+    self->slots[SLOT_SCENE__NODES] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Scene_get_meshes(Scene *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SCENE__MESHES];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MeshList_from(self->data->meshes, self->ctx);
+    self->slots[SLOT_SCENE__MESHES] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Scene_get_lights(Scene *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SCENE__LIGHTS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = LightList_from(self->data->lights, self->ctx);
+    self->slots[SLOT_SCENE__LIGHTS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Scene_get_cameras(Scene *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SCENE__CAMERAS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = CameraList_from(self->data->cameras, self->ctx);
+    self->slots[SLOT_SCENE__CAMERAS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Scene_get_bones(Scene *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SCENE__BONES];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = BoneList_from(self->data->bones, self->ctx);
+    self->slots[SLOT_SCENE__BONES] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Scene_get_empties(Scene *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SCENE__EMPTIES];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = EmptyList_from(self->data->empties, self->ctx);
+    self->slots[SLOT_SCENE__EMPTIES] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Scene_get_line_curves(Scene *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SCENE__LINE_CURVES];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = LineCurveList_from(self->data->line_curves, self->ctx);
+    self->slots[SLOT_SCENE__LINE_CURVES] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Scene_get_nurbs_curves(Scene *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SCENE__NURBS_CURVES];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = NurbsCurveList_from(self->data->nurbs_curves, self->ctx);
+    self->slots[SLOT_SCENE__NURBS_CURVES] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Scene_get_nurbs_surfaces(Scene *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SCENE__NURBS_SURFACES];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = NurbsSurfaceList_from(self->data->nurbs_surfaces, self->ctx);
+    self->slots[SLOT_SCENE__NURBS_SURFACES] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Scene_get_nurbs_trim_surfaces(Scene *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SCENE__NURBS_TRIM_SURFACES];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = NurbsTrimSurfaceList_from(self->data->nurbs_trim_surfaces, self->ctx);
+    self->slots[SLOT_SCENE__NURBS_TRIM_SURFACES] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Scene_get_nurbs_trim_boundaries(Scene *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SCENE__NURBS_TRIM_BOUNDARIES];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = NurbsTrimBoundaryList_from(self->data->nurbs_trim_boundaries, self->ctx);
+    self->slots[SLOT_SCENE__NURBS_TRIM_BOUNDARIES] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Scene_get_procedural_geometries(Scene *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SCENE__PROCEDURAL_GEOMETRIES];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = ProceduralGeometryList_from(self->data->procedural_geometries, self->ctx);
+    self->slots[SLOT_SCENE__PROCEDURAL_GEOMETRIES] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Scene_get_stereo_cameras(Scene *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SCENE__STEREO_CAMERAS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = StereoCameraList_from(self->data->stereo_cameras, self->ctx);
+    self->slots[SLOT_SCENE__STEREO_CAMERAS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Scene_get_camera_switchers(Scene *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SCENE__CAMERA_SWITCHERS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = CameraSwitcherList_from(self->data->camera_switchers, self->ctx);
+    self->slots[SLOT_SCENE__CAMERA_SWITCHERS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Scene_get_markers(Scene *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SCENE__MARKERS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MarkerList_from(self->data->markers, self->ctx);
+    self->slots[SLOT_SCENE__MARKERS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Scene_get_lod_groups(Scene *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SCENE__LOD_GROUPS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = LodGroupList_from(self->data->lod_groups, self->ctx);
+    self->slots[SLOT_SCENE__LOD_GROUPS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Scene_get_skin_deformers(Scene *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SCENE__SKIN_DEFORMERS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = SkinDeformerList_from(self->data->skin_deformers, self->ctx);
+    self->slots[SLOT_SCENE__SKIN_DEFORMERS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Scene_get_skin_clusters(Scene *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SCENE__SKIN_CLUSTERS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = SkinClusterList_from(self->data->skin_clusters, self->ctx);
+    self->slots[SLOT_SCENE__SKIN_CLUSTERS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Scene_get_blend_deformers(Scene *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SCENE__BLEND_DEFORMERS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = BlendDeformerList_from(self->data->blend_deformers, self->ctx);
+    self->slots[SLOT_SCENE__BLEND_DEFORMERS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Scene_get_blend_channels(Scene *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SCENE__BLEND_CHANNELS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = BlendChannelList_from(self->data->blend_channels, self->ctx);
+    self->slots[SLOT_SCENE__BLEND_CHANNELS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Scene_get_blend_shapes(Scene *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SCENE__BLEND_SHAPES];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = BlendShapeList_from(self->data->blend_shapes, self->ctx);
+    self->slots[SLOT_SCENE__BLEND_SHAPES] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Scene_get_cache_deformers(Scene *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SCENE__CACHE_DEFORMERS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = CacheDeformerList_from(self->data->cache_deformers, self->ctx);
+    self->slots[SLOT_SCENE__CACHE_DEFORMERS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Scene_get_cache_files(Scene *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SCENE__CACHE_FILES];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = CacheFileList_from(self->data->cache_files, self->ctx);
+    self->slots[SLOT_SCENE__CACHE_FILES] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Scene_get_materials(Scene *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SCENE__MATERIALS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MaterialList_from(self->data->materials, self->ctx);
+    self->slots[SLOT_SCENE__MATERIALS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Scene_get_textures(Scene *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SCENE__TEXTURES];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = TextureList_from(self->data->textures, self->ctx);
+    self->slots[SLOT_SCENE__TEXTURES] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Scene_get_videos(Scene *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SCENE__VIDEOS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = VideoList_from(self->data->videos, self->ctx);
+    self->slots[SLOT_SCENE__VIDEOS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Scene_get_shaders(Scene *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SCENE__SHADERS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = ShaderList_from(self->data->shaders, self->ctx);
+    self->slots[SLOT_SCENE__SHADERS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Scene_get_shader_bindings(Scene *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SCENE__SHADER_BINDINGS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = ShaderBindingList_from(self->data->shader_bindings, self->ctx);
+    self->slots[SLOT_SCENE__SHADER_BINDINGS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Scene_get_anim_stacks(Scene *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SCENE__ANIM_STACKS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = AnimStackList_from(self->data->anim_stacks, self->ctx);
+    self->slots[SLOT_SCENE__ANIM_STACKS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Scene_get_anim_layers(Scene *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SCENE__ANIM_LAYERS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = AnimLayerList_from(self->data->anim_layers, self->ctx);
+    self->slots[SLOT_SCENE__ANIM_LAYERS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Scene_get_anim_values(Scene *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SCENE__ANIM_VALUES];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = AnimValueList_from(self->data->anim_values, self->ctx);
+    self->slots[SLOT_SCENE__ANIM_VALUES] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Scene_get_anim_curves(Scene *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SCENE__ANIM_CURVES];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = AnimCurveList_from(self->data->anim_curves, self->ctx);
+    self->slots[SLOT_SCENE__ANIM_CURVES] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Scene_get_display_layers(Scene *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SCENE__DISPLAY_LAYERS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = DisplayLayerList_from(self->data->display_layers, self->ctx);
+    self->slots[SLOT_SCENE__DISPLAY_LAYERS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Scene_get_selection_sets(Scene *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SCENE__SELECTION_SETS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = SelectionSetList_from(self->data->selection_sets, self->ctx);
+    self->slots[SLOT_SCENE__SELECTION_SETS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Scene_get_selection_nodes(Scene *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SCENE__SELECTION_NODES];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = SelectionNodeList_from(self->data->selection_nodes, self->ctx);
+    self->slots[SLOT_SCENE__SELECTION_NODES] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Scene_get_characters(Scene *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SCENE__CHARACTERS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = CharacterList_from(self->data->characters, self->ctx);
+    self->slots[SLOT_SCENE__CHARACTERS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Scene_get_constraints(Scene *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SCENE__CONSTRAINTS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = ConstraintList_from(self->data->constraints, self->ctx);
+    self->slots[SLOT_SCENE__CONSTRAINTS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Scene_get_audio_layers(Scene *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SCENE__AUDIO_LAYERS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = AudioLayerList_from(self->data->audio_layers, self->ctx);
+    self->slots[SLOT_SCENE__AUDIO_LAYERS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Scene_get_audio_clips(Scene *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SCENE__AUDIO_CLIPS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = AudioClipList_from(self->data->audio_clips, self->ctx);
+    self->slots[SLOT_SCENE__AUDIO_CLIPS] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Scene_get_poses(Scene *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SCENE__POSES];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = PoseList_from(self->data->poses, self->ctx);
+    self->slots[SLOT_SCENE__POSES] = slot;
+    return Py_NewRef(slot);
+}
+
+static PyObject *Scene_get_metadata_objects(Scene *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_SCENE__METADATA_OBJECTS];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = MetadataObjectList_from(self->data->metadata_objects, self->ctx);
+    self->slots[SLOT_SCENE__METADATA_OBJECTS] = slot;
     return Py_NewRef(slot);
 }
 
@@ -16562,6 +20532,48 @@ static PyGetSetDef Scene_getset[] = {
     { "settings", (getter)Scene_get_settings, NULL, "settings" },
     { "root_node", (getter)Scene_get_root_node, NULL, "root_node" },
     { "anim", (getter)Scene_get_anim, NULL, "anim" },
+    { "unknowns", (getter)Scene_get_unknowns, NULL, "unknowns" },
+    { "nodes", (getter)Scene_get_nodes, NULL, "nodes" },
+    { "meshes", (getter)Scene_get_meshes, NULL, "meshes" },
+    { "lights", (getter)Scene_get_lights, NULL, "lights" },
+    { "cameras", (getter)Scene_get_cameras, NULL, "cameras" },
+    { "bones", (getter)Scene_get_bones, NULL, "bones" },
+    { "empties", (getter)Scene_get_empties, NULL, "empties" },
+    { "line_curves", (getter)Scene_get_line_curves, NULL, "line_curves" },
+    { "nurbs_curves", (getter)Scene_get_nurbs_curves, NULL, "nurbs_curves" },
+    { "nurbs_surfaces", (getter)Scene_get_nurbs_surfaces, NULL, "nurbs_surfaces" },
+    { "nurbs_trim_surfaces", (getter)Scene_get_nurbs_trim_surfaces, NULL, "nurbs_trim_surfaces" },
+    { "nurbs_trim_boundaries", (getter)Scene_get_nurbs_trim_boundaries, NULL, "nurbs_trim_boundaries" },
+    { "procedural_geometries", (getter)Scene_get_procedural_geometries, NULL, "procedural_geometries" },
+    { "stereo_cameras", (getter)Scene_get_stereo_cameras, NULL, "stereo_cameras" },
+    { "camera_switchers", (getter)Scene_get_camera_switchers, NULL, "camera_switchers" },
+    { "markers", (getter)Scene_get_markers, NULL, "markers" },
+    { "lod_groups", (getter)Scene_get_lod_groups, NULL, "lod_groups" },
+    { "skin_deformers", (getter)Scene_get_skin_deformers, NULL, "skin_deformers" },
+    { "skin_clusters", (getter)Scene_get_skin_clusters, NULL, "skin_clusters" },
+    { "blend_deformers", (getter)Scene_get_blend_deformers, NULL, "blend_deformers" },
+    { "blend_channels", (getter)Scene_get_blend_channels, NULL, "blend_channels" },
+    { "blend_shapes", (getter)Scene_get_blend_shapes, NULL, "blend_shapes" },
+    { "cache_deformers", (getter)Scene_get_cache_deformers, NULL, "cache_deformers" },
+    { "cache_files", (getter)Scene_get_cache_files, NULL, "cache_files" },
+    { "materials", (getter)Scene_get_materials, NULL, "materials" },
+    { "textures", (getter)Scene_get_textures, NULL, "textures" },
+    { "videos", (getter)Scene_get_videos, NULL, "videos" },
+    { "shaders", (getter)Scene_get_shaders, NULL, "shaders" },
+    { "shader_bindings", (getter)Scene_get_shader_bindings, NULL, "shader_bindings" },
+    { "anim_stacks", (getter)Scene_get_anim_stacks, NULL, "anim_stacks" },
+    { "anim_layers", (getter)Scene_get_anim_layers, NULL, "anim_layers" },
+    { "anim_values", (getter)Scene_get_anim_values, NULL, "anim_values" },
+    { "anim_curves", (getter)Scene_get_anim_curves, NULL, "anim_curves" },
+    { "display_layers", (getter)Scene_get_display_layers, NULL, "display_layers" },
+    { "selection_sets", (getter)Scene_get_selection_sets, NULL, "selection_sets" },
+    { "selection_nodes", (getter)Scene_get_selection_nodes, NULL, "selection_nodes" },
+    { "characters", (getter)Scene_get_characters, NULL, "characters" },
+    { "constraints", (getter)Scene_get_constraints, NULL, "constraints" },
+    { "audio_layers", (getter)Scene_get_audio_layers, NULL, "audio_layers" },
+    { "audio_clips", (getter)Scene_get_audio_clips, NULL, "audio_clips" },
+    { "poses", (getter)Scene_get_poses, NULL, "poses" },
+    { "metadata_objects", (getter)Scene_get_metadata_objects, NULL, "metadata_objects" },
     { "texture_files", (getter)Scene_get_texture_files, NULL, "texture_files" },
     { "elements", (getter)Scene_get_elements, NULL, "elements" },
     { "connections_src", (getter)Scene_get_connections_src, NULL, "connections_src" },
@@ -18392,7 +22404,6 @@ static int to_allocator_opts(ufbx_allocator_opts *dst, PyObject *src) {
 }
 
 static int to_open_memory_opts(ufbx_open_memory_opts *dst, PyObject *src) {
-    PyObject *value;
     return 0;
 }
 
@@ -18488,6 +22499,11 @@ static int to_load_opts(ufbx_load_opts *dst, PyObject *src) {
         dst->force_single_thread_ascii_parsing = PyObject_IsTrue(value);
         if (PyErr_Occurred()) return -1;
     }
+    value = PyDict_GetItemString(src, "index_error_handling");
+    if (value) {
+        dst->index_error_handling = (ufbx_index_error_handling)PyLong_AsLong(value);
+        if (PyErr_Occurred()) return -1;
+    }
     value = PyDict_GetItemString(src, "connect_broken_elements");
     if (value) {
         dst->connect_broken_elements = PyObject_IsTrue(value);
@@ -18543,9 +22559,34 @@ static int to_load_opts(ufbx_load_opts *dst, PyObject *src) {
         dst->progress_interval_hint = (uint64_t)PyLong_AsUnsignedLongLong(value);
         if (PyErr_Occurred()) return -1;
     }
+    value = PyDict_GetItemString(src, "geometry_transform_handling");
+    if (value) {
+        dst->geometry_transform_handling = (ufbx_geometry_transform_handling)PyLong_AsLong(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "inherit_mode_handling");
+    if (value) {
+        dst->inherit_mode_handling = (ufbx_inherit_mode_handling)PyLong_AsLong(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "space_conversion");
+    if (value) {
+        dst->space_conversion = (ufbx_space_conversion)PyLong_AsLong(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "pivot_handling");
+    if (value) {
+        dst->pivot_handling = (ufbx_pivot_handling)PyLong_AsLong(value);
+        if (PyErr_Occurred()) return -1;
+    }
     value = PyDict_GetItemString(src, "pivot_handling_retain_empties");
     if (value) {
         dst->pivot_handling_retain_empties = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "handedness_conversion_axis");
+    if (value) {
+        dst->handedness_conversion_axis = (ufbx_mirror_axis)PyLong_AsLong(value);
         if (PyErr_Occurred()) return -1;
     }
     value = PyDict_GetItemString(src, "handedness_conversion_retain_winding");
@@ -18558,9 +22599,24 @@ static int to_load_opts(ufbx_load_opts *dst, PyObject *src) {
         dst->reverse_winding = PyObject_IsTrue(value);
         if (PyErr_Occurred()) return -1;
     }
+    value = PyDict_GetItemString(src, "target_axes");
+    if (value) {
+        dst->target_axes = CoordinateAxes_to(value);
+        if (PyErr_Occurred()) return -1;
+    }
     value = PyDict_GetItemString(src, "target_unit_meters");
     if (value) {
         dst->target_unit_meters = (ufbx_real)PyFloat_AsDouble(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "target_camera_axes");
+    if (value) {
+        dst->target_camera_axes = CoordinateAxes_to(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "target_light_axes");
+    if (value) {
+        dst->target_light_axes = CoordinateAxes_to(value);
         if (PyErr_Occurred()) return -1;
     }
     value = PyDict_GetItemString(src, "normalize_normals");
@@ -18578,9 +22634,19 @@ static int to_load_opts(ufbx_load_opts *dst, PyObject *src) {
         dst->use_root_transform = PyObject_IsTrue(value);
         if (PyErr_Occurred()) return -1;
     }
+    value = PyDict_GetItemString(src, "root_transform");
+    if (value) {
+        dst->root_transform = Transform_to(value);
+        if (PyErr_Occurred()) return -1;
+    }
     value = PyDict_GetItemString(src, "key_clamp_threshold");
     if (value) {
         dst->key_clamp_threshold = PyFloat_AsDouble(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "unicode_error_handling");
+    if (value) {
+        dst->unicode_error_handling = (ufbx_unicode_error_handling)PyLong_AsLong(value);
         if (PyErr_Occurred()) return -1;
     }
     value = PyDict_GetItemString(src, "retain_vertex_attrib_w");
@@ -18591,6 +22657,11 @@ static int to_load_opts(ufbx_load_opts *dst, PyObject *src) {
     value = PyDict_GetItemString(src, "retain_dom");
     if (value) {
         dst->retain_dom = PyObject_IsTrue(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "file_format");
+    if (value) {
+        dst->file_format = (ufbx_file_format)PyLong_AsLong(value);
         if (PyErr_Occurred()) return -1;
     }
     value = PyDict_GetItemString(src, "file_format_lookahead");
@@ -18633,6 +22704,11 @@ static int to_load_opts(ufbx_load_opts *dst, PyObject *src) {
         dst->obj_unit_meters = (ufbx_real)PyFloat_AsDouble(value);
         if (PyErr_Occurred()) return -1;
     }
+    value = PyDict_GetItemString(src, "obj_axes");
+    if (value) {
+        dst->obj_axes = CoordinateAxes_to(value);
+        if (PyErr_Occurred()) return -1;
+    }
     return 0;
 }
 
@@ -18666,6 +22742,11 @@ static int to_prop_override_desc(ufbx_prop_override_desc *dst, PyObject *src) {
     value = PyDict_GetItemString(src, "element_id");
     if (value) {
         dst->element_id = (uint32_t)PyLong_AsUnsignedLong(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "value");
+    if (value) {
+        dst->value = Vec4_to(value);
         if (PyErr_Occurred()) return -1;
     }
     value = PyDict_GetItemString(src, "value_int");
@@ -18731,6 +22812,11 @@ static int to_bake_opts(ufbx_bake_opts *dst, PyObject *src) {
     value = PyDict_GetItemString(src, "max_keyframe_segments");
     if (value) {
         dst->max_keyframe_segments = PyLong_AsSize_t(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "step_handling");
+    if (value) {
+        dst->step_handling = (ufbx_bake_step_handling)PyLong_AsLong(value);
         if (PyErr_Occurred()) return -1;
     }
     value = PyDict_GetItemString(src, "step_custom_duration");
@@ -18803,6 +22889,16 @@ static int to_tessellate_surface_opts(ufbx_tessellate_surface_opts *dst, PyObjec
 
 static int to_subdivide_opts(ufbx_subdivide_opts *dst, PyObject *src) {
     PyObject *value;
+    value = PyDict_GetItemString(src, "boundary");
+    if (value) {
+        dst->boundary = (ufbx_subdivision_boundary)PyLong_AsLong(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "uv_boundary");
+    if (value) {
+        dst->uv_boundary = (ufbx_subdivision_boundary)PyLong_AsLong(value);
+        if (PyErr_Occurred()) return -1;
+    }
     value = PyDict_GetItemString(src, "ignore_normals");
     if (value) {
         dst->ignore_normals = PyObject_IsTrue(value);
@@ -18851,6 +22947,11 @@ static int to_geometry_cache_opts(ufbx_geometry_cache_opts *dst, PyObject *src) 
     value = PyDict_GetItemString(src, "frames_per_second");
     if (value) {
         dst->frames_per_second = PyFloat_AsDouble(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "mirror_axis");
+    if (value) {
+        dst->mirror_axis = (ufbx_mirror_axis)PyLong_AsLong(value);
         if (PyErr_Occurred()) return -1;
     }
     value = PyDict_GetItemString(src, "use_scale_factor");
@@ -18952,6 +23053,68 @@ static PyObject *mod_find_prop(PyObject *self, PyObject *args) {
     return to_pyobject_todo("ufbx_prop*");
 }
 
+static PyObject *mod_find_real(PyObject *self, PyObject *args) {
+    Props *props;
+    const char *name;
+    Py_ssize_t name_len;
+    double def;
+    if (!PyArg_ParseTuple(args, "O!s#d", &Props_Type, &props, &name, &name_len, &def)) {
+        return NULL;
+    }
+    if (!props->ctx->ok) {
+        return Context_error(props->ctx);
+    }
+    ufbx_real ret = ufbx_find_real_len(props->data, name, (size_t)name_len, (ufbx_real)def);
+    return PyFloat_FromDouble(ret);
+}
+
+static PyObject *mod_find_vec3(PyObject *self, PyObject *args) {
+    Props *props;
+    const char *name;
+    Py_ssize_t name_len;
+    PyObject *def_obj;
+    ufbx_vec3 def;
+    if (!PyArg_ParseTuple(args, "O!s#O!", &Props_Type, &props, &name, &name_len, &Vec3_Type, &def_obj)) {
+        return NULL;
+    }
+    if (!props->ctx->ok) {
+        return Context_error(props->ctx);
+    }
+    def = Vec3_to(def_obj);
+    ufbx_vec3 ret = ufbx_find_vec3_len(props->data, name, (size_t)name_len, def);
+    return Vec3_from(&ret);
+}
+
+static PyObject *mod_find_int(PyObject *self, PyObject *args) {
+    Props *props;
+    const char *name;
+    Py_ssize_t name_len;
+    long long def;
+    if (!PyArg_ParseTuple(args, "O!s#L", &Props_Type, &props, &name, &name_len, &def)) {
+        return NULL;
+    }
+    if (!props->ctx->ok) {
+        return Context_error(props->ctx);
+    }
+    int64_t ret = ufbx_find_int_len(props->data, name, (size_t)name_len, (int64_t)def);
+    return PyLong_FromLongLong((long long)ret);
+}
+
+static PyObject *mod_find_bool(PyObject *self, PyObject *args) {
+    Props *props;
+    const char *name;
+    Py_ssize_t name_len;
+    int def;
+    if (!PyArg_ParseTuple(args, "O!s#p", &Props_Type, &props, &name, &name_len, &def)) {
+        return NULL;
+    }
+    if (!props->ctx->ok) {
+        return Context_error(props->ctx);
+    }
+    bool ret = ufbx_find_bool_len(props->data, name, (size_t)name_len, def != 0);
+    return Py_NewRef(ret ? Py_True : Py_False);
+}
+
 static PyObject *mod_find_node(PyObject *self, PyObject *args) {
     Scene *scene;
     const char *name;
@@ -19046,6 +23209,186 @@ static PyObject *mod_get_compatible_matrix_for_normals(PyObject *self, PyObject 
     return Matrix_from(&ret);
 }
 
+static PyObject *mod_evaluate_curve(PyObject *self, PyObject *args) {
+    AnimCurve *curve;
+    double time;
+    double default_value;
+    if (!PyArg_ParseTuple(args, "O!dd", &AnimCurve_Type, &curve, &time, &default_value)) {
+        return NULL;
+    }
+    if (!curve->ctx->ok) {
+        return Context_error(curve->ctx);
+    }
+    ufbx_real ret = ufbx_evaluate_curve(curve->data, time, (ufbx_real)default_value);
+    return PyFloat_FromDouble(ret);
+}
+
+static PyObject *mod_evaluate_curve_flags(PyObject *self, PyObject *args) {
+    AnimCurve *curve;
+    double time;
+    double default_value;
+    unsigned int flags;
+    if (!PyArg_ParseTuple(args, "O!ddI", &AnimCurve_Type, &curve, &time, &default_value, &flags)) {
+        return NULL;
+    }
+    if (!curve->ctx->ok) {
+        return Context_error(curve->ctx);
+    }
+    ufbx_real ret = ufbx_evaluate_curve_flags(curve->data, time, (ufbx_real)default_value, (uint32_t)flags);
+    return PyFloat_FromDouble(ret);
+}
+
+static PyObject *mod_evaluate_anim_value_real(PyObject *self, PyObject *args) {
+    AnimValue *anim_value;
+    double time;
+    if (!PyArg_ParseTuple(args, "O!d", &AnimValue_Type, &anim_value, &time)) {
+        return NULL;
+    }
+    if (!anim_value->ctx->ok) {
+        return Context_error(anim_value->ctx);
+    }
+    ufbx_real ret = ufbx_evaluate_anim_value_real(anim_value->data, time);
+    return PyFloat_FromDouble(ret);
+}
+
+static PyObject *mod_evaluate_anim_value_vec3(PyObject *self, PyObject *args) {
+    AnimValue *anim_value;
+    double time;
+    if (!PyArg_ParseTuple(args, "O!d", &AnimValue_Type, &anim_value, &time)) {
+        return NULL;
+    }
+    if (!anim_value->ctx->ok) {
+        return Context_error(anim_value->ctx);
+    }
+    ufbx_vec3 ret = ufbx_evaluate_anim_value_vec3(anim_value->data, time);
+    return Vec3_from(&ret);
+}
+
+static PyObject *mod_evaluate_anim_value_real_flags(PyObject *self, PyObject *args) {
+    AnimValue *anim_value;
+    double time;
+    unsigned int flags;
+    if (!PyArg_ParseTuple(args, "O!dI", &AnimValue_Type, &anim_value, &time, &flags)) {
+        return NULL;
+    }
+    if (!anim_value->ctx->ok) {
+        return Context_error(anim_value->ctx);
+    }
+    ufbx_real ret = ufbx_evaluate_anim_value_real_flags(anim_value->data, time, (uint32_t)flags);
+    return PyFloat_FromDouble(ret);
+}
+
+static PyObject *mod_evaluate_anim_value_vec3_flags(PyObject *self, PyObject *args) {
+    AnimValue *anim_value;
+    double time;
+    unsigned int flags;
+    if (!PyArg_ParseTuple(args, "O!dI", &AnimValue_Type, &anim_value, &time, &flags)) {
+        return NULL;
+    }
+    if (!anim_value->ctx->ok) {
+        return Context_error(anim_value->ctx);
+    }
+    ufbx_vec3 ret = ufbx_evaluate_anim_value_vec3_flags(anim_value->data, time, (uint32_t)flags);
+    return Vec3_from(&ret);
+}
+
+static PyObject *mod_evaluate_props_flags(PyObject *self, PyObject *args) {
+    Anim *anim;
+    Element *element;
+    double time;
+    Prop *buffer;
+    Py_ssize_t buffer_size;
+    unsigned int flags;
+    if (!PyArg_ParseTuple(args, "O!O!dO!nI", &Anim_Type, &anim, &Element_Type, &element, &time, &Prop_Type, &buffer, &buffer_size, &flags)) {
+        return NULL;
+    }
+    if (!anim->ctx->ok) {
+        return Context_error(anim->ctx);
+    }
+    ufbx_props ret = ufbx_evaluate_props_flags(anim->data, element->data, time, buffer->data, (size_t)buffer_size, (uint32_t)flags);
+    return Props_from(&ret, anim->ctx);
+}
+
+static PyObject *mod_evaluate_transform(PyObject *self, PyObject *args) {
+    Anim *anim;
+    Node *node;
+    double time;
+    if (!PyArg_ParseTuple(args, "O!O!d", &Anim_Type, &anim, &Node_Type, &node, &time)) {
+        return NULL;
+    }
+    if (!anim->ctx->ok) {
+        return Context_error(anim->ctx);
+    }
+    ufbx_transform ret = ufbx_evaluate_transform(anim->data, node->data, time);
+    return Transform_from(&ret);
+}
+
+static PyObject *mod_evaluate_transform_flags(PyObject *self, PyObject *args) {
+    Anim *anim;
+    Node *node;
+    double time;
+    unsigned int flags;
+    if (!PyArg_ParseTuple(args, "O!O!dI", &Anim_Type, &anim, &Node_Type, &node, &time, &flags)) {
+        return NULL;
+    }
+    if (!anim->ctx->ok) {
+        return Context_error(anim->ctx);
+    }
+    ufbx_transform ret = ufbx_evaluate_transform_flags(anim->data, node->data, time, (uint32_t)flags);
+    return Transform_from(&ret);
+}
+
+static PyObject *mod_evaluate_blend_weight(PyObject *self, PyObject *args) {
+    Anim *anim;
+    BlendChannel *channel;
+    double time;
+    if (!PyArg_ParseTuple(args, "O!O!d", &Anim_Type, &anim, &BlendChannel_Type, &channel, &time)) {
+        return NULL;
+    }
+    if (!anim->ctx->ok) {
+        return Context_error(anim->ctx);
+    }
+    ufbx_real ret = ufbx_evaluate_blend_weight(anim->data, channel->data, time);
+    return PyFloat_FromDouble(ret);
+}
+
+static PyObject *mod_evaluate_blend_weight_flags(PyObject *self, PyObject *args) {
+    Anim *anim;
+    BlendChannel *channel;
+    double time;
+    unsigned int flags;
+    if (!PyArg_ParseTuple(args, "O!O!dI", &Anim_Type, &anim, &BlendChannel_Type, &channel, &time, &flags)) {
+        return NULL;
+    }
+    if (!anim->ctx->ok) {
+        return Context_error(anim->ctx);
+    }
+    ufbx_real ret = ufbx_evaluate_blend_weight_flags(anim->data, channel->data, time, (uint32_t)flags);
+    return PyFloat_FromDouble(ret);
+}
+
+static PyObject *mod_evaluate_scene(PyObject *self, PyObject *args, PyObject *kwargs) {
+    Scene *scene;
+    Anim *anim;
+    double time;
+    ufbx_evaluate_opts opts = { 0 };
+    ufbx_error error;
+    if (!PyArg_ParseTuple(args, "O!O!d", &Scene_Type, &scene, &Anim_Type, &anim, &time)) {
+        return NULL;
+    }
+    if (!scene->ctx->ok) {
+        return Context_error(scene->ctx);
+    }
+    if (to_evaluate_opts(&opts, kwargs) < 0) {
+        return NULL;
+    }
+    ufbx_scene* ret = ufbx_evaluate_scene(scene->data, anim->data, time, &opts, &error);
+    if (error.type != UFBX_ERROR_NONE) {
+        return UfbxError_raise(&error);
+    }
+    return Scene_create(ret);
+}
+
 static PyObject *mod_create_anim(PyObject *self, PyObject *args, PyObject *kwargs) {
     Scene *scene;
     ufbx_anim_opts opts = { 0 };
@@ -19063,7 +23406,7 @@ static PyObject *mod_create_anim(PyObject *self, PyObject *args, PyObject *kwarg
     if (error.type != UFBX_ERROR_NONE) {
         return UfbxError_raise(&error);
     }
-    return to_pyobject_todo("ufbx_anim*");
+    return Anim_create(ret);
 }
 
 static PyObject *mod_bake_anim(PyObject *self, PyObject *args, PyObject *kwargs) {
@@ -19087,6 +23430,22 @@ static PyObject *mod_bake_anim(PyObject *self, PyObject *args, PyObject *kwargs)
     return to_pyobject_todo("ufbx_baked_anim*");
 }
 
+static PyObject *mod_find_baked_node_by_typed_id(PyObject *self, PyObject *args) {
+    BakedAnim *bake;
+    unsigned int typed_id;
+    if (!PyArg_ParseTuple(args, "O!I", &BakedAnim_Type, &bake, &typed_id)) {
+        return NULL;
+    }
+    if (!bake->ctx->ok) {
+        return Context_error(bake->ctx);
+    }
+    ufbx_baked_node* ret = ufbx_find_baked_node_by_typed_id(bake->data, (uint32_t)typed_id);
+    if (!ret) {
+        return Py_NewRef(Py_None);
+    }
+    return to_pyobject_todo("ufbx_baked_node*");
+}
+
 static PyObject *mod_find_baked_node(PyObject *self, PyObject *args) {
     BakedAnim *bake;
     Node *node;
@@ -19101,6 +23460,22 @@ static PyObject *mod_find_baked_node(PyObject *self, PyObject *args) {
         return Py_NewRef(Py_None);
     }
     return to_pyobject_todo("ufbx_baked_node*");
+}
+
+static PyObject *mod_find_baked_element_by_element_id(PyObject *self, PyObject *args) {
+    BakedAnim *bake;
+    unsigned int element_id;
+    if (!PyArg_ParseTuple(args, "O!I", &BakedAnim_Type, &bake, &element_id)) {
+        return NULL;
+    }
+    if (!bake->ctx->ok) {
+        return Context_error(bake->ctx);
+    }
+    ufbx_baked_element* ret = ufbx_find_baked_element_by_element_id(bake->data, (uint32_t)element_id);
+    if (!ret) {
+        return Py_NewRef(Py_None);
+    }
+    return to_pyobject_todo("ufbx_baked_element*");
 }
 
 static PyObject *mod_find_baked_element(PyObject *self, PyObject *args) {
@@ -19197,22 +23572,176 @@ static PyObject *mod_find_shader_texture_input(PyObject *self, PyObject *args) {
     return to_pyobject_todo("ufbx_shader_texture_input*");
 }
 
-static PyObject *mod_load_geometry_cache(PyObject *self, PyObject *args, PyObject *kwargs) {
-    const char *filename;
-    Py_ssize_t filename_len;
-    ufbx_geometry_cache_opts opts = { 0 };
-    ufbx_error error;
-    if (!PyArg_ParseTuple(args, "s#", &filename, &filename_len)) {
+static PyObject *mod_vec3_normalize(PyObject *self, PyObject *args) {
+    PyObject *v_obj;
+    ufbx_vec3 v;
+    if (!PyArg_ParseTuple(args, "O!", &Vec3_Type, &v_obj)) {
         return NULL;
     }
-    if (to_geometry_cache_opts(&opts, kwargs) < 0) {
+    v = Vec3_to(v_obj);
+    ufbx_vec3 ret = ufbx_vec3_normalize(v);
+    return Vec3_from(&ret);
+}
+
+static PyObject *mod_quat_dot(PyObject *self, PyObject *args) {
+    PyObject *a_obj;
+    ufbx_quat a;
+    PyObject *b_obj;
+    ufbx_quat b;
+    if (!PyArg_ParseTuple(args, "O!O!", &Quat_Type, &a_obj, &Quat_Type, &b_obj)) {
         return NULL;
     }
-    ufbx_geometry_cache* ret = ufbx_load_geometry_cache_len(filename, (size_t)filename_len, &opts, &error);
-    if (error.type != UFBX_ERROR_NONE) {
-        return UfbxError_raise(&error);
+    a = Quat_to(a_obj);
+    b = Quat_to(b_obj);
+    ufbx_real ret = ufbx_quat_dot(a, b);
+    return PyFloat_FromDouble(ret);
+}
+
+static PyObject *mod_quat_mul(PyObject *self, PyObject *args) {
+    PyObject *a_obj;
+    ufbx_quat a;
+    PyObject *b_obj;
+    ufbx_quat b;
+    if (!PyArg_ParseTuple(args, "O!O!", &Quat_Type, &a_obj, &Quat_Type, &b_obj)) {
+        return NULL;
     }
-    return to_pyobject_todo("ufbx_geometry_cache*");
+    a = Quat_to(a_obj);
+    b = Quat_to(b_obj);
+    ufbx_quat ret = ufbx_quat_mul(a, b);
+    return Quat_from(&ret);
+}
+
+static PyObject *mod_quat_normalize(PyObject *self, PyObject *args) {
+    PyObject *q_obj;
+    ufbx_quat q;
+    if (!PyArg_ParseTuple(args, "O!", &Quat_Type, &q_obj)) {
+        return NULL;
+    }
+    q = Quat_to(q_obj);
+    ufbx_quat ret = ufbx_quat_normalize(q);
+    return Quat_from(&ret);
+}
+
+static PyObject *mod_quat_fix_antipodal(PyObject *self, PyObject *args) {
+    PyObject *q_obj;
+    ufbx_quat q;
+    PyObject *reference_obj;
+    ufbx_quat reference;
+    if (!PyArg_ParseTuple(args, "O!O!", &Quat_Type, &q_obj, &Quat_Type, &reference_obj)) {
+        return NULL;
+    }
+    q = Quat_to(q_obj);
+    reference = Quat_to(reference_obj);
+    ufbx_quat ret = ufbx_quat_fix_antipodal(q, reference);
+    return Quat_from(&ret);
+}
+
+static PyObject *mod_quat_slerp(PyObject *self, PyObject *args) {
+    PyObject *a_obj;
+    ufbx_quat a;
+    PyObject *b_obj;
+    ufbx_quat b;
+    double t;
+    if (!PyArg_ParseTuple(args, "O!O!d", &Quat_Type, &a_obj, &Quat_Type, &b_obj, &t)) {
+        return NULL;
+    }
+    a = Quat_to(a_obj);
+    b = Quat_to(b_obj);
+    ufbx_quat ret = ufbx_quat_slerp(a, b, (ufbx_real)t);
+    return Quat_from(&ret);
+}
+
+static PyObject *mod_quat_rotate_vec3(PyObject *self, PyObject *args) {
+    PyObject *q_obj;
+    ufbx_quat q;
+    PyObject *v_obj;
+    ufbx_vec3 v;
+    if (!PyArg_ParseTuple(args, "O!O!", &Quat_Type, &q_obj, &Vec3_Type, &v_obj)) {
+        return NULL;
+    }
+    q = Quat_to(q_obj);
+    v = Vec3_to(v_obj);
+    ufbx_vec3 ret = ufbx_quat_rotate_vec3(q, v);
+    return Vec3_from(&ret);
+}
+
+static PyObject *mod_get_blend_shape_offset_index(PyObject *self, PyObject *args) {
+    BlendShape *shape;
+    Py_ssize_t vertex;
+    if (!PyArg_ParseTuple(args, "O!n", &BlendShape_Type, &shape, &vertex)) {
+        return NULL;
+    }
+    if (!shape->ctx->ok) {
+        return Context_error(shape->ctx);
+    }
+    uint32_t ret = ufbx_get_blend_shape_offset_index(shape->data, (size_t)vertex);
+    return PyLong_FromUnsignedLong((unsigned long)ret);
+}
+
+static PyObject *mod_get_blend_shape_vertex_offset(PyObject *self, PyObject *args) {
+    BlendShape *shape;
+    Py_ssize_t vertex;
+    if (!PyArg_ParseTuple(args, "O!n", &BlendShape_Type, &shape, &vertex)) {
+        return NULL;
+    }
+    if (!shape->ctx->ok) {
+        return Context_error(shape->ctx);
+    }
+    ufbx_vec3 ret = ufbx_get_blend_shape_vertex_offset(shape->data, (size_t)vertex);
+    return Vec3_from(&ret);
+}
+
+static PyObject *mod_get_blend_vertex_offset(PyObject *self, PyObject *args) {
+    BlendDeformer *blend;
+    Py_ssize_t vertex;
+    if (!PyArg_ParseTuple(args, "O!n", &BlendDeformer_Type, &blend, &vertex)) {
+        return NULL;
+    }
+    if (!blend->ctx->ok) {
+        return Context_error(blend->ctx);
+    }
+    ufbx_vec3 ret = ufbx_get_blend_vertex_offset(blend->data, (size_t)vertex);
+    return Vec3_from(&ret);
+}
+
+static PyObject *mod_evaluate_nurbs_curve(PyObject *self, PyObject *args) {
+    NurbsCurve *curve;
+    double u;
+    if (!PyArg_ParseTuple(args, "O!d", &NurbsCurve_Type, &curve, &u)) {
+        return NULL;
+    }
+    if (!curve->ctx->ok) {
+        return Context_error(curve->ctx);
+    }
+    ufbx_curve_point ret = ufbx_evaluate_nurbs_curve(curve->data, (ufbx_real)u);
+    return CurvePoint_from(&ret);
+}
+
+static PyObject *mod_evaluate_nurbs_surface(PyObject *self, PyObject *args) {
+    NurbsSurface *surface;
+    double u;
+    double v;
+    if (!PyArg_ParseTuple(args, "O!dd", &NurbsSurface_Type, &surface, &u, &v)) {
+        return NULL;
+    }
+    if (!surface->ctx->ok) {
+        return Context_error(surface->ctx);
+    }
+    ufbx_surface_point ret = ufbx_evaluate_nurbs_surface(surface->data, (ufbx_real)u, (ufbx_real)v);
+    return SurfacePoint_from(&ret);
+}
+
+static PyObject *mod_find_face_index(PyObject *self, PyObject *args) {
+    Mesh *mesh;
+    Py_ssize_t index;
+    if (!PyArg_ParseTuple(args, "O!n", &Mesh_Type, &mesh, &index)) {
+        return NULL;
+    }
+    if (!mesh->ctx->ok) {
+        return Context_error(mesh->ctx);
+    }
+    uint32_t ret = ufbx_find_face_index(mesh->data, (size_t)index);
+    return PyLong_FromUnsignedLong((unsigned long)ret);
 }
 
 static PyObject *mod_dom_find(PyObject *self, PyObject *args) {
@@ -19230,6 +23759,96 @@ static PyObject *mod_dom_find(PyObject *self, PyObject *args) {
         return Py_NewRef(Py_None);
     }
     return to_pyobject_todo("ufbx_dom_node*");
+}
+
+static PyObject *mod_get_vertex_real(PyObject *self, PyObject *args) {
+    ufbx_panic panic;
+    panic.did_panic = false;
+    VertexReal *v;
+    Py_ssize_t index;
+    if (!PyArg_ParseTuple(args, "O!n", &VertexReal_Type, &v, &index)) {
+        return NULL;
+    }
+    if (!v->ctx->ok) {
+        return Context_error(v->ctx);
+    }
+    ufbx_real ret = ufbx_catch_get_vertex_real(&panic, v->data, (size_t)index);
+    if (panic.did_panic) {
+        return Panic_raise(&panic);
+    }
+    return PyFloat_FromDouble(ret);
+}
+
+static PyObject *mod_get_vertex_vec2(PyObject *self, PyObject *args) {
+    ufbx_panic panic;
+    panic.did_panic = false;
+    VertexVec2 *v;
+    Py_ssize_t index;
+    if (!PyArg_ParseTuple(args, "O!n", &VertexVec2_Type, &v, &index)) {
+        return NULL;
+    }
+    if (!v->ctx->ok) {
+        return Context_error(v->ctx);
+    }
+    ufbx_vec2 ret = ufbx_catch_get_vertex_vec2(&panic, v->data, (size_t)index);
+    if (panic.did_panic) {
+        return Panic_raise(&panic);
+    }
+    return Vec2_from(&ret);
+}
+
+static PyObject *mod_get_vertex_vec3(PyObject *self, PyObject *args) {
+    ufbx_panic panic;
+    panic.did_panic = false;
+    VertexVec3 *v;
+    Py_ssize_t index;
+    if (!PyArg_ParseTuple(args, "O!n", &VertexVec3_Type, &v, &index)) {
+        return NULL;
+    }
+    if (!v->ctx->ok) {
+        return Context_error(v->ctx);
+    }
+    ufbx_vec3 ret = ufbx_catch_get_vertex_vec3(&panic, v->data, (size_t)index);
+    if (panic.did_panic) {
+        return Panic_raise(&panic);
+    }
+    return Vec3_from(&ret);
+}
+
+static PyObject *mod_get_vertex_vec4(PyObject *self, PyObject *args) {
+    ufbx_panic panic;
+    panic.did_panic = false;
+    VertexVec4 *v;
+    Py_ssize_t index;
+    if (!PyArg_ParseTuple(args, "O!n", &VertexVec4_Type, &v, &index)) {
+        return NULL;
+    }
+    if (!v->ctx->ok) {
+        return Context_error(v->ctx);
+    }
+    ufbx_vec4 ret = ufbx_catch_get_vertex_vec4(&panic, v->data, (size_t)index);
+    if (panic.did_panic) {
+        return Panic_raise(&panic);
+    }
+    return Vec4_from(&ret);
+}
+
+static PyObject *mod_get_vertex_w_vec3(PyObject *self, PyObject *args) {
+    ufbx_panic panic;
+    panic.did_panic = false;
+    VertexVec3 *v;
+    Py_ssize_t index;
+    if (!PyArg_ParseTuple(args, "O!n", &VertexVec3_Type, &v, &index)) {
+        return NULL;
+    }
+    if (!v->ctx->ok) {
+        return Context_error(v->ctx);
+    }
+    ufbx_real ret = ufbx_catch_get_vertex_w_vec3(&panic, v->data, (size_t)index);
+    if (panic.did_panic) {
+        return Panic_raise(&panic);
+    }
+    return PyFloat_FromDouble(ret);
 }
 
 static PyObject *mod_as_unknown(PyObject *self, PyObject *args) {
@@ -20315,23 +24934,58 @@ static PyMethodDef mod_methods[] = {
     { "load_memory", (PyCFunction)&mod_load_memory, METH_VARARGS|METH_KEYWORDS, NULL },
     { "load_file", (PyCFunction)&mod_load_file, METH_VARARGS|METH_KEYWORDS, NULL },
     { "find_prop", &mod_find_prop, METH_VARARGS, NULL },
+    { "find_real", &mod_find_real, METH_VARARGS, NULL },
+    { "find_vec3", &mod_find_vec3, METH_VARARGS, NULL },
+    { "find_int", &mod_find_int, METH_VARARGS, NULL },
+    { "find_bool", &mod_find_bool, METH_VARARGS, NULL },
     { "find_node", &mod_find_node, METH_VARARGS, NULL },
     { "find_anim_stack", &mod_find_anim_stack, METH_VARARGS, NULL },
     { "find_material", &mod_find_material, METH_VARARGS, NULL },
     { "find_anim_prop", &mod_find_anim_prop, METH_VARARGS, NULL },
     { "find_anim_props", &mod_find_anim_props, METH_VARARGS, NULL },
     { "get_compatible_matrix_for_normals", &mod_get_compatible_matrix_for_normals, METH_VARARGS, NULL },
+    { "evaluate_curve", &mod_evaluate_curve, METH_VARARGS, NULL },
+    { "evaluate_curve_flags", &mod_evaluate_curve_flags, METH_VARARGS, NULL },
+    { "evaluate_anim_value_real", &mod_evaluate_anim_value_real, METH_VARARGS, NULL },
+    { "evaluate_anim_value_vec3", &mod_evaluate_anim_value_vec3, METH_VARARGS, NULL },
+    { "evaluate_anim_value_real_flags", &mod_evaluate_anim_value_real_flags, METH_VARARGS, NULL },
+    { "evaluate_anim_value_vec3_flags", &mod_evaluate_anim_value_vec3_flags, METH_VARARGS, NULL },
+    { "evaluate_props_flags", &mod_evaluate_props_flags, METH_VARARGS, NULL },
+    { "evaluate_transform", &mod_evaluate_transform, METH_VARARGS, NULL },
+    { "evaluate_transform_flags", &mod_evaluate_transform_flags, METH_VARARGS, NULL },
+    { "evaluate_blend_weight", &mod_evaluate_blend_weight, METH_VARARGS, NULL },
+    { "evaluate_blend_weight_flags", &mod_evaluate_blend_weight_flags, METH_VARARGS, NULL },
+    { "evaluate_scene", (PyCFunction)&mod_evaluate_scene, METH_VARARGS|METH_KEYWORDS, NULL },
     { "create_anim", (PyCFunction)&mod_create_anim, METH_VARARGS|METH_KEYWORDS, NULL },
     { "bake_anim", (PyCFunction)&mod_bake_anim, METH_VARARGS|METH_KEYWORDS, NULL },
+    { "find_baked_node_by_typed_id", &mod_find_baked_node_by_typed_id, METH_VARARGS, NULL },
     { "find_baked_node", &mod_find_baked_node, METH_VARARGS, NULL },
+    { "find_baked_element_by_element_id", &mod_find_baked_element_by_element_id, METH_VARARGS, NULL },
     { "find_baked_element", &mod_find_baked_element, METH_VARARGS, NULL },
     { "get_bone_pose", &mod_get_bone_pose, METH_VARARGS, NULL },
     { "find_prop_texture", &mod_find_prop_texture, METH_VARARGS, NULL },
     { "find_shader_prop", &mod_find_shader_prop, METH_VARARGS, NULL },
     { "find_shader_prop_bindings", &mod_find_shader_prop_bindings, METH_VARARGS, NULL },
     { "find_shader_texture_input", &mod_find_shader_texture_input, METH_VARARGS, NULL },
-    { "load_geometry_cache", (PyCFunction)&mod_load_geometry_cache, METH_VARARGS|METH_KEYWORDS, NULL },
+    { "vec3_normalize", &mod_vec3_normalize, METH_VARARGS, NULL },
+    { "quat_dot", &mod_quat_dot, METH_VARARGS, NULL },
+    { "quat_mul", &mod_quat_mul, METH_VARARGS, NULL },
+    { "quat_normalize", &mod_quat_normalize, METH_VARARGS, NULL },
+    { "quat_fix_antipodal", &mod_quat_fix_antipodal, METH_VARARGS, NULL },
+    { "quat_slerp", &mod_quat_slerp, METH_VARARGS, NULL },
+    { "quat_rotate_vec3", &mod_quat_rotate_vec3, METH_VARARGS, NULL },
+    { "get_blend_shape_offset_index", &mod_get_blend_shape_offset_index, METH_VARARGS, NULL },
+    { "get_blend_shape_vertex_offset", &mod_get_blend_shape_vertex_offset, METH_VARARGS, NULL },
+    { "get_blend_vertex_offset", &mod_get_blend_vertex_offset, METH_VARARGS, NULL },
+    { "evaluate_nurbs_curve", &mod_evaluate_nurbs_curve, METH_VARARGS, NULL },
+    { "evaluate_nurbs_surface", &mod_evaluate_nurbs_surface, METH_VARARGS, NULL },
+    { "find_face_index", &mod_find_face_index, METH_VARARGS, NULL },
     { "dom_find", &mod_dom_find, METH_VARARGS, NULL },
+    { "get_vertex_real", &mod_get_vertex_real, METH_VARARGS, NULL },
+    { "get_vertex_vec2", &mod_get_vertex_vec2, METH_VARARGS, NULL },
+    { "get_vertex_vec3", &mod_get_vertex_vec3, METH_VARARGS, NULL },
+    { "get_vertex_vec4", &mod_get_vertex_vec4, METH_VARARGS, NULL },
+    { "get_vertex_w_vec3", &mod_get_vertex_w_vec3, METH_VARARGS, NULL },
     { "as_unknown", &mod_as_unknown, METH_VARARGS, NULL },
     { "as_node", &mod_as_node, METH_VARARGS, NULL },
     { "as_mesh", &mod_as_mesh, METH_VARARGS, NULL },

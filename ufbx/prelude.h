@@ -21,6 +21,7 @@ typedef struct {
 	PyObject *name;
 
 	ufbx_scene *scene;
+	ufbx_anim *anim;
 
     size_t num_elements;
 	PyObject **elements;
@@ -52,6 +53,8 @@ static void Context_dealloc(Context *self)
 	}
 
 	ufbx_free_scene(self->scene);
+	ufbx_free_anim(self->anim);
+
 	free(self->elements);
 
 	Py_TYPE(self)->tp_free((PyObject*)self);
@@ -73,6 +76,7 @@ static PyTypeObject Context_Type = {
 static PyObject *Element_create(ufbx_element *elem, Context *ctx);
 
 static PyObject *UfbxError_raise(ufbx_error *error);
+static PyObject *Panic_raise(ufbx_panic *panic);
 
 static PyObject *Context_error(Context *ctx)
 {
@@ -149,6 +153,62 @@ static PyObject* Matrix_from(const ufbx_matrix *v)
 	return r;
 }
 
+static ufbx_vec2 Vec2_to(PyObject *v)
+{
+	ufbx_vec2 r;
+	r.x = (ufbx_real)PyFloat_AsDouble(PyStructSequence_GetItem(v, 0));
+	r.y = (ufbx_real)PyFloat_AsDouble(PyStructSequence_GetItem(v, 1));
+	return r;
+}
+
+static ufbx_vec3 Vec3_to(PyObject *v)
+{
+	ufbx_vec3 r;
+	r.x = (ufbx_real)PyFloat_AsDouble(PyStructSequence_GetItem(v, 0));
+	r.y = (ufbx_real)PyFloat_AsDouble(PyStructSequence_GetItem(v, 1));
+	r.z = (ufbx_real)PyFloat_AsDouble(PyStructSequence_GetItem(v, 2));
+	return r;
+}
+
+static ufbx_vec4 Vec4_to(PyObject *v)
+{
+	ufbx_vec4 r;
+	r.x = (ufbx_real)PyFloat_AsDouble(PyStructSequence_GetItem(v, 0));
+	r.y = (ufbx_real)PyFloat_AsDouble(PyStructSequence_GetItem(v, 1));
+	r.z = (ufbx_real)PyFloat_AsDouble(PyStructSequence_GetItem(v, 2));
+	r.w = (ufbx_real)PyFloat_AsDouble(PyStructSequence_GetItem(v, 3));
+	return r;
+}
+
+static ufbx_quat Quat_to(PyObject *v)
+{
+	ufbx_quat r;
+	r.x = (ufbx_real)PyFloat_AsDouble(PyStructSequence_GetItem(v, 0));
+	r.y = (ufbx_real)PyFloat_AsDouble(PyStructSequence_GetItem(v, 1));
+	r.z = (ufbx_real)PyFloat_AsDouble(PyStructSequence_GetItem(v, 2));
+	r.w = (ufbx_real)PyFloat_AsDouble(PyStructSequence_GetItem(v, 3));
+	return r;
+}
+
+static ufbx_transform Transform_to(PyObject *v)
+{
+	ufbx_transform r;
+	r.translation = Vec3_to(PyStructSequence_GetItem(v, 0));
+	r.rotation = Quat_to(PyStructSequence_GetItem(v, 1));
+	r.scale = Vec3_to(PyStructSequence_GetItem(v, 2));
+	return r;
+}
+
+static ufbx_matrix Matrix_to(PyObject *v)
+{
+	ufbx_matrix r;
+	r.cols[0] = Vec3_to(PyTuple_GetItem(v, 0));
+	r.cols[1] = Vec3_to(PyTuple_GetItem(v, 1));
+	r.cols[2] = Vec3_to(PyTuple_GetItem(v, 2));
+	r.cols[3] = Vec3_to(PyTuple_GetItem(v, 3));
+	return r;
+}
+
 static PyObject* String_from(ufbx_string v)
 {
     return PyUnicode_FromStringAndSize(v.data, (Py_ssize_t)v.length);
@@ -174,6 +234,7 @@ static PyObject* Element_from(void *p_elem, Context *ctx)
 }
 
 static PyObject* Scene_create(ufbx_scene *scene);
+static PyObject* Anim_create(ufbx_anim *anim);
 
 static PyObject* to_pyobject_todo(const char *type)
 {
