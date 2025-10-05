@@ -26,15 +26,35 @@ typedef struct {
 	PyObject **elements;
 } Context;
 
-static void Context_dealloc(Context *ctx)
+static int Context_traverse(Context *self, visitproc visit, void *arg)
 {
-	Py_XDECREF(ctx->name);
-	for (size_t i = 0; i < ctx->num_elements; i++) {
-		Py_XDECREF(ctx->elements[i]);
+	Py_VISIT(self->name);
+	for (size_t i = 0; i < self->num_elements; i++) {
+		Py_VISIT(self->elements[i]);
+	}
+	return 0;
+}
+
+static int Context_clear(Context *self)
+{
+	Py_CLEAR(self->name);
+	for (size_t i = 0; i < self->num_elements; i++) {
+		Py_CLEAR(self->elements[i]);
+	}
+	return 0;
+}
+
+static void Context_dealloc(Context *self)
+{
+	Py_XDECREF(self->name);
+	for (size_t i = 0; i < self->num_elements; i++) {
+		Py_XDECREF(self->elements[i]);
 	}
 
-	ufbx_free_scene(ctx->scene);
-	free(ctx->elements);
+	ufbx_free_scene(self->scene);
+	free(self->elements);
+
+	Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
 static PyTypeObject Context_Type = {
@@ -43,9 +63,11 @@ static PyTypeObject Context_Type = {
     .tp_doc = PyDoc_STR("Context"),
     .tp_basicsize = sizeof(Context),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
 	.tp_dealloc = (destructor)&Context_dealloc,
+	.tp_traverse = (traverseproc)&Context_traverse,
+	.tp_clear = (inquiry)&Context_clear,
 };
 
 static PyObject *Element_create(ufbx_element *elem, Context *ctx);
@@ -139,7 +161,7 @@ static PyObject* Blob_from(ufbx_blob v)
 
 static PyObject* Element_from(void *p_elem, Context *ctx)
 {
-	if (!p_elem) return Py_None;
+	if (!p_elem) return Py_NewRef(Py_None);
     if (!ctx->ok) return Context_error(ctx);
 
     ufbx_element *elem = (ufbx_element*)p_elem;

@@ -30,6 +30,7 @@ class PyhtonArg:
     vars: str
     ctx: Optional[str] = None
     post: Optional[str] = None
+    input_type: Optional[str] = None
 
 def emit(line=""):
     global g_indent
@@ -229,6 +230,8 @@ class PythonFunc:
         if self.ir.name in unsupported_funcs: do_emit = False
         self.is_emitted = do_emit
 
+        input_type = None
+
         args = []
         try:
             args = [func_arg(arg) for arg in self.ir.arguments]
@@ -238,10 +241,16 @@ class PythonFunc:
         args = [arg for arg in args if arg]
         self.args = args
 
+        for arg in args:
+            if arg.input_type:
+                assert not input_type
+                input_type = arg.input_type
+        self.input_type = input_type
+
 manual_types = { "ufbx_string", "ufbx_blob" }
 
 pyobject_primtive = {
-    "void": lambda _: "Py_None",
+    "void": lambda _: "Py_NewRef(Py_None)",
     "char": lambda v: f"PyLong_FromUnsignedLong((unsigned long){v})",
     "int8_t": lambda v: f"PyLong_FromLong((long){v})",
     "uint8_t": lambda v: f"PyLong_FromUnsignedLong((unsigned long){v})",
@@ -254,7 +263,7 @@ pyobject_primtive = {
     "size_t": lambda v: f"PyLong_FromSize_t({v})",
     "uintptr_t": lambda v: f"PyLong_FromSize_t((size_t){v})",
     "ptrdiff_t": lambda v: f"PyLong_FromSsize_t((Py_ssize_t){v})",
-    "bool": lambda v: f"{v} ? Py_True : Py_False",
+    "bool": lambda v: f"Py_NewRef({v} ? Py_True : Py_False)",
     "ufbx_real": lambda v: f"PyFloat_FromDouble({v})",
 }
 
@@ -384,7 +393,7 @@ def emit_list(ps: PythonStruct):
     emit_lines(f"""
         static PyObject *{name}_item({name} *self, Py_ssize_t index) {{
             if (!self->ctx->ok) return Context_error(self->ctx);
-            size_t count = self->count;
+            size_t count = self->data.count;
             if (index < 0 || (size_t)index >= count) {{
                 PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
                 return NULL;
@@ -489,6 +498,61 @@ def emit_struct(ps: PythonStruct):
     for pf in ps.fields:
         emit_getter(ps, pf)
 
+    # Traverse
+    emit()
+    emit_lines(f"""
+        static int {ps.name}_traverse({ps.name} *self, visitproc visit, void *arg) {{
+    """)
+    indent()
+
+    if ps.ir.is_element:
+        emit("if (Element_traverse((Element*)self, visit, arg) < 0) return -1;")
+    else:
+        emit("Py_VISIT(self->ctx);")
+
+    if slot_count > 0:
+        emit_lines(f"""
+                for (size_t i = 0; i < {slot_count_name}; i++) {{
+                    Py_VISIT(self->slots[i]);
+                }}
+        """)
+    emit("return 0;")
+    unindent()
+    emit("}")
+
+    # Clear
+    emit()
+    emit_lines(f"""
+        static int {ps.name}_clear({ps.name} *self) {{
+    """)
+    indent()
+
+    if ps.ir.is_element:
+        emit("if (Element_clear((Element*)self) < 0) return -1;")
+    else:
+        emit("Py_CLEAR(self->ctx);")
+
+    if slot_count > 0:
+        emit_lines(f"""
+                for (size_t i = 0; i < {slot_count_name}; i++) {{
+                    Py_CLEAR(self->slots[i]);
+                }}
+        """)
+
+    emit("return 0;")
+    unindent()
+    emit("}")
+
+    # Dealloc
+    emit()
+    emit_lines(f"""
+        void {ps.name}_dealloc({ps.name} *self) {{
+            PyObject_GC_UnTrack(self);
+            {ps.name}_clear(self);
+            Py_TYPE(self)->tp_free((PyObject *) self);
+        }}
+    """)
+
     getset = None
     if ps.fields:
         emit("")
@@ -502,6 +566,10 @@ def emit_struct(ps: PythonStruct):
         emit("};")
         getset = f"{ps.name}_getset"
 
+    flags = "Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC"
+    if ps.ir.name == "ufbx_element":
+        flags += "|Py_TPFLAGS_BASETYPE"
+
     # Type declaration
     emit()
     emit_lines(f"""
@@ -511,8 +579,11 @@ def emit_struct(ps: PythonStruct):
         .tp_doc = PyDoc_STR("{ps.name}"),
         .tp_basicsize = sizeof({ps.name}),
         .tp_itemsize = 0,
-        .tp_flags = Py_TPFLAGS_DEFAULT,
+        .tp_flags = {flags},
         .tp_new = PyType_GenericNew,
+        .tp_dealloc = (destructor)&{ps.name}_dealloc,
+        .tp_traverse = (traverseproc)&{ps.name}_traverse,
+        .tp_clear = (inquiry)&{ps.name}_clear,
     """)
     indent()
 
@@ -619,10 +690,9 @@ def func_arg(arg: ir.Argument) -> Optional[PyhtonArg]:
                         {ps.name} *{name};
                     """, ctx=f"{name}->ctx")
                 elif ps.ir.is_input:
-                    # TODO
                     return PyhtonArg("", "", "", "", f"&{name}", f"""
                             {ps.ir.name} {name} = {{ 0 }};
-                        """)
+                        """, input_type=ps.ir.name)
 
         raise FunctionArgNotImplemented()
 
@@ -640,7 +710,10 @@ def emit_func(pf: PythonFunc):
             break
 
     emit()
-    emit(f"static PyObject *mod_{pf.name}(PyObject *self, PyObject *args) {{")
+    if pf.input_type:
+        emit(f"static PyObject *mod_{pf.name}(PyObject *self, PyObject *args, PyObject *kwargs) {{")
+    else:
+        emit(f"static PyObject *mod_{pf.name}(PyObject *self, PyObject *args) {{")
     indent()
 
     fmt = ""
@@ -689,7 +762,7 @@ def emit_func(pf: PythonFunc):
     if pf.ir.nullable_return:
         emit_lines(f"""
             if (!ret) {{
-                return Py_None;
+                return Py_NewRef(Py_None);
             }}
         """)
 
@@ -707,7 +780,7 @@ def emit_func(pf: PythonFunc):
             """)
     else:
         emit_lines(f"""
-            return Py_None;
+            return Py_NewRef(Py_None);
         """)
 
     unindent()
@@ -758,7 +831,10 @@ def emit_module_types():
     indent()
 
     for pf in module_funcs:
-        emit(f"{{ \"{pf.name}\", &mod_{pf.name}, METH_VARARGS, NULL }},")
+        if pf.input_type:
+            emit(f"{{ \"{pf.name}\", (PyCFunction)&mod_{pf.name}, METH_VARARGS|METH_KEYWORDS, NULL }},")
+        else:
+            emit(f"{{ \"{pf.name}\", &mod_{pf.name}, METH_VARARGS, NULL }},")
     emit(f"{{ NULL }},")
 
     unindent()

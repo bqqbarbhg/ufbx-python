@@ -814,12 +814,12 @@ static PyObject *BoolList_len(BoolList *self, PyObject *key) {
 
 static PyObject *BoolList_item(BoolList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
-    return self->data.data[index] ? Py_True : Py_False;
+    return Py_NewRef(self->data.data[index] ? Py_True : Py_False);
 }
 
 static PySequenceMethods BoolList_Sequence = {
@@ -860,7 +860,7 @@ static PyObject *Uint32List_len(Uint32List *self, PyObject *key) {
 
 static PyObject *Uint32List_item(Uint32List *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -906,7 +906,7 @@ static PyObject *RealList_len(RealList *self, PyObject *key) {
 
 static PyObject *RealList_item(RealList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -952,7 +952,7 @@ static PyObject *Vec2List_len(Vec2List *self, PyObject *key) {
 
 static PyObject *Vec2List_item(Vec2List *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -998,7 +998,7 @@ static PyObject *Vec3List_len(Vec3List *self, PyObject *key) {
 
 static PyObject *Vec3List_item(Vec3List *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -1044,7 +1044,7 @@ static PyObject *Vec4List_len(Vec4List *self, PyObject *key) {
 
 static PyObject *Vec4List_item(Vec4List *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -1090,7 +1090,7 @@ static PyObject *StringList_len(StringList *self, PyObject *key) {
 
 static PyObject *StringList_item(StringList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -1136,7 +1136,7 @@ static PyObject *Int32List_len(Int32List *self, PyObject *key) {
 
 static PyObject *Int32List_item(Int32List *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -1182,7 +1182,7 @@ static PyObject *Int64List_len(Int64List *self, PyObject *key) {
 
 static PyObject *Int64List_item(Int64List *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -1228,7 +1228,7 @@ static PyObject *FloatList_len(FloatList *self, PyObject *key) {
 
 static PyObject *FloatList_item(FloatList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -1274,7 +1274,7 @@ static PyObject *DoubleList_len(DoubleList *self, PyObject *key) {
 
 static PyObject *DoubleList_item(DoubleList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -1320,7 +1320,7 @@ static PyObject *BlobList_len(BlobList *self, PyObject *key) {
 
 static PyObject *BlobList_item(BlobList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -1366,7 +1366,7 @@ static PyObject *DomNodeList_len(DomNodeList *self, PyObject *key) {
 
 static PyObject *DomNodeList_item(DomNodeList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -1412,7 +1412,7 @@ static PyObject *DomValueList_len(DomValueList *self, PyObject *key) {
 
 static PyObject *DomValueList_item(DomValueList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -1458,7 +1458,7 @@ static PyObject *PropList_len(PropList *self, PyObject *key) {
 
 static PyObject *PropList_item(PropList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -1504,7 +1504,7 @@ static PyObject *ElementList_len(ElementList *self, PyObject *key) {
 
 static PyObject *ElementList_item(ElementList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -1550,7 +1550,7 @@ static PyObject *UnknownList_len(UnknownList *self, PyObject *key) {
 
 static PyObject *UnknownList_item(UnknownList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -1596,7 +1596,7 @@ static PyObject *NodeList_len(NodeList *self, PyObject *key) {
 
 static PyObject *NodeList_item(NodeList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -1642,7 +1642,7 @@ static PyObject *MeshList_len(MeshList *self, PyObject *key) {
 
 static PyObject *MeshList_item(MeshList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -1688,7 +1688,7 @@ static PyObject *LightList_len(LightList *self, PyObject *key) {
 
 static PyObject *LightList_item(LightList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -1734,7 +1734,7 @@ static PyObject *CameraList_len(CameraList *self, PyObject *key) {
 
 static PyObject *CameraList_item(CameraList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -1780,7 +1780,7 @@ static PyObject *BoneList_len(BoneList *self, PyObject *key) {
 
 static PyObject *BoneList_item(BoneList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -1826,7 +1826,7 @@ static PyObject *EmptyList_len(EmptyList *self, PyObject *key) {
 
 static PyObject *EmptyList_item(EmptyList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -1872,7 +1872,7 @@ static PyObject *LineCurveList_len(LineCurveList *self, PyObject *key) {
 
 static PyObject *LineCurveList_item(LineCurveList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -1918,7 +1918,7 @@ static PyObject *NurbsCurveList_len(NurbsCurveList *self, PyObject *key) {
 
 static PyObject *NurbsCurveList_item(NurbsCurveList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -1964,7 +1964,7 @@ static PyObject *NurbsSurfaceList_len(NurbsSurfaceList *self, PyObject *key) {
 
 static PyObject *NurbsSurfaceList_item(NurbsSurfaceList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -2010,7 +2010,7 @@ static PyObject *NurbsTrimSurfaceList_len(NurbsTrimSurfaceList *self, PyObject *
 
 static PyObject *NurbsTrimSurfaceList_item(NurbsTrimSurfaceList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -2056,7 +2056,7 @@ static PyObject *NurbsTrimBoundaryList_len(NurbsTrimBoundaryList *self, PyObject
 
 static PyObject *NurbsTrimBoundaryList_item(NurbsTrimBoundaryList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -2102,7 +2102,7 @@ static PyObject *ProceduralGeometryList_len(ProceduralGeometryList *self, PyObje
 
 static PyObject *ProceduralGeometryList_item(ProceduralGeometryList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -2148,7 +2148,7 @@ static PyObject *StereoCameraList_len(StereoCameraList *self, PyObject *key) {
 
 static PyObject *StereoCameraList_item(StereoCameraList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -2194,7 +2194,7 @@ static PyObject *CameraSwitcherList_len(CameraSwitcherList *self, PyObject *key)
 
 static PyObject *CameraSwitcherList_item(CameraSwitcherList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -2240,7 +2240,7 @@ static PyObject *MarkerList_len(MarkerList *self, PyObject *key) {
 
 static PyObject *MarkerList_item(MarkerList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -2286,7 +2286,7 @@ static PyObject *LodGroupList_len(LodGroupList *self, PyObject *key) {
 
 static PyObject *LodGroupList_item(LodGroupList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -2332,7 +2332,7 @@ static PyObject *SkinDeformerList_len(SkinDeformerList *self, PyObject *key) {
 
 static PyObject *SkinDeformerList_item(SkinDeformerList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -2378,7 +2378,7 @@ static PyObject *SkinClusterList_len(SkinClusterList *self, PyObject *key) {
 
 static PyObject *SkinClusterList_item(SkinClusterList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -2424,7 +2424,7 @@ static PyObject *BlendDeformerList_len(BlendDeformerList *self, PyObject *key) {
 
 static PyObject *BlendDeformerList_item(BlendDeformerList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -2470,7 +2470,7 @@ static PyObject *BlendChannelList_len(BlendChannelList *self, PyObject *key) {
 
 static PyObject *BlendChannelList_item(BlendChannelList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -2516,7 +2516,7 @@ static PyObject *BlendShapeList_len(BlendShapeList *self, PyObject *key) {
 
 static PyObject *BlendShapeList_item(BlendShapeList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -2562,7 +2562,7 @@ static PyObject *CacheDeformerList_len(CacheDeformerList *self, PyObject *key) {
 
 static PyObject *CacheDeformerList_item(CacheDeformerList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -2608,7 +2608,7 @@ static PyObject *CacheFileList_len(CacheFileList *self, PyObject *key) {
 
 static PyObject *CacheFileList_item(CacheFileList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -2654,7 +2654,7 @@ static PyObject *MaterialList_len(MaterialList *self, PyObject *key) {
 
 static PyObject *MaterialList_item(MaterialList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -2700,7 +2700,7 @@ static PyObject *TextureList_len(TextureList *self, PyObject *key) {
 
 static PyObject *TextureList_item(TextureList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -2746,7 +2746,7 @@ static PyObject *VideoList_len(VideoList *self, PyObject *key) {
 
 static PyObject *VideoList_item(VideoList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -2792,7 +2792,7 @@ static PyObject *ShaderList_len(ShaderList *self, PyObject *key) {
 
 static PyObject *ShaderList_item(ShaderList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -2838,7 +2838,7 @@ static PyObject *ShaderBindingList_len(ShaderBindingList *self, PyObject *key) {
 
 static PyObject *ShaderBindingList_item(ShaderBindingList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -2884,7 +2884,7 @@ static PyObject *AnimStackList_len(AnimStackList *self, PyObject *key) {
 
 static PyObject *AnimStackList_item(AnimStackList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -2930,7 +2930,7 @@ static PyObject *AnimLayerList_len(AnimLayerList *self, PyObject *key) {
 
 static PyObject *AnimLayerList_item(AnimLayerList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -2976,7 +2976,7 @@ static PyObject *AnimValueList_len(AnimValueList *self, PyObject *key) {
 
 static PyObject *AnimValueList_item(AnimValueList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -3022,7 +3022,7 @@ static PyObject *AnimCurveList_len(AnimCurveList *self, PyObject *key) {
 
 static PyObject *AnimCurveList_item(AnimCurveList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -3068,7 +3068,7 @@ static PyObject *DisplayLayerList_len(DisplayLayerList *self, PyObject *key) {
 
 static PyObject *DisplayLayerList_item(DisplayLayerList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -3114,7 +3114,7 @@ static PyObject *SelectionSetList_len(SelectionSetList *self, PyObject *key) {
 
 static PyObject *SelectionSetList_item(SelectionSetList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -3160,7 +3160,7 @@ static PyObject *SelectionNodeList_len(SelectionNodeList *self, PyObject *key) {
 
 static PyObject *SelectionNodeList_item(SelectionNodeList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -3206,7 +3206,7 @@ static PyObject *CharacterList_len(CharacterList *self, PyObject *key) {
 
 static PyObject *CharacterList_item(CharacterList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -3252,7 +3252,7 @@ static PyObject *ConstraintList_len(ConstraintList *self, PyObject *key) {
 
 static PyObject *ConstraintList_item(ConstraintList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -3298,7 +3298,7 @@ static PyObject *AudioLayerList_len(AudioLayerList *self, PyObject *key) {
 
 static PyObject *AudioLayerList_item(AudioLayerList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -3344,7 +3344,7 @@ static PyObject *AudioClipList_len(AudioClipList *self, PyObject *key) {
 
 static PyObject *AudioClipList_item(AudioClipList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -3390,7 +3390,7 @@ static PyObject *PoseList_len(PoseList *self, PyObject *key) {
 
 static PyObject *PoseList_item(PoseList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -3436,7 +3436,7 @@ static PyObject *MetadataObjectList_len(MetadataObjectList *self, PyObject *key)
 
 static PyObject *MetadataObjectList_item(MetadataObjectList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -3482,7 +3482,7 @@ static PyObject *ConnectionList_len(ConnectionList *self, PyObject *key) {
 
 static PyObject *ConnectionList_item(ConnectionList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -3528,7 +3528,7 @@ static PyObject *UvSetList_len(UvSetList *self, PyObject *key) {
 
 static PyObject *UvSetList_item(UvSetList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -3574,7 +3574,7 @@ static PyObject *ColorSetList_len(ColorSetList *self, PyObject *key) {
 
 static PyObject *ColorSetList_item(ColorSetList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -3620,7 +3620,7 @@ static PyObject *EdgeList_len(EdgeList *self, PyObject *key) {
 
 static PyObject *EdgeList_item(EdgeList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -3666,7 +3666,7 @@ static PyObject *FaceList_len(FaceList *self, PyObject *key) {
 
 static PyObject *FaceList_item(FaceList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -3712,7 +3712,7 @@ static PyObject *MeshPartList_len(MeshPartList *self, PyObject *key) {
 
 static PyObject *MeshPartList_item(MeshPartList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -3758,7 +3758,7 @@ static PyObject *FaceGroupList_len(FaceGroupList *self, PyObject *key) {
 
 static PyObject *FaceGroupList_item(FaceGroupList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -3804,7 +3804,7 @@ static PyObject *SubdivisionWeightRangeList_len(SubdivisionWeightRangeList *self
 
 static PyObject *SubdivisionWeightRangeList_item(SubdivisionWeightRangeList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -3850,7 +3850,7 @@ static PyObject *SubdivisionWeightList_len(SubdivisionWeightList *self, PyObject
 
 static PyObject *SubdivisionWeightList_item(SubdivisionWeightList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -3896,7 +3896,7 @@ static PyObject *LineSegmentList_len(LineSegmentList *self, PyObject *key) {
 
 static PyObject *LineSegmentList_item(LineSegmentList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -3942,7 +3942,7 @@ static PyObject *LodLevelList_len(LodLevelList *self, PyObject *key) {
 
 static PyObject *LodLevelList_item(LodLevelList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -3988,7 +3988,7 @@ static PyObject *SkinVertexList_len(SkinVertexList *self, PyObject *key) {
 
 static PyObject *SkinVertexList_item(SkinVertexList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -4034,7 +4034,7 @@ static PyObject *SkinWeightList_len(SkinWeightList *self, PyObject *key) {
 
 static PyObject *SkinWeightList_item(SkinWeightList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -4080,7 +4080,7 @@ static PyObject *BlendKeyframeList_len(BlendKeyframeList *self, PyObject *key) {
 
 static PyObject *BlendKeyframeList_item(BlendKeyframeList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -4126,7 +4126,7 @@ static PyObject *CacheFrameList_len(CacheFrameList *self, PyObject *key) {
 
 static PyObject *CacheFrameList_item(CacheFrameList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -4172,7 +4172,7 @@ static PyObject *CacheChannelList_len(CacheChannelList *self, PyObject *key) {
 
 static PyObject *CacheChannelList_item(CacheChannelList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -4218,7 +4218,7 @@ static PyObject *MaterialTextureList_len(MaterialTextureList *self, PyObject *ke
 
 static PyObject *MaterialTextureList_item(MaterialTextureList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -4264,7 +4264,7 @@ static PyObject *TextureLayerList_len(TextureLayerList *self, PyObject *key) {
 
 static PyObject *TextureLayerList_item(TextureLayerList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -4310,7 +4310,7 @@ static PyObject *ShaderTextureInputList_len(ShaderTextureInputList *self, PyObje
 
 static PyObject *ShaderTextureInputList_item(ShaderTextureInputList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -4356,7 +4356,7 @@ static PyObject *TextureFileList_len(TextureFileList *self, PyObject *key) {
 
 static PyObject *TextureFileList_item(TextureFileList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -4402,7 +4402,7 @@ static PyObject *ShaderPropBindingList_len(ShaderPropBindingList *self, PyObject
 
 static PyObject *ShaderPropBindingList_item(ShaderPropBindingList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -4448,7 +4448,7 @@ static PyObject *PropOverrideList_len(PropOverrideList *self, PyObject *key) {
 
 static PyObject *PropOverrideList_item(PropOverrideList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -4494,7 +4494,7 @@ static PyObject *TransformOverrideList_len(TransformOverrideList *self, PyObject
 
 static PyObject *TransformOverrideList_item(TransformOverrideList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -4540,7 +4540,7 @@ static PyObject *AnimPropList_len(AnimPropList *self, PyObject *key) {
 
 static PyObject *AnimPropList_item(AnimPropList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -4586,7 +4586,7 @@ static PyObject *KeyframeList_len(KeyframeList *self, PyObject *key) {
 
 static PyObject *KeyframeList_item(KeyframeList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -4632,7 +4632,7 @@ static PyObject *ConstraintTargetList_len(ConstraintTargetList *self, PyObject *
 
 static PyObject *ConstraintTargetList_item(ConstraintTargetList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -4678,7 +4678,7 @@ static PyObject *BonePoseList_len(BonePoseList *self, PyObject *key) {
 
 static PyObject *BonePoseList_item(BonePoseList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -4724,7 +4724,7 @@ static PyObject *NameElementList_len(NameElementList *self, PyObject *key) {
 
 static PyObject *NameElementList_item(NameElementList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -4770,7 +4770,7 @@ static PyObject *WarningList_len(WarningList *self, PyObject *key) {
 
 static PyObject *WarningList_item(WarningList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -4816,7 +4816,7 @@ static PyObject *BakedVec3List_len(BakedVec3List *self, PyObject *key) {
 
 static PyObject *BakedVec3List_item(BakedVec3List *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -4862,7 +4862,7 @@ static PyObject *BakedQuatList_len(BakedQuatList *self, PyObject *key) {
 
 static PyObject *BakedQuatList_item(BakedQuatList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -4908,7 +4908,7 @@ static PyObject *BakedNodeList_len(BakedNodeList *self, PyObject *key) {
 
 static PyObject *BakedNodeList_item(BakedNodeList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -4954,7 +4954,7 @@ static PyObject *BakedPropList_len(BakedPropList *self, PyObject *key) {
 
 static PyObject *BakedPropList_item(BakedPropList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -5000,7 +5000,7 @@ static PyObject *BakedElementList_len(BakedElementList *self, PyObject *key) {
 
 static PyObject *BakedElementList_item(BakedElementList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -5046,7 +5046,7 @@ static PyObject *ConstUint32List_len(ConstUint32List *self, PyObject *key) {
 
 static PyObject *ConstUint32List_item(ConstUint32List *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -5092,7 +5092,7 @@ static PyObject *ConstRealList_len(ConstRealList *self, PyObject *key) {
 
 static PyObject *ConstRealList_item(ConstRealList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -5138,7 +5138,7 @@ static PyObject *ConstPropOverrideDescList_len(ConstPropOverrideDescList *self, 
 
 static PyObject *ConstPropOverrideDescList_item(ConstPropOverrideDescList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -5184,7 +5184,7 @@ static PyObject *ConstTransformOverrideList_len(ConstTransformOverrideList *self
 
 static PyObject *ConstTransformOverrideList_item(ConstTransformOverrideList *self, Py_ssize_t index) {
     if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->count;
+    size_t count = self->data.count;
     if (index < 0 || (size_t)index >= count) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
@@ -5248,6 +5248,28 @@ static PyObject *VoidList_get_count(VoidList *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static int VoidList_traverse(VoidList *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_VOID_LIST; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int VoidList_clear(VoidList *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_VOID_LIST; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void VoidList_dealloc(VoidList *self) {
+    PyObject_GC_UnTrack(self);
+    VoidList_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef VoidList_getset[] = {
     { "data", (getter)VoidList_get_data, NULL, "data" },
     { "count", (getter)VoidList_get_count, NULL, "count" },
@@ -5260,8 +5282,11 @@ static PyTypeObject VoidList_Type = {
     .tp_doc = PyDoc_STR("VoidList"),
     .tp_basicsize = sizeof(VoidList),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&VoidList_dealloc,
+    .tp_traverse = (traverseproc)&VoidList_traverse,
+    .tp_clear = (inquiry)&VoidList_clear,
     .tp_getset = VoidList_getset,
 };
 
@@ -5334,6 +5359,28 @@ static PyObject *DomValue_get_value_float(DomValue *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static int DomValue_traverse(DomValue *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_DOM_VALUE; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int DomValue_clear(DomValue *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_DOM_VALUE; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void DomValue_dealloc(DomValue *self) {
+    PyObject_GC_UnTrack(self);
+    DomValue_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef DomValue_getset[] = {
     { "type", (getter)DomValue_get_type, NULL, "type" },
     { "value_str", (getter)DomValue_get_value_str, NULL, "value_str" },
@@ -5349,8 +5396,11 @@ static PyTypeObject DomValue_Type = {
     .tp_doc = PyDoc_STR("DomValue"),
     .tp_basicsize = sizeof(DomValue),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&DomValue_dealloc,
+    .tp_traverse = (traverseproc)&DomValue_traverse,
+    .tp_clear = (inquiry)&DomValue_clear,
     .tp_getset = DomValue_getset,
 };
 
@@ -5403,6 +5453,28 @@ static PyObject *DomNode_get_values(DomNode *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static int DomNode_traverse(DomNode *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_DOM_NODE; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int DomNode_clear(DomNode *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_DOM_NODE; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void DomNode_dealloc(DomNode *self) {
+    PyObject_GC_UnTrack(self);
+    DomNode_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef DomNode_getset[] = {
     { "name", (getter)DomNode_get_name, NULL, "name" },
     { "children", (getter)DomNode_get_children, NULL, "children" },
@@ -5416,8 +5488,11 @@ static PyTypeObject DomNode_Type = {
     .tp_doc = PyDoc_STR("DomNode"),
     .tp_basicsize = sizeof(DomNode),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&DomNode_dealloc,
+    .tp_traverse = (traverseproc)&DomNode_traverse,
+    .tp_clear = (inquiry)&DomNode_clear,
     .tp_getset = DomNode_getset,
 };
 
@@ -5500,6 +5575,28 @@ static PyObject *Prop_get_value_int(Prop *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static int Prop_traverse(Prop *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_PROP; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int Prop_clear(Prop *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_PROP; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void Prop_dealloc(Prop *self) {
+    PyObject_GC_UnTrack(self);
+    Prop_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef Prop_getset[] = {
     { "name", (getter)Prop_get_name, NULL, "name" },
     { "type", (getter)Prop_get_type, NULL, "type" },
@@ -5516,8 +5613,11 @@ static PyTypeObject Prop_Type = {
     .tp_doc = PyDoc_STR("Prop"),
     .tp_basicsize = sizeof(Prop),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&Prop_dealloc,
+    .tp_traverse = (traverseproc)&Prop_traverse,
+    .tp_clear = (inquiry)&Prop_clear,
     .tp_getset = Prop_getset,
 };
 
@@ -5570,6 +5670,28 @@ static PyObject *Props_get_defaults(Props *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static int Props_traverse(Props *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_PROPS; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int Props_clear(Props *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_PROPS; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void Props_dealloc(Props *self) {
+    PyObject_GC_UnTrack(self);
+    Props_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef Props_getset[] = {
     { "props", (getter)Props_get_props, NULL, "props" },
     { "num_animated", (getter)Props_get_num_animated, NULL, "num_animated" },
@@ -5583,8 +5705,11 @@ static PyTypeObject Props_Type = {
     .tp_doc = PyDoc_STR("Props"),
     .tp_basicsize = sizeof(Props),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&Props_dealloc,
+    .tp_traverse = (traverseproc)&Props_traverse,
+    .tp_clear = (inquiry)&Props_clear,
     .tp_getset = Props_getset,
 };
 
@@ -5647,6 +5772,28 @@ static PyObject *Connection_get_dst_prop(Connection *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static int Connection_traverse(Connection *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_CONNECTION; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int Connection_clear(Connection *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_CONNECTION; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void Connection_dealloc(Connection *self) {
+    PyObject_GC_UnTrack(self);
+    Connection_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef Connection_getset[] = {
     { "src", (getter)Connection_get_src, NULL, "src" },
     { "dst", (getter)Connection_get_dst, NULL, "dst" },
@@ -5661,8 +5808,11 @@ static PyTypeObject Connection_Type = {
     .tp_doc = PyDoc_STR("Connection"),
     .tp_basicsize = sizeof(Connection),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&Connection_dealloc,
+    .tp_traverse = (traverseproc)&Connection_traverse,
+    .tp_clear = (inquiry)&Connection_clear,
     .tp_getset = Connection_getset,
 };
 
@@ -5785,6 +5935,28 @@ static PyObject *Element_get_scene(Element *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static int Element_traverse(Element *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_ELEMENT; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int Element_clear(Element *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_ELEMENT; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void Element_dealloc(Element *self) {
+    PyObject_GC_UnTrack(self);
+    Element_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef Element_getset[] = {
     { "name", (getter)Element_get_name, NULL, "name" },
     { "props", (getter)Element_get_props, NULL, "props" },
@@ -5805,8 +5977,11 @@ static PyTypeObject Element_Type = {
     .tp_doc = PyDoc_STR("Element"),
     .tp_basicsize = sizeof(Element),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC|Py_TPFLAGS_BASETYPE,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&Element_dealloc,
+    .tp_traverse = (traverseproc)&Element_traverse,
+    .tp_clear = (inquiry)&Element_clear,
     .tp_getset = Element_getset,
 };
 
@@ -5856,6 +6031,28 @@ static PyObject *Unknown_get_sub_type(Unknown *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static int Unknown_traverse(Unknown *self, visitproc visit, void *arg) {
+    if (Element_traverse((Element*)self, visit, arg) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_UNKNOWN; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int Unknown_clear(Unknown *self) {
+    if (Element_clear((Element*)self) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_UNKNOWN; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void Unknown_dealloc(Unknown *self) {
+    PyObject_GC_UnTrack(self);
+    Unknown_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef Unknown_getset[] = {
     { "type", (getter)Unknown_get_type, NULL, "type" },
     { "super_type", (getter)Unknown_get_super_type, NULL, "super_type" },
@@ -5869,8 +6066,11 @@ static PyTypeObject Unknown_Type = {
     .tp_doc = PyDoc_STR("Unknown"),
     .tp_basicsize = sizeof(Unknown),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&Unknown_dealloc,
+    .tp_traverse = (traverseproc)&Unknown_traverse,
+    .tp_clear = (inquiry)&Unknown_clear,
     .tp_getset = Unknown_getset,
     .tp_base = &Element_Type,
 };
@@ -6234,7 +6434,7 @@ static PyObject *Node_get_visible(Node *self, void *closure) {
     PyObject *slot = self->slots[SLOT_NODE__VISIBLE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->visible ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->visible ? Py_True : Py_False);
     self->slots[SLOT_NODE__VISIBLE] = slot;
     return Py_NewRef(slot);
 }
@@ -6243,7 +6443,7 @@ static PyObject *Node_get_is_root(Node *self, void *closure) {
     PyObject *slot = self->slots[SLOT_NODE__IS_ROOT];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->is_root ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->is_root ? Py_True : Py_False);
     self->slots[SLOT_NODE__IS_ROOT] = slot;
     return Py_NewRef(slot);
 }
@@ -6252,7 +6452,7 @@ static PyObject *Node_get_has_geometry_transform(Node *self, void *closure) {
     PyObject *slot = self->slots[SLOT_NODE__HAS_GEOMETRY_TRANSFORM];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->has_geometry_transform ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->has_geometry_transform ? Py_True : Py_False);
     self->slots[SLOT_NODE__HAS_GEOMETRY_TRANSFORM] = slot;
     return Py_NewRef(slot);
 }
@@ -6261,7 +6461,7 @@ static PyObject *Node_get_has_adjust_transform(Node *self, void *closure) {
     PyObject *slot = self->slots[SLOT_NODE__HAS_ADJUST_TRANSFORM];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->has_adjust_transform ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->has_adjust_transform ? Py_True : Py_False);
     self->slots[SLOT_NODE__HAS_ADJUST_TRANSFORM] = slot;
     return Py_NewRef(slot);
 }
@@ -6270,7 +6470,7 @@ static PyObject *Node_get_has_root_adjust_transform(Node *self, void *closure) {
     PyObject *slot = self->slots[SLOT_NODE__HAS_ROOT_ADJUST_TRANSFORM];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->has_root_adjust_transform ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->has_root_adjust_transform ? Py_True : Py_False);
     self->slots[SLOT_NODE__HAS_ROOT_ADJUST_TRANSFORM] = slot;
     return Py_NewRef(slot);
 }
@@ -6279,7 +6479,7 @@ static PyObject *Node_get_is_geometry_transform_helper(Node *self, void *closure
     PyObject *slot = self->slots[SLOT_NODE__IS_GEOMETRY_TRANSFORM_HELPER];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->is_geometry_transform_helper ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->is_geometry_transform_helper ? Py_True : Py_False);
     self->slots[SLOT_NODE__IS_GEOMETRY_TRANSFORM_HELPER] = slot;
     return Py_NewRef(slot);
 }
@@ -6288,7 +6488,7 @@ static PyObject *Node_get_is_scale_helper(Node *self, void *closure) {
     PyObject *slot = self->slots[SLOT_NODE__IS_SCALE_HELPER];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->is_scale_helper ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->is_scale_helper ? Py_True : Py_False);
     self->slots[SLOT_NODE__IS_SCALE_HELPER] = slot;
     return Py_NewRef(slot);
 }
@@ -6297,7 +6497,7 @@ static PyObject *Node_get_is_scale_compensate_parent(Node *self, void *closure) 
     PyObject *slot = self->slots[SLOT_NODE__IS_SCALE_COMPENSATE_PARENT];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->is_scale_compensate_parent ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->is_scale_compensate_parent ? Py_True : Py_False);
     self->slots[SLOT_NODE__IS_SCALE_COMPENSATE_PARENT] = slot;
     return Py_NewRef(slot);
 }
@@ -6309,6 +6509,28 @@ static PyObject *Node_get_node_depth(Node *self, void *closure) {
     slot = PyLong_FromUnsignedLong((unsigned long)self->data->node_depth);
     self->slots[SLOT_NODE__NODE_DEPTH] = slot;
     return Py_NewRef(slot);
+}
+
+static int Node_traverse(Node *self, visitproc visit, void *arg) {
+    if (Element_traverse((Element*)self, visit, arg) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_NODE; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int Node_clear(Node *self) {
+    if (Element_clear((Element*)self) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_NODE; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void Node_dealloc(Node *self) {
+    PyObject_GC_UnTrack(self);
+    Node_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PyGetSetDef Node_getset[] = {
@@ -6363,8 +6585,11 @@ static PyTypeObject Node_Type = {
     .tp_doc = PyDoc_STR("Node"),
     .tp_basicsize = sizeof(Node),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&Node_dealloc,
+    .tp_traverse = (traverseproc)&Node_traverse,
+    .tp_clear = (inquiry)&Node_clear,
     .tp_getset = Node_getset,
     .tp_base = &Element_Type,
 };
@@ -6390,7 +6615,7 @@ static PyObject *VertexAttrib_get_exists(VertexAttrib *self, void *closure) {
     PyObject *slot = self->slots[SLOT_VERTEX_ATTRIB__EXISTS];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->exists ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->exists ? Py_True : Py_False);
     self->slots[SLOT_VERTEX_ATTRIB__EXISTS] = slot;
     return Py_NewRef(slot);
 }
@@ -6426,7 +6651,7 @@ static PyObject *VertexAttrib_get_unique_per_vertex(VertexAttrib *self, void *cl
     PyObject *slot = self->slots[SLOT_VERTEX_ATTRIB__UNIQUE_PER_VERTEX];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->unique_per_vertex ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->unique_per_vertex ? Py_True : Py_False);
     self->slots[SLOT_VERTEX_ATTRIB__UNIQUE_PER_VERTEX] = slot;
     return Py_NewRef(slot);
 }
@@ -6438,6 +6663,28 @@ static PyObject *VertexAttrib_get_values_w(VertexAttrib *self, void *closure) {
     slot = RealList_from(self->data->values_w, self->ctx);
     self->slots[SLOT_VERTEX_ATTRIB__VALUES_W] = slot;
     return Py_NewRef(slot);
+}
+
+static int VertexAttrib_traverse(VertexAttrib *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_VERTEX_ATTRIB; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int VertexAttrib_clear(VertexAttrib *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_VERTEX_ATTRIB; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void VertexAttrib_dealloc(VertexAttrib *self) {
+    PyObject_GC_UnTrack(self);
+    VertexAttrib_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PyGetSetDef VertexAttrib_getset[] = {
@@ -6456,8 +6703,11 @@ static PyTypeObject VertexAttrib_Type = {
     .tp_doc = PyDoc_STR("VertexAttrib"),
     .tp_basicsize = sizeof(VertexAttrib),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&VertexAttrib_dealloc,
+    .tp_traverse = (traverseproc)&VertexAttrib_traverse,
+    .tp_clear = (inquiry)&VertexAttrib_clear,
     .tp_getset = VertexAttrib_getset,
 };
 
@@ -6490,7 +6740,7 @@ static PyObject *VertexReal_get_exists(VertexReal *self, void *closure) {
     PyObject *slot = self->slots[SLOT_VERTEX_REAL__EXISTS];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->exists ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->exists ? Py_True : Py_False);
     self->slots[SLOT_VERTEX_REAL__EXISTS] = slot;
     return Py_NewRef(slot);
 }
@@ -6526,7 +6776,7 @@ static PyObject *VertexReal_get_unique_per_vertex(VertexReal *self, void *closur
     PyObject *slot = self->slots[SLOT_VERTEX_REAL__UNIQUE_PER_VERTEX];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->unique_per_vertex ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->unique_per_vertex ? Py_True : Py_False);
     self->slots[SLOT_VERTEX_REAL__UNIQUE_PER_VERTEX] = slot;
     return Py_NewRef(slot);
 }
@@ -6538,6 +6788,28 @@ static PyObject *VertexReal_get_values_w(VertexReal *self, void *closure) {
     slot = RealList_from(self->data->values_w, self->ctx);
     self->slots[SLOT_VERTEX_REAL__VALUES_W] = slot;
     return Py_NewRef(slot);
+}
+
+static int VertexReal_traverse(VertexReal *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_VERTEX_REAL; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int VertexReal_clear(VertexReal *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_VERTEX_REAL; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void VertexReal_dealloc(VertexReal *self) {
+    PyObject_GC_UnTrack(self);
+    VertexReal_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PyGetSetDef VertexReal_getset[] = {
@@ -6556,8 +6828,11 @@ static PyTypeObject VertexReal_Type = {
     .tp_doc = PyDoc_STR("VertexReal"),
     .tp_basicsize = sizeof(VertexReal),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&VertexReal_dealloc,
+    .tp_traverse = (traverseproc)&VertexReal_traverse,
+    .tp_clear = (inquiry)&VertexReal_clear,
     .tp_getset = VertexReal_getset,
 };
 
@@ -6590,7 +6865,7 @@ static PyObject *VertexVec2_get_exists(VertexVec2 *self, void *closure) {
     PyObject *slot = self->slots[SLOT_VERTEX_VEC2__EXISTS];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->exists ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->exists ? Py_True : Py_False);
     self->slots[SLOT_VERTEX_VEC2__EXISTS] = slot;
     return Py_NewRef(slot);
 }
@@ -6626,7 +6901,7 @@ static PyObject *VertexVec2_get_unique_per_vertex(VertexVec2 *self, void *closur
     PyObject *slot = self->slots[SLOT_VERTEX_VEC2__UNIQUE_PER_VERTEX];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->unique_per_vertex ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->unique_per_vertex ? Py_True : Py_False);
     self->slots[SLOT_VERTEX_VEC2__UNIQUE_PER_VERTEX] = slot;
     return Py_NewRef(slot);
 }
@@ -6638,6 +6913,28 @@ static PyObject *VertexVec2_get_values_w(VertexVec2 *self, void *closure) {
     slot = RealList_from(self->data->values_w, self->ctx);
     self->slots[SLOT_VERTEX_VEC2__VALUES_W] = slot;
     return Py_NewRef(slot);
+}
+
+static int VertexVec2_traverse(VertexVec2 *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_VERTEX_VEC2; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int VertexVec2_clear(VertexVec2 *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_VERTEX_VEC2; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void VertexVec2_dealloc(VertexVec2 *self) {
+    PyObject_GC_UnTrack(self);
+    VertexVec2_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PyGetSetDef VertexVec2_getset[] = {
@@ -6656,8 +6953,11 @@ static PyTypeObject VertexVec2_Type = {
     .tp_doc = PyDoc_STR("VertexVec2"),
     .tp_basicsize = sizeof(VertexVec2),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&VertexVec2_dealloc,
+    .tp_traverse = (traverseproc)&VertexVec2_traverse,
+    .tp_clear = (inquiry)&VertexVec2_clear,
     .tp_getset = VertexVec2_getset,
 };
 
@@ -6690,7 +6990,7 @@ static PyObject *VertexVec3_get_exists(VertexVec3 *self, void *closure) {
     PyObject *slot = self->slots[SLOT_VERTEX_VEC3__EXISTS];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->exists ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->exists ? Py_True : Py_False);
     self->slots[SLOT_VERTEX_VEC3__EXISTS] = slot;
     return Py_NewRef(slot);
 }
@@ -6726,7 +7026,7 @@ static PyObject *VertexVec3_get_unique_per_vertex(VertexVec3 *self, void *closur
     PyObject *slot = self->slots[SLOT_VERTEX_VEC3__UNIQUE_PER_VERTEX];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->unique_per_vertex ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->unique_per_vertex ? Py_True : Py_False);
     self->slots[SLOT_VERTEX_VEC3__UNIQUE_PER_VERTEX] = slot;
     return Py_NewRef(slot);
 }
@@ -6738,6 +7038,28 @@ static PyObject *VertexVec3_get_values_w(VertexVec3 *self, void *closure) {
     slot = RealList_from(self->data->values_w, self->ctx);
     self->slots[SLOT_VERTEX_VEC3__VALUES_W] = slot;
     return Py_NewRef(slot);
+}
+
+static int VertexVec3_traverse(VertexVec3 *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_VERTEX_VEC3; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int VertexVec3_clear(VertexVec3 *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_VERTEX_VEC3; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void VertexVec3_dealloc(VertexVec3 *self) {
+    PyObject_GC_UnTrack(self);
+    VertexVec3_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PyGetSetDef VertexVec3_getset[] = {
@@ -6756,8 +7078,11 @@ static PyTypeObject VertexVec3_Type = {
     .tp_doc = PyDoc_STR("VertexVec3"),
     .tp_basicsize = sizeof(VertexVec3),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&VertexVec3_dealloc,
+    .tp_traverse = (traverseproc)&VertexVec3_traverse,
+    .tp_clear = (inquiry)&VertexVec3_clear,
     .tp_getset = VertexVec3_getset,
 };
 
@@ -6790,7 +7115,7 @@ static PyObject *VertexVec4_get_exists(VertexVec4 *self, void *closure) {
     PyObject *slot = self->slots[SLOT_VERTEX_VEC4__EXISTS];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->exists ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->exists ? Py_True : Py_False);
     self->slots[SLOT_VERTEX_VEC4__EXISTS] = slot;
     return Py_NewRef(slot);
 }
@@ -6826,7 +7151,7 @@ static PyObject *VertexVec4_get_unique_per_vertex(VertexVec4 *self, void *closur
     PyObject *slot = self->slots[SLOT_VERTEX_VEC4__UNIQUE_PER_VERTEX];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->unique_per_vertex ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->unique_per_vertex ? Py_True : Py_False);
     self->slots[SLOT_VERTEX_VEC4__UNIQUE_PER_VERTEX] = slot;
     return Py_NewRef(slot);
 }
@@ -6838,6 +7163,28 @@ static PyObject *VertexVec4_get_values_w(VertexVec4 *self, void *closure) {
     slot = RealList_from(self->data->values_w, self->ctx);
     self->slots[SLOT_VERTEX_VEC4__VALUES_W] = slot;
     return Py_NewRef(slot);
+}
+
+static int VertexVec4_traverse(VertexVec4 *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_VERTEX_VEC4; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int VertexVec4_clear(VertexVec4 *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_VERTEX_VEC4; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void VertexVec4_dealloc(VertexVec4 *self) {
+    PyObject_GC_UnTrack(self);
+    VertexVec4_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PyGetSetDef VertexVec4_getset[] = {
@@ -6856,8 +7203,11 @@ static PyTypeObject VertexVec4_Type = {
     .tp_doc = PyDoc_STR("VertexVec4"),
     .tp_basicsize = sizeof(VertexVec4),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&VertexVec4_dealloc,
+    .tp_traverse = (traverseproc)&VertexVec4_traverse,
+    .tp_clear = (inquiry)&VertexVec4_clear,
     .tp_getset = VertexVec4_getset,
 };
 
@@ -6930,6 +7280,28 @@ static PyObject *UvSet_get_vertex_bitangent(UvSet *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static int UvSet_traverse(UvSet *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_UV_SET; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int UvSet_clear(UvSet *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_UV_SET; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void UvSet_dealloc(UvSet *self) {
+    PyObject_GC_UnTrack(self);
+    UvSet_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef UvSet_getset[] = {
     { "name", (getter)UvSet_get_name, NULL, "name" },
     { "index", (getter)UvSet_get_index, NULL, "index" },
@@ -6945,8 +7317,11 @@ static PyTypeObject UvSet_Type = {
     .tp_doc = PyDoc_STR("UvSet"),
     .tp_basicsize = sizeof(UvSet),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&UvSet_dealloc,
+    .tp_traverse = (traverseproc)&UvSet_traverse,
+    .tp_clear = (inquiry)&UvSet_clear,
     .tp_getset = UvSet_getset,
 };
 
@@ -6999,6 +7374,28 @@ static PyObject *ColorSet_get_vertex_color(ColorSet *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static int ColorSet_traverse(ColorSet *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_COLOR_SET; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int ColorSet_clear(ColorSet *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_COLOR_SET; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void ColorSet_dealloc(ColorSet *self) {
+    PyObject_GC_UnTrack(self);
+    ColorSet_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef ColorSet_getset[] = {
     { "name", (getter)ColorSet_get_name, NULL, "name" },
     { "index", (getter)ColorSet_get_index, NULL, "index" },
@@ -7012,8 +7409,11 @@ static PyTypeObject ColorSet_Type = {
     .tp_doc = PyDoc_STR("ColorSet"),
     .tp_basicsize = sizeof(ColorSet),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&ColorSet_dealloc,
+    .tp_traverse = (traverseproc)&ColorSet_traverse,
+    .tp_clear = (inquiry)&ColorSet_clear,
     .tp_getset = ColorSet_getset,
 };
 
@@ -7106,6 +7506,28 @@ static PyObject *MeshPart_get_face_indices(MeshPart *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static int MeshPart_traverse(MeshPart *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_MESH_PART; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int MeshPart_clear(MeshPart *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_MESH_PART; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void MeshPart_dealloc(MeshPart *self) {
+    PyObject_GC_UnTrack(self);
+    MeshPart_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef MeshPart_getset[] = {
     { "index", (getter)MeshPart_get_index, NULL, "index" },
     { "num_faces", (getter)MeshPart_get_num_faces, NULL, "num_faces" },
@@ -7123,8 +7545,11 @@ static PyTypeObject MeshPart_Type = {
     .tp_doc = PyDoc_STR("MeshPart"),
     .tp_basicsize = sizeof(MeshPart),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&MeshPart_dealloc,
+    .tp_traverse = (traverseproc)&MeshPart_traverse,
+    .tp_clear = (inquiry)&MeshPart_clear,
     .tp_getset = MeshPart_getset,
 };
 
@@ -7167,6 +7592,28 @@ static PyObject *FaceGroup_get_name(FaceGroup *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static int FaceGroup_traverse(FaceGroup *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_FACE_GROUP; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int FaceGroup_clear(FaceGroup *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_FACE_GROUP; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void FaceGroup_dealloc(FaceGroup *self) {
+    PyObject_GC_UnTrack(self);
+    FaceGroup_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef FaceGroup_getset[] = {
     { "id", (getter)FaceGroup_get_id, NULL, "id" },
     { "name", (getter)FaceGroup_get_name, NULL, "name" },
@@ -7179,8 +7626,11 @@ static PyTypeObject FaceGroup_Type = {
     .tp_doc = PyDoc_STR("FaceGroup"),
     .tp_basicsize = sizeof(FaceGroup),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&FaceGroup_dealloc,
+    .tp_traverse = (traverseproc)&FaceGroup_traverse,
+    .tp_clear = (inquiry)&FaceGroup_clear,
     .tp_getset = FaceGroup_getset,
 };
 
@@ -7223,6 +7673,28 @@ static PyObject *SubdivisionWeightRange_get_num_weights(SubdivisionWeightRange *
     return Py_NewRef(slot);
 }
 
+static int SubdivisionWeightRange_traverse(SubdivisionWeightRange *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_SUBDIVISION_WEIGHT_RANGE; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int SubdivisionWeightRange_clear(SubdivisionWeightRange *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_SUBDIVISION_WEIGHT_RANGE; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void SubdivisionWeightRange_dealloc(SubdivisionWeightRange *self) {
+    PyObject_GC_UnTrack(self);
+    SubdivisionWeightRange_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef SubdivisionWeightRange_getset[] = {
     { "weight_begin", (getter)SubdivisionWeightRange_get_weight_begin, NULL, "weight_begin" },
     { "num_weights", (getter)SubdivisionWeightRange_get_num_weights, NULL, "num_weights" },
@@ -7235,8 +7707,11 @@ static PyTypeObject SubdivisionWeightRange_Type = {
     .tp_doc = PyDoc_STR("SubdivisionWeightRange"),
     .tp_basicsize = sizeof(SubdivisionWeightRange),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&SubdivisionWeightRange_dealloc,
+    .tp_traverse = (traverseproc)&SubdivisionWeightRange_traverse,
+    .tp_clear = (inquiry)&SubdivisionWeightRange_clear,
     .tp_getset = SubdivisionWeightRange_getset,
 };
 
@@ -7279,6 +7754,28 @@ static PyObject *SubdivisionWeight_get_index(SubdivisionWeight *self, void *clos
     return Py_NewRef(slot);
 }
 
+static int SubdivisionWeight_traverse(SubdivisionWeight *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_SUBDIVISION_WEIGHT; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int SubdivisionWeight_clear(SubdivisionWeight *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_SUBDIVISION_WEIGHT; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void SubdivisionWeight_dealloc(SubdivisionWeight *self) {
+    PyObject_GC_UnTrack(self);
+    SubdivisionWeight_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef SubdivisionWeight_getset[] = {
     { "weight", (getter)SubdivisionWeight_get_weight, NULL, "weight" },
     { "index", (getter)SubdivisionWeight_get_index, NULL, "index" },
@@ -7291,8 +7788,11 @@ static PyTypeObject SubdivisionWeight_Type = {
     .tp_doc = PyDoc_STR("SubdivisionWeight"),
     .tp_basicsize = sizeof(SubdivisionWeight),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&SubdivisionWeight_dealloc,
+    .tp_traverse = (traverseproc)&SubdivisionWeight_traverse,
+    .tp_clear = (inquiry)&SubdivisionWeight_clear,
     .tp_getset = SubdivisionWeight_getset,
 };
 
@@ -7395,6 +7895,28 @@ static PyObject *SubdivisionResult_get_skin_cluster_weights(SubdivisionResult *s
     return Py_NewRef(slot);
 }
 
+static int SubdivisionResult_traverse(SubdivisionResult *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_SUBDIVISION_RESULT; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int SubdivisionResult_clear(SubdivisionResult *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_SUBDIVISION_RESULT; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void SubdivisionResult_dealloc(SubdivisionResult *self) {
+    PyObject_GC_UnTrack(self);
+    SubdivisionResult_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef SubdivisionResult_getset[] = {
     { "result_memory_used", (getter)SubdivisionResult_get_result_memory_used, NULL, "result_memory_used" },
     { "temp_memory_used", (getter)SubdivisionResult_get_temp_memory_used, NULL, "temp_memory_used" },
@@ -7413,8 +7935,11 @@ static PyTypeObject SubdivisionResult_Type = {
     .tp_doc = PyDoc_STR("SubdivisionResult"),
     .tp_basicsize = sizeof(SubdivisionResult),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&SubdivisionResult_dealloc,
+    .tp_traverse = (traverseproc)&SubdivisionResult_traverse,
+    .tp_clear = (inquiry)&SubdivisionResult_clear,
     .tp_getset = SubdivisionResult_getset,
 };
 
@@ -7813,7 +8338,7 @@ static PyObject *Mesh_get_skinned_is_local(Mesh *self, void *closure) {
     PyObject *slot = self->slots[SLOT_MESH__SKINNED_IS_LOCAL];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->skinned_is_local ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->skinned_is_local ? Py_True : Py_False);
     self->slots[SLOT_MESH__SKINNED_IS_LOCAL] = slot;
     return Py_NewRef(slot);
 }
@@ -7921,7 +8446,7 @@ static PyObject *Mesh_get_reversed_winding(Mesh *self, void *closure) {
     PyObject *slot = self->slots[SLOT_MESH__REVERSED_WINDING];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->reversed_winding ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->reversed_winding ? Py_True : Py_False);
     self->slots[SLOT_MESH__REVERSED_WINDING] = slot;
     return Py_NewRef(slot);
 }
@@ -7930,7 +8455,7 @@ static PyObject *Mesh_get_generated_normals(Mesh *self, void *closure) {
     PyObject *slot = self->slots[SLOT_MESH__GENERATED_NORMALS];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->generated_normals ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->generated_normals ? Py_True : Py_False);
     self->slots[SLOT_MESH__GENERATED_NORMALS] = slot;
     return Py_NewRef(slot);
 }
@@ -7939,7 +8464,7 @@ static PyObject *Mesh_get_subdivision_evaluated(Mesh *self, void *closure) {
     PyObject *slot = self->slots[SLOT_MESH__SUBDIVISION_EVALUATED];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->subdivision_evaluated ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->subdivision_evaluated ? Py_True : Py_False);
     self->slots[SLOT_MESH__SUBDIVISION_EVALUATED] = slot;
     return Py_NewRef(slot);
 }
@@ -7957,9 +8482,31 @@ static PyObject *Mesh_get_from_tessellated_nurbs(Mesh *self, void *closure) {
     PyObject *slot = self->slots[SLOT_MESH__FROM_TESSELLATED_NURBS];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->from_tessellated_nurbs ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->from_tessellated_nurbs ? Py_True : Py_False);
     self->slots[SLOT_MESH__FROM_TESSELLATED_NURBS] = slot;
     return Py_NewRef(slot);
+}
+
+static int Mesh_traverse(Mesh *self, visitproc visit, void *arg) {
+    if (Element_traverse((Element*)self, visit, arg) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_MESH; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int Mesh_clear(Mesh *self) {
+    if (Element_clear((Element*)self) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_MESH; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void Mesh_dealloc(Mesh *self) {
+    PyObject_GC_UnTrack(self);
+    Mesh_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PyGetSetDef Mesh_getset[] = {
@@ -8024,8 +8571,11 @@ static PyTypeObject Mesh_Type = {
     .tp_doc = PyDoc_STR("Mesh"),
     .tp_basicsize = sizeof(Mesh),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&Mesh_dealloc,
+    .tp_traverse = (traverseproc)&Mesh_traverse,
+    .tp_clear = (inquiry)&Mesh_clear,
     .tp_getset = Mesh_getset,
     .tp_base = &Element_Type,
 };
@@ -8132,7 +8682,7 @@ static PyObject *Light_get_cast_light(Light *self, void *closure) {
     PyObject *slot = self->slots[SLOT_LIGHT__CAST_LIGHT];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->cast_light ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->cast_light ? Py_True : Py_False);
     self->slots[SLOT_LIGHT__CAST_LIGHT] = slot;
     return Py_NewRef(slot);
 }
@@ -8141,9 +8691,31 @@ static PyObject *Light_get_cast_shadows(Light *self, void *closure) {
     PyObject *slot = self->slots[SLOT_LIGHT__CAST_SHADOWS];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->cast_shadows ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->cast_shadows ? Py_True : Py_False);
     self->slots[SLOT_LIGHT__CAST_SHADOWS] = slot;
     return Py_NewRef(slot);
+}
+
+static int Light_traverse(Light *self, visitproc visit, void *arg) {
+    if (Element_traverse((Element*)self, visit, arg) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_LIGHT; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int Light_clear(Light *self) {
+    if (Element_clear((Element*)self) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_LIGHT; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void Light_dealloc(Light *self) {
+    PyObject_GC_UnTrack(self);
+    Light_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PyGetSetDef Light_getset[] = {
@@ -8166,8 +8738,11 @@ static PyTypeObject Light_Type = {
     .tp_doc = PyDoc_STR("Light"),
     .tp_basicsize = sizeof(Light),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&Light_dealloc,
+    .tp_traverse = (traverseproc)&Light_traverse,
+    .tp_clear = (inquiry)&Light_clear,
     .tp_getset = Light_getset,
     .tp_base = &Element_Type,
 };
@@ -8221,7 +8796,7 @@ static PyObject *Camera_get_resolution_is_pixels(Camera *self, void *closure) {
     PyObject *slot = self->slots[SLOT_CAMERA__RESOLUTION_IS_PIXELS];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->resolution_is_pixels ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->resolution_is_pixels ? Py_True : Py_False);
     self->slots[SLOT_CAMERA__RESOLUTION_IS_PIXELS] = slot;
     return Py_NewRef(slot);
 }
@@ -8388,6 +8963,28 @@ static PyObject *Camera_get_squeeze_ratio(Camera *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static int Camera_traverse(Camera *self, visitproc visit, void *arg) {
+    if (Element_traverse((Element*)self, visit, arg) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_CAMERA; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int Camera_clear(Camera *self) {
+    if (Element_clear((Element*)self) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_CAMERA; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void Camera_dealloc(Camera *self) {
+    PyObject_GC_UnTrack(self);
+    Camera_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef Camera_getset[] = {
     { "projection_mode", (getter)Camera_get_projection_mode, NULL, "projection_mode" },
     { "resolution_is_pixels", (getter)Camera_get_resolution_is_pixels, NULL, "resolution_is_pixels" },
@@ -8418,8 +9015,11 @@ static PyTypeObject Camera_Type = {
     .tp_doc = PyDoc_STR("Camera"),
     .tp_basicsize = sizeof(Camera),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&Camera_dealloc,
+    .tp_traverse = (traverseproc)&Camera_traverse,
+    .tp_clear = (inquiry)&Camera_clear,
     .tp_getset = Camera_getset,
     .tp_base = &Element_Type,
 };
@@ -8465,9 +9065,31 @@ static PyObject *Bone_get_is_root(Bone *self, void *closure) {
     PyObject *slot = self->slots[SLOT_BONE__IS_ROOT];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->is_root ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->is_root ? Py_True : Py_False);
     self->slots[SLOT_BONE__IS_ROOT] = slot;
     return Py_NewRef(slot);
+}
+
+static int Bone_traverse(Bone *self, visitproc visit, void *arg) {
+    if (Element_traverse((Element*)self, visit, arg) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_BONE; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int Bone_clear(Bone *self) {
+    if (Element_clear((Element*)self) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_BONE; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void Bone_dealloc(Bone *self) {
+    PyObject_GC_UnTrack(self);
+    Bone_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PyGetSetDef Bone_getset[] = {
@@ -8483,8 +9105,11 @@ static PyTypeObject Bone_Type = {
     .tp_doc = PyDoc_STR("Bone"),
     .tp_basicsize = sizeof(Bone),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&Bone_dealloc,
+    .tp_traverse = (traverseproc)&Bone_traverse,
+    .tp_clear = (inquiry)&Bone_clear,
     .tp_getset = Bone_getset,
     .tp_base = &Element_Type,
 };
@@ -8500,14 +9125,33 @@ typedef struct {
     };
 } Empty;
 
+static int Empty_traverse(Empty *self, visitproc visit, void *arg) {
+    if (Element_traverse((Element*)self, visit, arg) < 0) return -1;
+    return 0;
+}
+
+static int Empty_clear(Empty *self) {
+    if (Element_clear((Element*)self) < 0) return -1;
+    return 0;
+}
+
+void Empty_dealloc(Empty *self) {
+    PyObject_GC_UnTrack(self);
+    Empty_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyTypeObject Empty_Type = {
     .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "ufbx.Empty",
     .tp_doc = PyDoc_STR("Empty"),
     .tp_basicsize = sizeof(Empty),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&Empty_dealloc,
+    .tp_traverse = (traverseproc)&Empty_traverse,
+    .tp_clear = (inquiry)&Empty_clear,
     .tp_base = &Element_Type,
 };
 
@@ -8542,6 +9186,28 @@ static PyObject *LineSegment_get_num_indices(LineSegment *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static int LineSegment_traverse(LineSegment *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_LINE_SEGMENT; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int LineSegment_clear(LineSegment *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_LINE_SEGMENT; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void LineSegment_dealloc(LineSegment *self) {
+    PyObject_GC_UnTrack(self);
+    LineSegment_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef LineSegment_getset[] = {
     { "index_begin", (getter)LineSegment_get_index_begin, NULL, "index_begin" },
     { "num_indices", (getter)LineSegment_get_num_indices, NULL, "num_indices" },
@@ -8554,8 +9220,11 @@ static PyTypeObject LineSegment_Type = {
     .tp_doc = PyDoc_STR("LineSegment"),
     .tp_basicsize = sizeof(LineSegment),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&LineSegment_dealloc,
+    .tp_traverse = (traverseproc)&LineSegment_traverse,
+    .tp_clear = (inquiry)&LineSegment_clear,
     .tp_getset = LineSegment_getset,
 };
 
@@ -8628,9 +9297,31 @@ static PyObject *LineCurve_get_from_tessellated_nurbs(LineCurve *self, void *clo
     PyObject *slot = self->slots[SLOT_LINE_CURVE__FROM_TESSELLATED_NURBS];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->from_tessellated_nurbs ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->from_tessellated_nurbs ? Py_True : Py_False);
     self->slots[SLOT_LINE_CURVE__FROM_TESSELLATED_NURBS] = slot;
     return Py_NewRef(slot);
+}
+
+static int LineCurve_traverse(LineCurve *self, visitproc visit, void *arg) {
+    if (Element_traverse((Element*)self, visit, arg) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_LINE_CURVE; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int LineCurve_clear(LineCurve *self) {
+    if (Element_clear((Element*)self) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_LINE_CURVE; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void LineCurve_dealloc(LineCurve *self) {
+    PyObject_GC_UnTrack(self);
+    LineCurve_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PyGetSetDef LineCurve_getset[] = {
@@ -8648,8 +9339,11 @@ static PyTypeObject LineCurve_Type = {
     .tp_doc = PyDoc_STR("LineCurve"),
     .tp_basicsize = sizeof(LineCurve),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&LineCurve_dealloc,
+    .tp_traverse = (traverseproc)&LineCurve_traverse,
+    .tp_clear = (inquiry)&LineCurve_clear,
     .tp_getset = LineCurve_getset,
     .tp_base = &Element_Type,
 };
@@ -8732,7 +9426,7 @@ static PyObject *NurbsBasis_get_is_2d(NurbsBasis *self, void *closure) {
     PyObject *slot = self->slots[SLOT_NURBS_BASIS__IS_2D];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->is_2d ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->is_2d ? Py_True : Py_False);
     self->slots[SLOT_NURBS_BASIS__IS_2D] = slot;
     return Py_NewRef(slot);
 }
@@ -8750,9 +9444,31 @@ static PyObject *NurbsBasis_get_valid(NurbsBasis *self, void *closure) {
     PyObject *slot = self->slots[SLOT_NURBS_BASIS__VALID];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->valid ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->valid ? Py_True : Py_False);
     self->slots[SLOT_NURBS_BASIS__VALID] = slot;
     return Py_NewRef(slot);
+}
+
+static int NurbsBasis_traverse(NurbsBasis *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_NURBS_BASIS; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int NurbsBasis_clear(NurbsBasis *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_NURBS_BASIS; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void NurbsBasis_dealloc(NurbsBasis *self) {
+    PyObject_GC_UnTrack(self);
+    NurbsBasis_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PyGetSetDef NurbsBasis_getset[] = {
@@ -8774,8 +9490,11 @@ static PyTypeObject NurbsBasis_Type = {
     .tp_doc = PyDoc_STR("NurbsBasis"),
     .tp_basicsize = sizeof(NurbsBasis),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&NurbsBasis_dealloc,
+    .tp_traverse = (traverseproc)&NurbsBasis_traverse,
+    .tp_clear = (inquiry)&NurbsBasis_clear,
     .tp_getset = NurbsBasis_getset,
 };
 
@@ -8823,6 +9542,28 @@ static PyObject *NurbsCurve_get_control_points(NurbsCurve *self, void *closure) 
     return Py_NewRef(slot);
 }
 
+static int NurbsCurve_traverse(NurbsCurve *self, visitproc visit, void *arg) {
+    if (Element_traverse((Element*)self, visit, arg) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_NURBS_CURVE; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int NurbsCurve_clear(NurbsCurve *self) {
+    if (Element_clear((Element*)self) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_NURBS_CURVE; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void NurbsCurve_dealloc(NurbsCurve *self) {
+    PyObject_GC_UnTrack(self);
+    NurbsCurve_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef NurbsCurve_getset[] = {
     { "basis", (getter)NurbsCurve_get_basis, NULL, "basis" },
     { "control_points", (getter)NurbsCurve_get_control_points, NULL, "control_points" },
@@ -8835,8 +9576,11 @@ static PyTypeObject NurbsCurve_Type = {
     .tp_doc = PyDoc_STR("NurbsCurve"),
     .tp_basicsize = sizeof(NurbsCurve),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&NurbsCurve_dealloc,
+    .tp_traverse = (traverseproc)&NurbsCurve_traverse,
+    .tp_clear = (inquiry)&NurbsCurve_clear,
     .tp_getset = NurbsCurve_getset,
     .tp_base = &Element_Type,
 };
@@ -8933,7 +9677,7 @@ static PyObject *NurbsSurface_get_flip_normals(NurbsSurface *self, void *closure
     PyObject *slot = self->slots[SLOT_NURBS_SURFACE__FLIP_NORMALS];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->flip_normals ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->flip_normals ? Py_True : Py_False);
     self->slots[SLOT_NURBS_SURFACE__FLIP_NORMALS] = slot;
     return Py_NewRef(slot);
 }
@@ -8945,6 +9689,28 @@ static PyObject *NurbsSurface_get_material(NurbsSurface *self, void *closure) {
     slot = Element_from(self->data->material, self->ctx);
     self->slots[SLOT_NURBS_SURFACE__MATERIAL] = slot;
     return Py_NewRef(slot);
+}
+
+static int NurbsSurface_traverse(NurbsSurface *self, visitproc visit, void *arg) {
+    if (Element_traverse((Element*)self, visit, arg) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_NURBS_SURFACE; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int NurbsSurface_clear(NurbsSurface *self) {
+    if (Element_clear((Element*)self) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_NURBS_SURFACE; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void NurbsSurface_dealloc(NurbsSurface *self) {
+    PyObject_GC_UnTrack(self);
+    NurbsSurface_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PyGetSetDef NurbsSurface_getset[] = {
@@ -8966,8 +9732,11 @@ static PyTypeObject NurbsSurface_Type = {
     .tp_doc = PyDoc_STR("NurbsSurface"),
     .tp_basicsize = sizeof(NurbsSurface),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&NurbsSurface_dealloc,
+    .tp_traverse = (traverseproc)&NurbsSurface_traverse,
+    .tp_clear = (inquiry)&NurbsSurface_clear,
     .tp_getset = NurbsSurface_getset,
     .tp_base = &Element_Type,
 };
@@ -8983,14 +9752,33 @@ typedef struct {
     };
 } NurbsTrimSurface;
 
+static int NurbsTrimSurface_traverse(NurbsTrimSurface *self, visitproc visit, void *arg) {
+    if (Element_traverse((Element*)self, visit, arg) < 0) return -1;
+    return 0;
+}
+
+static int NurbsTrimSurface_clear(NurbsTrimSurface *self) {
+    if (Element_clear((Element*)self) < 0) return -1;
+    return 0;
+}
+
+void NurbsTrimSurface_dealloc(NurbsTrimSurface *self) {
+    PyObject_GC_UnTrack(self);
+    NurbsTrimSurface_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyTypeObject NurbsTrimSurface_Type = {
     .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "ufbx.NurbsTrimSurface",
     .tp_doc = PyDoc_STR("NurbsTrimSurface"),
     .tp_basicsize = sizeof(NurbsTrimSurface),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&NurbsTrimSurface_dealloc,
+    .tp_traverse = (traverseproc)&NurbsTrimSurface_traverse,
+    .tp_clear = (inquiry)&NurbsTrimSurface_clear,
     .tp_base = &Element_Type,
 };
 
@@ -9005,14 +9793,33 @@ typedef struct {
     };
 } NurbsTrimBoundary;
 
+static int NurbsTrimBoundary_traverse(NurbsTrimBoundary *self, visitproc visit, void *arg) {
+    if (Element_traverse((Element*)self, visit, arg) < 0) return -1;
+    return 0;
+}
+
+static int NurbsTrimBoundary_clear(NurbsTrimBoundary *self) {
+    if (Element_clear((Element*)self) < 0) return -1;
+    return 0;
+}
+
+void NurbsTrimBoundary_dealloc(NurbsTrimBoundary *self) {
+    PyObject_GC_UnTrack(self);
+    NurbsTrimBoundary_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyTypeObject NurbsTrimBoundary_Type = {
     .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "ufbx.NurbsTrimBoundary",
     .tp_doc = PyDoc_STR("NurbsTrimBoundary"),
     .tp_basicsize = sizeof(NurbsTrimBoundary),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&NurbsTrimBoundary_dealloc,
+    .tp_traverse = (traverseproc)&NurbsTrimBoundary_traverse,
+    .tp_clear = (inquiry)&NurbsTrimBoundary_clear,
     .tp_base = &Element_Type,
 };
 
@@ -9027,14 +9834,33 @@ typedef struct {
     };
 } ProceduralGeometry;
 
+static int ProceduralGeometry_traverse(ProceduralGeometry *self, visitproc visit, void *arg) {
+    if (Element_traverse((Element*)self, visit, arg) < 0) return -1;
+    return 0;
+}
+
+static int ProceduralGeometry_clear(ProceduralGeometry *self) {
+    if (Element_clear((Element*)self) < 0) return -1;
+    return 0;
+}
+
+void ProceduralGeometry_dealloc(ProceduralGeometry *self) {
+    PyObject_GC_UnTrack(self);
+    ProceduralGeometry_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyTypeObject ProceduralGeometry_Type = {
     .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "ufbx.ProceduralGeometry",
     .tp_doc = PyDoc_STR("ProceduralGeometry"),
     .tp_basicsize = sizeof(ProceduralGeometry),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&ProceduralGeometry_dealloc,
+    .tp_traverse = (traverseproc)&ProceduralGeometry_traverse,
+    .tp_clear = (inquiry)&ProceduralGeometry_clear,
     .tp_base = &Element_Type,
 };
 
@@ -9074,6 +9900,28 @@ static PyObject *StereoCamera_get_right(StereoCamera *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static int StereoCamera_traverse(StereoCamera *self, visitproc visit, void *arg) {
+    if (Element_traverse((Element*)self, visit, arg) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_STEREO_CAMERA; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int StereoCamera_clear(StereoCamera *self) {
+    if (Element_clear((Element*)self) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_STEREO_CAMERA; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void StereoCamera_dealloc(StereoCamera *self) {
+    PyObject_GC_UnTrack(self);
+    StereoCamera_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef StereoCamera_getset[] = {
     { "left", (getter)StereoCamera_get_left, NULL, "left" },
     { "right", (getter)StereoCamera_get_right, NULL, "right" },
@@ -9086,8 +9934,11 @@ static PyTypeObject StereoCamera_Type = {
     .tp_doc = PyDoc_STR("StereoCamera"),
     .tp_basicsize = sizeof(StereoCamera),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&StereoCamera_dealloc,
+    .tp_traverse = (traverseproc)&StereoCamera_traverse,
+    .tp_clear = (inquiry)&StereoCamera_clear,
     .tp_getset = StereoCamera_getset,
     .tp_base = &Element_Type,
 };
@@ -9103,14 +9954,33 @@ typedef struct {
     };
 } CameraSwitcher;
 
+static int CameraSwitcher_traverse(CameraSwitcher *self, visitproc visit, void *arg) {
+    if (Element_traverse((Element*)self, visit, arg) < 0) return -1;
+    return 0;
+}
+
+static int CameraSwitcher_clear(CameraSwitcher *self) {
+    if (Element_clear((Element*)self) < 0) return -1;
+    return 0;
+}
+
+void CameraSwitcher_dealloc(CameraSwitcher *self) {
+    PyObject_GC_UnTrack(self);
+    CameraSwitcher_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyTypeObject CameraSwitcher_Type = {
     .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "ufbx.CameraSwitcher",
     .tp_doc = PyDoc_STR("CameraSwitcher"),
     .tp_basicsize = sizeof(CameraSwitcher),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&CameraSwitcher_dealloc,
+    .tp_traverse = (traverseproc)&CameraSwitcher_traverse,
+    .tp_clear = (inquiry)&CameraSwitcher_clear,
     .tp_base = &Element_Type,
 };
 
@@ -9140,6 +10010,28 @@ static PyObject *Marker_get_type(Marker *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static int Marker_traverse(Marker *self, visitproc visit, void *arg) {
+    if (Element_traverse((Element*)self, visit, arg) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_MARKER; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int Marker_clear(Marker *self) {
+    if (Element_clear((Element*)self) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_MARKER; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void Marker_dealloc(Marker *self) {
+    PyObject_GC_UnTrack(self);
+    Marker_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef Marker_getset[] = {
     { "type", (getter)Marker_get_type, NULL, "type" },
     { NULL },
@@ -9151,8 +10043,11 @@ static PyTypeObject Marker_Type = {
     .tp_doc = PyDoc_STR("Marker"),
     .tp_basicsize = sizeof(Marker),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&Marker_dealloc,
+    .tp_traverse = (traverseproc)&Marker_traverse,
+    .tp_clear = (inquiry)&Marker_clear,
     .tp_getset = Marker_getset,
     .tp_base = &Element_Type,
 };
@@ -9183,7 +10078,7 @@ static PyObject *LodGroup_get_relative_distances(LodGroup *self, void *closure) 
     PyObject *slot = self->slots[SLOT_LOD_GROUP__RELATIVE_DISTANCES];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->relative_distances ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->relative_distances ? Py_True : Py_False);
     self->slots[SLOT_LOD_GROUP__RELATIVE_DISTANCES] = slot;
     return Py_NewRef(slot);
 }
@@ -9201,7 +10096,7 @@ static PyObject *LodGroup_get_ignore_parent_transform(LodGroup *self, void *clos
     PyObject *slot = self->slots[SLOT_LOD_GROUP__IGNORE_PARENT_TRANSFORM];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->ignore_parent_transform ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->ignore_parent_transform ? Py_True : Py_False);
     self->slots[SLOT_LOD_GROUP__IGNORE_PARENT_TRANSFORM] = slot;
     return Py_NewRef(slot);
 }
@@ -9210,7 +10105,7 @@ static PyObject *LodGroup_get_use_distance_limit(LodGroup *self, void *closure) 
     PyObject *slot = self->slots[SLOT_LOD_GROUP__USE_DISTANCE_LIMIT];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->use_distance_limit ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->use_distance_limit ? Py_True : Py_False);
     self->slots[SLOT_LOD_GROUP__USE_DISTANCE_LIMIT] = slot;
     return Py_NewRef(slot);
 }
@@ -9233,6 +10128,28 @@ static PyObject *LodGroup_get_distance_limit_max(LodGroup *self, void *closure) 
     return Py_NewRef(slot);
 }
 
+static int LodGroup_traverse(LodGroup *self, visitproc visit, void *arg) {
+    if (Element_traverse((Element*)self, visit, arg) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_LOD_GROUP; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int LodGroup_clear(LodGroup *self) {
+    if (Element_clear((Element*)self) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_LOD_GROUP; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void LodGroup_dealloc(LodGroup *self) {
+    PyObject_GC_UnTrack(self);
+    LodGroup_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef LodGroup_getset[] = {
     { "relative_distances", (getter)LodGroup_get_relative_distances, NULL, "relative_distances" },
     { "lod_levels", (getter)LodGroup_get_lod_levels, NULL, "lod_levels" },
@@ -9249,8 +10166,11 @@ static PyTypeObject LodGroup_Type = {
     .tp_doc = PyDoc_STR("LodGroup"),
     .tp_basicsize = sizeof(LodGroup),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&LodGroup_dealloc,
+    .tp_traverse = (traverseproc)&LodGroup_traverse,
+    .tp_clear = (inquiry)&LodGroup_clear,
     .tp_getset = LodGroup_getset,
     .tp_base = &Element_Type,
 };
@@ -9351,6 +10271,28 @@ static PyObject *SkinDeformer_get_dq_weights(SkinDeformer *self, void *closure) 
     return Py_NewRef(slot);
 }
 
+static int SkinDeformer_traverse(SkinDeformer *self, visitproc visit, void *arg) {
+    if (Element_traverse((Element*)self, visit, arg) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_SKIN_DEFORMER; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int SkinDeformer_clear(SkinDeformer *self) {
+    if (Element_clear((Element*)self) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_SKIN_DEFORMER; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void SkinDeformer_dealloc(SkinDeformer *self) {
+    PyObject_GC_UnTrack(self);
+    SkinDeformer_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef SkinDeformer_getset[] = {
     { "skinning_method", (getter)SkinDeformer_get_skinning_method, NULL, "skinning_method" },
     { "clusters", (getter)SkinDeformer_get_clusters, NULL, "clusters" },
@@ -9369,8 +10311,11 @@ static PyTypeObject SkinDeformer_Type = {
     .tp_doc = PyDoc_STR("SkinDeformer"),
     .tp_basicsize = sizeof(SkinDeformer),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&SkinDeformer_dealloc,
+    .tp_traverse = (traverseproc)&SkinDeformer_traverse,
+    .tp_clear = (inquiry)&SkinDeformer_clear,
     .tp_getset = SkinDeformer_getset,
     .tp_base = &Element_Type,
 };
@@ -9481,6 +10426,28 @@ static PyObject *SkinCluster_get_weights(SkinCluster *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static int SkinCluster_traverse(SkinCluster *self, visitproc visit, void *arg) {
+    if (Element_traverse((Element*)self, visit, arg) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_SKIN_CLUSTER; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int SkinCluster_clear(SkinCluster *self) {
+    if (Element_clear((Element*)self) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_SKIN_CLUSTER; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void SkinCluster_dealloc(SkinCluster *self) {
+    PyObject_GC_UnTrack(self);
+    SkinCluster_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef SkinCluster_getset[] = {
     { "bone_node", (getter)SkinCluster_get_bone_node, NULL, "bone_node" },
     { "geometry_to_bone", (getter)SkinCluster_get_geometry_to_bone, NULL, "geometry_to_bone" },
@@ -9500,8 +10467,11 @@ static PyTypeObject SkinCluster_Type = {
     .tp_doc = PyDoc_STR("SkinCluster"),
     .tp_basicsize = sizeof(SkinCluster),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&SkinCluster_dealloc,
+    .tp_traverse = (traverseproc)&SkinCluster_traverse,
+    .tp_clear = (inquiry)&SkinCluster_clear,
     .tp_getset = SkinCluster_getset,
     .tp_base = &Element_Type,
 };
@@ -9532,6 +10502,28 @@ static PyObject *BlendDeformer_get_channels(BlendDeformer *self, void *closure) 
     return Py_NewRef(slot);
 }
 
+static int BlendDeformer_traverse(BlendDeformer *self, visitproc visit, void *arg) {
+    if (Element_traverse((Element*)self, visit, arg) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_BLEND_DEFORMER; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int BlendDeformer_clear(BlendDeformer *self) {
+    if (Element_clear((Element*)self) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_BLEND_DEFORMER; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void BlendDeformer_dealloc(BlendDeformer *self) {
+    PyObject_GC_UnTrack(self);
+    BlendDeformer_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef BlendDeformer_getset[] = {
     { "channels", (getter)BlendDeformer_get_channels, NULL, "channels" },
     { NULL },
@@ -9543,8 +10535,11 @@ static PyTypeObject BlendDeformer_Type = {
     .tp_doc = PyDoc_STR("BlendDeformer"),
     .tp_basicsize = sizeof(BlendDeformer),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&BlendDeformer_dealloc,
+    .tp_traverse = (traverseproc)&BlendDeformer_traverse,
+    .tp_clear = (inquiry)&BlendDeformer_clear,
     .tp_getset = BlendDeformer_getset,
     .tp_base = &Element_Type,
 };
@@ -9590,6 +10585,28 @@ static PyObject *BlendKeyframe_get_effective_weight(BlendKeyframe *self, void *c
     return Py_NewRef(slot);
 }
 
+static int BlendKeyframe_traverse(BlendKeyframe *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_BLEND_KEYFRAME; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int BlendKeyframe_clear(BlendKeyframe *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_BLEND_KEYFRAME; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void BlendKeyframe_dealloc(BlendKeyframe *self) {
+    PyObject_GC_UnTrack(self);
+    BlendKeyframe_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef BlendKeyframe_getset[] = {
     { "shape", (getter)BlendKeyframe_get_shape, NULL, "shape" },
     { "target_weight", (getter)BlendKeyframe_get_target_weight, NULL, "target_weight" },
@@ -9603,8 +10620,11 @@ static PyTypeObject BlendKeyframe_Type = {
     .tp_doc = PyDoc_STR("BlendKeyframe"),
     .tp_basicsize = sizeof(BlendKeyframe),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&BlendKeyframe_dealloc,
+    .tp_traverse = (traverseproc)&BlendKeyframe_traverse,
+    .tp_clear = (inquiry)&BlendKeyframe_clear,
     .tp_getset = BlendKeyframe_getset,
 };
 
@@ -9662,6 +10682,28 @@ static PyObject *BlendChannel_get_target_shape(BlendChannel *self, void *closure
     return Py_NewRef(slot);
 }
 
+static int BlendChannel_traverse(BlendChannel *self, visitproc visit, void *arg) {
+    if (Element_traverse((Element*)self, visit, arg) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_BLEND_CHANNEL; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int BlendChannel_clear(BlendChannel *self) {
+    if (Element_clear((Element*)self) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_BLEND_CHANNEL; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void BlendChannel_dealloc(BlendChannel *self) {
+    PyObject_GC_UnTrack(self);
+    BlendChannel_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef BlendChannel_getset[] = {
     { "weight", (getter)BlendChannel_get_weight, NULL, "weight" },
     { "keyframes", (getter)BlendChannel_get_keyframes, NULL, "keyframes" },
@@ -9675,8 +10717,11 @@ static PyTypeObject BlendChannel_Type = {
     .tp_doc = PyDoc_STR("BlendChannel"),
     .tp_basicsize = sizeof(BlendChannel),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&BlendChannel_dealloc,
+    .tp_traverse = (traverseproc)&BlendChannel_traverse,
+    .tp_clear = (inquiry)&BlendChannel_clear,
     .tp_getset = BlendChannel_getset,
     .tp_base = &Element_Type,
 };
@@ -9747,6 +10792,28 @@ static PyObject *BlendShape_get_offset_weights(BlendShape *self, void *closure) 
     return Py_NewRef(slot);
 }
 
+static int BlendShape_traverse(BlendShape *self, visitproc visit, void *arg) {
+    if (Element_traverse((Element*)self, visit, arg) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_BLEND_SHAPE; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int BlendShape_clear(BlendShape *self) {
+    if (Element_clear((Element*)self) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_BLEND_SHAPE; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void BlendShape_dealloc(BlendShape *self) {
+    PyObject_GC_UnTrack(self);
+    BlendShape_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef BlendShape_getset[] = {
     { "num_offsets", (getter)BlendShape_get_num_offsets, NULL, "num_offsets" },
     { "offset_vertices", (getter)BlendShape_get_offset_vertices, NULL, "offset_vertices" },
@@ -9762,8 +10829,11 @@ static PyTypeObject BlendShape_Type = {
     .tp_doc = PyDoc_STR("BlendShape"),
     .tp_basicsize = sizeof(BlendShape),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&BlendShape_dealloc,
+    .tp_traverse = (traverseproc)&BlendShape_traverse,
+    .tp_clear = (inquiry)&BlendShape_clear,
     .tp_getset = BlendShape_getset,
     .tp_base = &Element_Type,
 };
@@ -9899,6 +10969,28 @@ static PyObject *CacheFrame_get_data_total_bytes(CacheFrame *self, void *closure
     return Py_NewRef(slot);
 }
 
+static int CacheFrame_traverse(CacheFrame *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_CACHE_FRAME; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int CacheFrame_clear(CacheFrame *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_CACHE_FRAME; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void CacheFrame_dealloc(CacheFrame *self) {
+    PyObject_GC_UnTrack(self);
+    CacheFrame_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef CacheFrame_getset[] = {
     { "channel", (getter)CacheFrame_get_channel, NULL, "channel" },
     { "time", (getter)CacheFrame_get_time, NULL, "time" },
@@ -9921,8 +11013,11 @@ static PyTypeObject CacheFrame_Type = {
     .tp_doc = PyDoc_STR("CacheFrame"),
     .tp_basicsize = sizeof(CacheFrame),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&CacheFrame_dealloc,
+    .tp_traverse = (traverseproc)&CacheFrame_traverse,
+    .tp_clear = (inquiry)&CacheFrame_clear,
     .tp_getset = CacheFrame_getset,
 };
 
@@ -10005,6 +11100,28 @@ static PyObject *CacheChannel_get_scale_factor(CacheChannel *self, void *closure
     return Py_NewRef(slot);
 }
 
+static int CacheChannel_traverse(CacheChannel *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_CACHE_CHANNEL; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int CacheChannel_clear(CacheChannel *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_CACHE_CHANNEL; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void CacheChannel_dealloc(CacheChannel *self) {
+    PyObject_GC_UnTrack(self);
+    CacheChannel_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef CacheChannel_getset[] = {
     { "name", (getter)CacheChannel_get_name, NULL, "name" },
     { "interpretation", (getter)CacheChannel_get_interpretation, NULL, "interpretation" },
@@ -10021,8 +11138,11 @@ static PyTypeObject CacheChannel_Type = {
     .tp_doc = PyDoc_STR("CacheChannel"),
     .tp_basicsize = sizeof(CacheChannel),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&CacheChannel_dealloc,
+    .tp_traverse = (traverseproc)&CacheChannel_traverse,
+    .tp_clear = (inquiry)&CacheChannel_clear,
     .tp_getset = CacheChannel_getset,
 };
 
@@ -10085,6 +11205,28 @@ static PyObject *GeometryCache_get_extra_info(GeometryCache *self, void *closure
     return Py_NewRef(slot);
 }
 
+static int GeometryCache_traverse(GeometryCache *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_GEOMETRY_CACHE; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int GeometryCache_clear(GeometryCache *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_GEOMETRY_CACHE; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void GeometryCache_dealloc(GeometryCache *self) {
+    PyObject_GC_UnTrack(self);
+    GeometryCache_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef GeometryCache_getset[] = {
     { "root_filename", (getter)GeometryCache_get_root_filename, NULL, "root_filename" },
     { "channels", (getter)GeometryCache_get_channels, NULL, "channels" },
@@ -10099,8 +11241,11 @@ static PyTypeObject GeometryCache_Type = {
     .tp_doc = PyDoc_STR("GeometryCache"),
     .tp_basicsize = sizeof(GeometryCache),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&GeometryCache_dealloc,
+    .tp_traverse = (traverseproc)&GeometryCache_traverse,
+    .tp_clear = (inquiry)&GeometryCache_clear,
     .tp_getset = GeometryCache_getset,
 };
 
@@ -10168,6 +11313,28 @@ static PyObject *CacheDeformer_get_external_channel(CacheDeformer *self, void *c
     return Py_NewRef(slot);
 }
 
+static int CacheDeformer_traverse(CacheDeformer *self, visitproc visit, void *arg) {
+    if (Element_traverse((Element*)self, visit, arg) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_CACHE_DEFORMER; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int CacheDeformer_clear(CacheDeformer *self) {
+    if (Element_clear((Element*)self) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_CACHE_DEFORMER; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void CacheDeformer_dealloc(CacheDeformer *self) {
+    PyObject_GC_UnTrack(self);
+    CacheDeformer_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef CacheDeformer_getset[] = {
     { "channel", (getter)CacheDeformer_get_channel, NULL, "channel" },
     { "file", (getter)CacheDeformer_get_file, NULL, "file" },
@@ -10182,8 +11349,11 @@ static PyTypeObject CacheDeformer_Type = {
     .tp_doc = PyDoc_STR("CacheDeformer"),
     .tp_basicsize = sizeof(CacheDeformer),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&CacheDeformer_dealloc,
+    .tp_traverse = (traverseproc)&CacheDeformer_traverse,
+    .tp_clear = (inquiry)&CacheDeformer_clear,
     .tp_getset = CacheDeformer_getset,
     .tp_base = &Element_Type,
 };
@@ -10284,6 +11454,28 @@ static PyObject *CacheFile_get_external_cache(CacheFile *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static int CacheFile_traverse(CacheFile *self, visitproc visit, void *arg) {
+    if (Element_traverse((Element*)self, visit, arg) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_CACHE_FILE; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int CacheFile_clear(CacheFile *self) {
+    if (Element_clear((Element*)self) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_CACHE_FILE; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void CacheFile_dealloc(CacheFile *self) {
+    PyObject_GC_UnTrack(self);
+    CacheFile_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef CacheFile_getset[] = {
     { "filename", (getter)CacheFile_get_filename, NULL, "filename" },
     { "absolute_filename", (getter)CacheFile_get_absolute_filename, NULL, "absolute_filename" },
@@ -10302,8 +11494,11 @@ static PyTypeObject CacheFile_Type = {
     .tp_doc = PyDoc_STR("CacheFile"),
     .tp_basicsize = sizeof(CacheFile),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&CacheFile_dealloc,
+    .tp_traverse = (traverseproc)&CacheFile_traverse,
+    .tp_clear = (inquiry)&CacheFile_clear,
     .tp_getset = CacheFile_getset,
     .tp_base = &Element_Type,
 };
@@ -10347,7 +11542,7 @@ static PyObject *MaterialMap_get_has_value(MaterialMap *self, void *closure) {
     PyObject *slot = self->slots[SLOT_MATERIAL_MAP__HAS_VALUE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->has_value ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->has_value ? Py_True : Py_False);
     self->slots[SLOT_MATERIAL_MAP__HAS_VALUE] = slot;
     return Py_NewRef(slot);
 }
@@ -10356,7 +11551,7 @@ static PyObject *MaterialMap_get_texture_enabled(MaterialMap *self, void *closur
     PyObject *slot = self->slots[SLOT_MATERIAL_MAP__TEXTURE_ENABLED];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->texture_enabled ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->texture_enabled ? Py_True : Py_False);
     self->slots[SLOT_MATERIAL_MAP__TEXTURE_ENABLED] = slot;
     return Py_NewRef(slot);
 }
@@ -10365,7 +11560,7 @@ static PyObject *MaterialMap_get_feature_disabled(MaterialMap *self, void *closu
     PyObject *slot = self->slots[SLOT_MATERIAL_MAP__FEATURE_DISABLED];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->feature_disabled ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->feature_disabled ? Py_True : Py_False);
     self->slots[SLOT_MATERIAL_MAP__FEATURE_DISABLED] = slot;
     return Py_NewRef(slot);
 }
@@ -10377,6 +11572,28 @@ static PyObject *MaterialMap_get_value_components(MaterialMap *self, void *closu
     slot = PyLong_FromUnsignedLong((unsigned long)self->data->value_components);
     self->slots[SLOT_MATERIAL_MAP__VALUE_COMPONENTS] = slot;
     return Py_NewRef(slot);
+}
+
+static int MaterialMap_traverse(MaterialMap *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_MATERIAL_MAP; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int MaterialMap_clear(MaterialMap *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_MATERIAL_MAP; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void MaterialMap_dealloc(MaterialMap *self) {
+    PyObject_GC_UnTrack(self);
+    MaterialMap_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PyGetSetDef MaterialMap_getset[] = {
@@ -10395,8 +11612,11 @@ static PyTypeObject MaterialMap_Type = {
     .tp_doc = PyDoc_STR("MaterialMap"),
     .tp_basicsize = sizeof(MaterialMap),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&MaterialMap_dealloc,
+    .tp_traverse = (traverseproc)&MaterialMap_traverse,
+    .tp_clear = (inquiry)&MaterialMap_clear,
     .tp_getset = MaterialMap_getset,
 };
 
@@ -10425,7 +11645,7 @@ static PyObject *MaterialFeatureInfo_get_enabled(MaterialFeatureInfo *self, void
     PyObject *slot = self->slots[SLOT_MATERIAL_FEATURE_INFO__ENABLED];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->enabled ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->enabled ? Py_True : Py_False);
     self->slots[SLOT_MATERIAL_FEATURE_INFO__ENABLED] = slot;
     return Py_NewRef(slot);
 }
@@ -10434,9 +11654,31 @@ static PyObject *MaterialFeatureInfo_get_is_explicit(MaterialFeatureInfo *self, 
     PyObject *slot = self->slots[SLOT_MATERIAL_FEATURE_INFO__IS_EXPLICIT];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->is_explicit ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->is_explicit ? Py_True : Py_False);
     self->slots[SLOT_MATERIAL_FEATURE_INFO__IS_EXPLICIT] = slot;
     return Py_NewRef(slot);
+}
+
+static int MaterialFeatureInfo_traverse(MaterialFeatureInfo *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_MATERIAL_FEATURE_INFO; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int MaterialFeatureInfo_clear(MaterialFeatureInfo *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_MATERIAL_FEATURE_INFO; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void MaterialFeatureInfo_dealloc(MaterialFeatureInfo *self) {
+    PyObject_GC_UnTrack(self);
+    MaterialFeatureInfo_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PyGetSetDef MaterialFeatureInfo_getset[] = {
@@ -10451,8 +11693,11 @@ static PyTypeObject MaterialFeatureInfo_Type = {
     .tp_doc = PyDoc_STR("MaterialFeatureInfo"),
     .tp_basicsize = sizeof(MaterialFeatureInfo),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&MaterialFeatureInfo_dealloc,
+    .tp_traverse = (traverseproc)&MaterialFeatureInfo_traverse,
+    .tp_clear = (inquiry)&MaterialFeatureInfo_clear,
     .tp_getset = MaterialFeatureInfo_getset,
 };
 
@@ -10505,6 +11750,28 @@ static PyObject *MaterialTexture_get_texture(MaterialTexture *self, void *closur
     return Py_NewRef(slot);
 }
 
+static int MaterialTexture_traverse(MaterialTexture *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_MATERIAL_TEXTURE; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int MaterialTexture_clear(MaterialTexture *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_MATERIAL_TEXTURE; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void MaterialTexture_dealloc(MaterialTexture *self) {
+    PyObject_GC_UnTrack(self);
+    MaterialTexture_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef MaterialTexture_getset[] = {
     { "material_prop", (getter)MaterialTexture_get_material_prop, NULL, "material_prop" },
     { "shader_prop", (getter)MaterialTexture_get_shader_prop, NULL, "shader_prop" },
@@ -10518,8 +11785,11 @@ static PyTypeObject MaterialTexture_Type = {
     .tp_doc = PyDoc_STR("MaterialTexture"),
     .tp_basicsize = sizeof(MaterialTexture),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&MaterialTexture_dealloc,
+    .tp_traverse = (traverseproc)&MaterialTexture_traverse,
+    .tp_clear = (inquiry)&MaterialTexture_clear,
     .tp_getset = MaterialTexture_getset,
 };
 
@@ -10537,14 +11807,33 @@ typedef struct {
     Context *ctx;
 } MaterialFbxMaps;
 
+static int MaterialFbxMaps_traverse(MaterialFbxMaps *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int MaterialFbxMaps_clear(MaterialFbxMaps *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void MaterialFbxMaps_dealloc(MaterialFbxMaps *self) {
+    PyObject_GC_UnTrack(self);
+    MaterialFbxMaps_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyTypeObject MaterialFbxMaps_Type = {
     .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "ufbx.MaterialFbxMaps",
     .tp_doc = PyDoc_STR("MaterialFbxMaps"),
     .tp_basicsize = sizeof(MaterialFbxMaps),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&MaterialFbxMaps_dealloc,
+    .tp_traverse = (traverseproc)&MaterialFbxMaps_traverse,
+    .tp_clear = (inquiry)&MaterialFbxMaps_clear,
 };
 
 static PyObject *MaterialFbxMaps_from(ufbx_material_fbx_maps *data, Context *ctx) {
@@ -10561,14 +11850,33 @@ typedef struct {
     Context *ctx;
 } MaterialPbrMaps;
 
+static int MaterialPbrMaps_traverse(MaterialPbrMaps *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int MaterialPbrMaps_clear(MaterialPbrMaps *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void MaterialPbrMaps_dealloc(MaterialPbrMaps *self) {
+    PyObject_GC_UnTrack(self);
+    MaterialPbrMaps_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyTypeObject MaterialPbrMaps_Type = {
     .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "ufbx.MaterialPbrMaps",
     .tp_doc = PyDoc_STR("MaterialPbrMaps"),
     .tp_basicsize = sizeof(MaterialPbrMaps),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&MaterialPbrMaps_dealloc,
+    .tp_traverse = (traverseproc)&MaterialPbrMaps_traverse,
+    .tp_clear = (inquiry)&MaterialPbrMaps_clear,
 };
 
 static PyObject *MaterialPbrMaps_from(ufbx_material_pbr_maps *data, Context *ctx) {
@@ -10585,14 +11893,33 @@ typedef struct {
     Context *ctx;
 } MaterialFeatures;
 
+static int MaterialFeatures_traverse(MaterialFeatures *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    return 0;
+}
+
+static int MaterialFeatures_clear(MaterialFeatures *self) {
+    Py_CLEAR(self->ctx);
+    return 0;
+}
+
+void MaterialFeatures_dealloc(MaterialFeatures *self) {
+    PyObject_GC_UnTrack(self);
+    MaterialFeatures_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyTypeObject MaterialFeatures_Type = {
     .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "ufbx.MaterialFeatures",
     .tp_doc = PyDoc_STR("MaterialFeatures"),
     .tp_basicsize = sizeof(MaterialFeatures),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&MaterialFeatures_dealloc,
+    .tp_traverse = (traverseproc)&MaterialFeatures_traverse,
+    .tp_clear = (inquiry)&MaterialFeatures_clear,
 };
 
 static PyObject *MaterialFeatures_from(ufbx_material_features *data, Context *ctx) {
@@ -10699,6 +12026,28 @@ static PyObject *Material_get_textures(Material *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static int Material_traverse(Material *self, visitproc visit, void *arg) {
+    if (Element_traverse((Element*)self, visit, arg) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_MATERIAL; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int Material_clear(Material *self) {
+    if (Element_clear((Element*)self) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_MATERIAL; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void Material_dealloc(Material *self) {
+    PyObject_GC_UnTrack(self);
+    Material_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef Material_getset[] = {
     { "fbx", (getter)Material_get_fbx, NULL, "fbx" },
     { "pbr", (getter)Material_get_pbr, NULL, "pbr" },
@@ -10717,8 +12066,11 @@ static PyTypeObject Material_Type = {
     .tp_doc = PyDoc_STR("Material"),
     .tp_basicsize = sizeof(Material),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&Material_dealloc,
+    .tp_traverse = (traverseproc)&Material_traverse,
+    .tp_clear = (inquiry)&Material_clear,
     .tp_getset = Material_getset,
     .tp_base = &Element_Type,
 };
@@ -10764,6 +12116,28 @@ static PyObject *TextureLayer_get_alpha(TextureLayer *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static int TextureLayer_traverse(TextureLayer *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_TEXTURE_LAYER; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int TextureLayer_clear(TextureLayer *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_TEXTURE_LAYER; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void TextureLayer_dealloc(TextureLayer *self) {
+    PyObject_GC_UnTrack(self);
+    TextureLayer_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef TextureLayer_getset[] = {
     { "texture", (getter)TextureLayer_get_texture, NULL, "texture" },
     { "blend_mode", (getter)TextureLayer_get_blend_mode, NULL, "blend_mode" },
@@ -10777,8 +12151,11 @@ static PyTypeObject TextureLayer_Type = {
     .tp_doc = PyDoc_STR("TextureLayer"),
     .tp_basicsize = sizeof(TextureLayer),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&TextureLayer_dealloc,
+    .tp_traverse = (traverseproc)&TextureLayer_traverse,
+    .tp_clear = (inquiry)&TextureLayer_clear,
     .tp_getset = TextureLayer_getset,
 };
 
@@ -10869,7 +12246,7 @@ static PyObject *ShaderTextureInput_get_texture_enabled(ShaderTextureInput *self
     PyObject *slot = self->slots[SLOT_SHADER_TEXTURE_INPUT__TEXTURE_ENABLED];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->texture_enabled ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->texture_enabled ? Py_True : Py_False);
     self->slots[SLOT_SHADER_TEXTURE_INPUT__TEXTURE_ENABLED] = slot;
     return Py_NewRef(slot);
 }
@@ -10901,6 +12278,28 @@ static PyObject *ShaderTextureInput_get_texture_enabled_prop(ShaderTextureInput 
     return Py_NewRef(slot);
 }
 
+static int ShaderTextureInput_traverse(ShaderTextureInput *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_SHADER_TEXTURE_INPUT; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int ShaderTextureInput_clear(ShaderTextureInput *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_SHADER_TEXTURE_INPUT; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void ShaderTextureInput_dealloc(ShaderTextureInput *self) {
+    PyObject_GC_UnTrack(self);
+    ShaderTextureInput_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef ShaderTextureInput_getset[] = {
     { "name", (getter)ShaderTextureInput_get_name, NULL, "name" },
     { "value_int", (getter)ShaderTextureInput_get_value_int, NULL, "value_int" },
@@ -10921,8 +12320,11 @@ static PyTypeObject ShaderTextureInput_Type = {
     .tp_doc = PyDoc_STR("ShaderTextureInput"),
     .tp_basicsize = sizeof(ShaderTextureInput),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&ShaderTextureInput_dealloc,
+    .tp_traverse = (traverseproc)&ShaderTextureInput_traverse,
+    .tp_clear = (inquiry)&ShaderTextureInput_clear,
     .tp_getset = ShaderTextureInput_getset,
 };
 
@@ -11035,6 +12437,28 @@ static PyObject *ShaderTexture_get_prop_prefix(ShaderTexture *self, void *closur
     return Py_NewRef(slot);
 }
 
+static int ShaderTexture_traverse(ShaderTexture *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_SHADER_TEXTURE; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int ShaderTexture_clear(ShaderTexture *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_SHADER_TEXTURE; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void ShaderTexture_dealloc(ShaderTexture *self) {
+    PyObject_GC_UnTrack(self);
+    ShaderTexture_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef ShaderTexture_getset[] = {
     { "type", (getter)ShaderTexture_get_type, NULL, "type" },
     { "shader_name", (getter)ShaderTexture_get_shader_name, NULL, "shader_name" },
@@ -11054,8 +12478,11 @@ static PyTypeObject ShaderTexture_Type = {
     .tp_doc = PyDoc_STR("ShaderTexture"),
     .tp_basicsize = sizeof(ShaderTexture),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&ShaderTexture_dealloc,
+    .tp_traverse = (traverseproc)&ShaderTexture_traverse,
+    .tp_clear = (inquiry)&ShaderTexture_clear,
     .tp_getset = ShaderTexture_getset,
 };
 
@@ -11158,6 +12585,28 @@ static PyObject *TextureFile_get_content(TextureFile *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static int TextureFile_traverse(TextureFile *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_TEXTURE_FILE; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int TextureFile_clear(TextureFile *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_TEXTURE_FILE; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void TextureFile_dealloc(TextureFile *self) {
+    PyObject_GC_UnTrack(self);
+    TextureFile_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef TextureFile_getset[] = {
     { "index", (getter)TextureFile_get_index, NULL, "index" },
     { "filename", (getter)TextureFile_get_filename, NULL, "filename" },
@@ -11176,8 +12625,11 @@ static PyTypeObject TextureFile_Type = {
     .tp_doc = PyDoc_STR("TextureFile"),
     .tp_basicsize = sizeof(TextureFile),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&TextureFile_dealloc,
+    .tp_traverse = (traverseproc)&TextureFile_traverse,
+    .tp_clear = (inquiry)&TextureFile_clear,
     .tp_getset = TextureFile_getset,
 };
 
@@ -11320,7 +12772,7 @@ static PyObject *Texture_get_has_file(Texture *self, void *closure) {
     PyObject *slot = self->slots[SLOT_TEXTURE__HAS_FILE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->has_file ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->has_file ? Py_True : Py_False);
     self->slots[SLOT_TEXTURE__HAS_FILE] = slot;
     return Py_NewRef(slot);
 }
@@ -11383,7 +12835,7 @@ static PyObject *Texture_get_has_uv_transform(Texture *self, void *closure) {
     PyObject *slot = self->slots[SLOT_TEXTURE__HAS_UV_TRANSFORM];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->has_uv_transform ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->has_uv_transform ? Py_True : Py_False);
     self->slots[SLOT_TEXTURE__HAS_UV_TRANSFORM] = slot;
     return Py_NewRef(slot);
 }
@@ -11413,6 +12865,28 @@ static PyObject *Texture_get_uv_to_texture(Texture *self, void *closure) {
     slot = Matrix_from(&self->data->uv_to_texture);
     self->slots[SLOT_TEXTURE__UV_TO_TEXTURE] = slot;
     return Py_NewRef(slot);
+}
+
+static int Texture_traverse(Texture *self, visitproc visit, void *arg) {
+    if (Element_traverse((Element*)self, visit, arg) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_TEXTURE; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int Texture_clear(Texture *self) {
+    if (Element_clear((Element*)self) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_TEXTURE; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void Texture_dealloc(Texture *self) {
+    PyObject_GC_UnTrack(self);
+    Texture_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PyGetSetDef Texture_getset[] = {
@@ -11446,8 +12920,11 @@ static PyTypeObject Texture_Type = {
     .tp_doc = PyDoc_STR("Texture"),
     .tp_basicsize = sizeof(Texture),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&Texture_dealloc,
+    .tp_traverse = (traverseproc)&Texture_traverse,
+    .tp_clear = (inquiry)&Texture_clear,
     .tp_getset = Texture_getset,
     .tp_base = &Element_Type,
 };
@@ -11538,6 +13015,28 @@ static PyObject *Video_get_content(Video *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static int Video_traverse(Video *self, visitproc visit, void *arg) {
+    if (Element_traverse((Element*)self, visit, arg) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_VIDEO; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int Video_clear(Video *self) {
+    if (Element_clear((Element*)self) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_VIDEO; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void Video_dealloc(Video *self) {
+    PyObject_GC_UnTrack(self);
+    Video_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef Video_getset[] = {
     { "filename", (getter)Video_get_filename, NULL, "filename" },
     { "absolute_filename", (getter)Video_get_absolute_filename, NULL, "absolute_filename" },
@@ -11555,8 +13054,11 @@ static PyTypeObject Video_Type = {
     .tp_doc = PyDoc_STR("Video"),
     .tp_basicsize = sizeof(Video),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&Video_dealloc,
+    .tp_traverse = (traverseproc)&Video_traverse,
+    .tp_clear = (inquiry)&Video_clear,
     .tp_getset = Video_getset,
     .tp_base = &Element_Type,
 };
@@ -11597,6 +13099,28 @@ static PyObject *Shader_get_bindings(Shader *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static int Shader_traverse(Shader *self, visitproc visit, void *arg) {
+    if (Element_traverse((Element*)self, visit, arg) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_SHADER; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int Shader_clear(Shader *self) {
+    if (Element_clear((Element*)self) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_SHADER; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void Shader_dealloc(Shader *self) {
+    PyObject_GC_UnTrack(self);
+    Shader_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef Shader_getset[] = {
     { "type", (getter)Shader_get_type, NULL, "type" },
     { "bindings", (getter)Shader_get_bindings, NULL, "bindings" },
@@ -11609,8 +13133,11 @@ static PyTypeObject Shader_Type = {
     .tp_doc = PyDoc_STR("Shader"),
     .tp_basicsize = sizeof(Shader),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&Shader_dealloc,
+    .tp_traverse = (traverseproc)&Shader_traverse,
+    .tp_clear = (inquiry)&Shader_clear,
     .tp_getset = Shader_getset,
     .tp_base = &Element_Type,
 };
@@ -11646,6 +13173,28 @@ static PyObject *ShaderPropBinding_get_material_prop(ShaderPropBinding *self, vo
     return Py_NewRef(slot);
 }
 
+static int ShaderPropBinding_traverse(ShaderPropBinding *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_SHADER_PROP_BINDING; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int ShaderPropBinding_clear(ShaderPropBinding *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_SHADER_PROP_BINDING; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void ShaderPropBinding_dealloc(ShaderPropBinding *self) {
+    PyObject_GC_UnTrack(self);
+    ShaderPropBinding_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef ShaderPropBinding_getset[] = {
     { "shader_prop", (getter)ShaderPropBinding_get_shader_prop, NULL, "shader_prop" },
     { "material_prop", (getter)ShaderPropBinding_get_material_prop, NULL, "material_prop" },
@@ -11658,8 +13207,11 @@ static PyTypeObject ShaderPropBinding_Type = {
     .tp_doc = PyDoc_STR("ShaderPropBinding"),
     .tp_basicsize = sizeof(ShaderPropBinding),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&ShaderPropBinding_dealloc,
+    .tp_traverse = (traverseproc)&ShaderPropBinding_traverse,
+    .tp_clear = (inquiry)&ShaderPropBinding_clear,
     .tp_getset = ShaderPropBinding_getset,
 };
 
@@ -11697,6 +13249,28 @@ static PyObject *ShaderBinding_get_prop_bindings(ShaderBinding *self, void *clos
     return Py_NewRef(slot);
 }
 
+static int ShaderBinding_traverse(ShaderBinding *self, visitproc visit, void *arg) {
+    if (Element_traverse((Element*)self, visit, arg) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_SHADER_BINDING; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int ShaderBinding_clear(ShaderBinding *self) {
+    if (Element_clear((Element*)self) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_SHADER_BINDING; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void ShaderBinding_dealloc(ShaderBinding *self) {
+    PyObject_GC_UnTrack(self);
+    ShaderBinding_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef ShaderBinding_getset[] = {
     { "prop_bindings", (getter)ShaderBinding_get_prop_bindings, NULL, "prop_bindings" },
     { NULL },
@@ -11708,8 +13282,11 @@ static PyTypeObject ShaderBinding_Type = {
     .tp_doc = PyDoc_STR("ShaderBinding"),
     .tp_basicsize = sizeof(ShaderBinding),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&ShaderBinding_dealloc,
+    .tp_traverse = (traverseproc)&ShaderBinding_traverse,
+    .tp_clear = (inquiry)&ShaderBinding_clear,
     .tp_getset = ShaderBinding_getset,
     .tp_base = &Element_Type,
 };
@@ -11775,6 +13352,28 @@ static PyObject *PropOverride_get_value_int(PropOverride *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static int PropOverride_traverse(PropOverride *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_PROP_OVERRIDE; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int PropOverride_clear(PropOverride *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_PROP_OVERRIDE; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void PropOverride_dealloc(PropOverride *self) {
+    PyObject_GC_UnTrack(self);
+    PropOverride_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef PropOverride_getset[] = {
     { "element_id", (getter)PropOverride_get_element_id, NULL, "element_id" },
     { "prop_name", (getter)PropOverride_get_prop_name, NULL, "prop_name" },
@@ -11790,8 +13389,11 @@ static PyTypeObject PropOverride_Type = {
     .tp_doc = PyDoc_STR("PropOverride"),
     .tp_basicsize = sizeof(PropOverride),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&PropOverride_dealloc,
+    .tp_traverse = (traverseproc)&PropOverride_traverse,
+    .tp_clear = (inquiry)&PropOverride_clear,
     .tp_getset = PropOverride_getset,
 };
 
@@ -11880,7 +13482,7 @@ static PyObject *Anim_get_ignore_connections(Anim *self, void *closure) {
     PyObject *slot = self->slots[SLOT_ANIM__IGNORE_CONNECTIONS];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->ignore_connections ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->ignore_connections ? Py_True : Py_False);
     self->slots[SLOT_ANIM__IGNORE_CONNECTIONS] = slot;
     return Py_NewRef(slot);
 }
@@ -11889,9 +13491,31 @@ static PyObject *Anim_get_custom(Anim *self, void *closure) {
     PyObject *slot = self->slots[SLOT_ANIM__CUSTOM];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->custom ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->custom ? Py_True : Py_False);
     self->slots[SLOT_ANIM__CUSTOM] = slot;
     return Py_NewRef(slot);
+}
+
+static int Anim_traverse(Anim *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_ANIM; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int Anim_clear(Anim *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_ANIM; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void Anim_dealloc(Anim *self) {
+    PyObject_GC_UnTrack(self);
+    Anim_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PyGetSetDef Anim_getset[] = {
@@ -11912,8 +13536,11 @@ static PyTypeObject Anim_Type = {
     .tp_doc = PyDoc_STR("Anim"),
     .tp_basicsize = sizeof(Anim),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&Anim_dealloc,
+    .tp_traverse = (traverseproc)&Anim_traverse,
+    .tp_clear = (inquiry)&Anim_clear,
     .tp_getset = Anim_getset,
 };
 
@@ -11981,6 +13608,28 @@ static PyObject *AnimStack_get_anim(AnimStack *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static int AnimStack_traverse(AnimStack *self, visitproc visit, void *arg) {
+    if (Element_traverse((Element*)self, visit, arg) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_ANIM_STACK; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int AnimStack_clear(AnimStack *self) {
+    if (Element_clear((Element*)self) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_ANIM_STACK; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void AnimStack_dealloc(AnimStack *self) {
+    PyObject_GC_UnTrack(self);
+    AnimStack_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef AnimStack_getset[] = {
     { "time_begin", (getter)AnimStack_get_time_begin, NULL, "time_begin" },
     { "time_end", (getter)AnimStack_get_time_end, NULL, "time_end" },
@@ -11995,8 +13644,11 @@ static PyTypeObject AnimStack_Type = {
     .tp_doc = PyDoc_STR("AnimStack"),
     .tp_basicsize = sizeof(AnimStack),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&AnimStack_dealloc,
+    .tp_traverse = (traverseproc)&AnimStack_traverse,
+    .tp_clear = (inquiry)&AnimStack_clear,
     .tp_getset = AnimStack_getset,
     .tp_base = &Element_Type,
 };
@@ -12042,6 +13694,28 @@ static PyObject *AnimProp_get_anim_value(AnimProp *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static int AnimProp_traverse(AnimProp *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_ANIM_PROP; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int AnimProp_clear(AnimProp *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_ANIM_PROP; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void AnimProp_dealloc(AnimProp *self) {
+    PyObject_GC_UnTrack(self);
+    AnimProp_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef AnimProp_getset[] = {
     { "element", (getter)AnimProp_get_element, NULL, "element" },
     { "prop_name", (getter)AnimProp_get_prop_name, NULL, "prop_name" },
@@ -12055,8 +13729,11 @@ static PyTypeObject AnimProp_Type = {
     .tp_doc = PyDoc_STR("AnimProp"),
     .tp_basicsize = sizeof(AnimProp),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&AnimProp_dealloc,
+    .tp_traverse = (traverseproc)&AnimProp_traverse,
+    .tp_clear = (inquiry)&AnimProp_clear,
     .tp_getset = AnimProp_getset,
 };
 
@@ -12106,7 +13783,7 @@ static PyObject *AnimLayer_get_weight_is_animated(AnimLayer *self, void *closure
     PyObject *slot = self->slots[SLOT_ANIM_LAYER__WEIGHT_IS_ANIMATED];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->weight_is_animated ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->weight_is_animated ? Py_True : Py_False);
     self->slots[SLOT_ANIM_LAYER__WEIGHT_IS_ANIMATED] = slot;
     return Py_NewRef(slot);
 }
@@ -12115,7 +13792,7 @@ static PyObject *AnimLayer_get_blended(AnimLayer *self, void *closure) {
     PyObject *slot = self->slots[SLOT_ANIM_LAYER__BLENDED];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->blended ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->blended ? Py_True : Py_False);
     self->slots[SLOT_ANIM_LAYER__BLENDED] = slot;
     return Py_NewRef(slot);
 }
@@ -12124,7 +13801,7 @@ static PyObject *AnimLayer_get_additive(AnimLayer *self, void *closure) {
     PyObject *slot = self->slots[SLOT_ANIM_LAYER__ADDITIVE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->additive ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->additive ? Py_True : Py_False);
     self->slots[SLOT_ANIM_LAYER__ADDITIVE] = slot;
     return Py_NewRef(slot);
 }
@@ -12133,7 +13810,7 @@ static PyObject *AnimLayer_get_compose_rotation(AnimLayer *self, void *closure) 
     PyObject *slot = self->slots[SLOT_ANIM_LAYER__COMPOSE_ROTATION];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->compose_rotation ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->compose_rotation ? Py_True : Py_False);
     self->slots[SLOT_ANIM_LAYER__COMPOSE_ROTATION] = slot;
     return Py_NewRef(slot);
 }
@@ -12142,7 +13819,7 @@ static PyObject *AnimLayer_get_compose_scale(AnimLayer *self, void *closure) {
     PyObject *slot = self->slots[SLOT_ANIM_LAYER__COMPOSE_SCALE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->compose_scale ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->compose_scale ? Py_True : Py_False);
     self->slots[SLOT_ANIM_LAYER__COMPOSE_SCALE] = slot;
     return Py_NewRef(slot);
 }
@@ -12174,6 +13851,28 @@ static PyObject *AnimLayer_get_anim(AnimLayer *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static int AnimLayer_traverse(AnimLayer *self, visitproc visit, void *arg) {
+    if (Element_traverse((Element*)self, visit, arg) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_ANIM_LAYER; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int AnimLayer_clear(AnimLayer *self) {
+    if (Element_clear((Element*)self) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_ANIM_LAYER; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void AnimLayer_dealloc(AnimLayer *self) {
+    PyObject_GC_UnTrack(self);
+    AnimLayer_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef AnimLayer_getset[] = {
     { "weight", (getter)AnimLayer_get_weight, NULL, "weight" },
     { "weight_is_animated", (getter)AnimLayer_get_weight_is_animated, NULL, "weight_is_animated" },
@@ -12193,8 +13892,11 @@ static PyTypeObject AnimLayer_Type = {
     .tp_doc = PyDoc_STR("AnimLayer"),
     .tp_basicsize = sizeof(AnimLayer),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&AnimLayer_dealloc,
+    .tp_traverse = (traverseproc)&AnimLayer_traverse,
+    .tp_clear = (inquiry)&AnimLayer_clear,
     .tp_getset = AnimLayer_getset,
     .tp_base = &Element_Type,
 };
@@ -12235,6 +13937,28 @@ static PyObject *AnimValue_get_curves(AnimValue *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static int AnimValue_traverse(AnimValue *self, visitproc visit, void *arg) {
+    if (Element_traverse((Element*)self, visit, arg) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_ANIM_VALUE; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int AnimValue_clear(AnimValue *self) {
+    if (Element_clear((Element*)self) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_ANIM_VALUE; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void AnimValue_dealloc(AnimValue *self) {
+    PyObject_GC_UnTrack(self);
+    AnimValue_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef AnimValue_getset[] = {
     { "default_value", (getter)AnimValue_get_default_value, NULL, "default_value" },
     { "curves", (getter)AnimValue_get_curves, NULL, "curves" },
@@ -12247,8 +13971,11 @@ static PyTypeObject AnimValue_Type = {
     .tp_doc = PyDoc_STR("AnimValue"),
     .tp_basicsize = sizeof(AnimValue),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&AnimValue_dealloc,
+    .tp_traverse = (traverseproc)&AnimValue_traverse,
+    .tp_clear = (inquiry)&AnimValue_clear,
     .tp_getset = AnimValue_getset,
     .tp_base = &Element_Type,
 };
@@ -12284,6 +14011,28 @@ static PyObject *Extrapolation_get_repeat_count(Extrapolation *self, void *closu
     return Py_NewRef(slot);
 }
 
+static int Extrapolation_traverse(Extrapolation *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_EXTRAPOLATION; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int Extrapolation_clear(Extrapolation *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_EXTRAPOLATION; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void Extrapolation_dealloc(Extrapolation *self) {
+    PyObject_GC_UnTrack(self);
+    Extrapolation_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef Extrapolation_getset[] = {
     { "mode", (getter)Extrapolation_get_mode, NULL, "mode" },
     { "repeat_count", (getter)Extrapolation_get_repeat_count, NULL, "repeat_count" },
@@ -12296,8 +14045,11 @@ static PyTypeObject Extrapolation_Type = {
     .tp_doc = PyDoc_STR("Extrapolation"),
     .tp_basicsize = sizeof(Extrapolation),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&Extrapolation_dealloc,
+    .tp_traverse = (traverseproc)&Extrapolation_traverse,
+    .tp_clear = (inquiry)&Extrapolation_clear,
     .tp_getset = Extrapolation_getset,
 };
 
@@ -12395,6 +14147,28 @@ static PyObject *AnimCurve_get_max_time(AnimCurve *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static int AnimCurve_traverse(AnimCurve *self, visitproc visit, void *arg) {
+    if (Element_traverse((Element*)self, visit, arg) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_ANIM_CURVE; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int AnimCurve_clear(AnimCurve *self) {
+    if (Element_clear((Element*)self) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_ANIM_CURVE; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void AnimCurve_dealloc(AnimCurve *self) {
+    PyObject_GC_UnTrack(self);
+    AnimCurve_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef AnimCurve_getset[] = {
     { "keyframes", (getter)AnimCurve_get_keyframes, NULL, "keyframes" },
     { "pre_extrapolation", (getter)AnimCurve_get_pre_extrapolation, NULL, "pre_extrapolation" },
@@ -12412,8 +14186,11 @@ static PyTypeObject AnimCurve_Type = {
     .tp_doc = PyDoc_STR("AnimCurve"),
     .tp_basicsize = sizeof(AnimCurve),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&AnimCurve_dealloc,
+    .tp_traverse = (traverseproc)&AnimCurve_traverse,
+    .tp_clear = (inquiry)&AnimCurve_clear,
     .tp_getset = AnimCurve_getset,
     .tp_base = &Element_Type,
 };
@@ -12451,7 +14228,7 @@ static PyObject *DisplayLayer_get_visible(DisplayLayer *self, void *closure) {
     PyObject *slot = self->slots[SLOT_DISPLAY_LAYER__VISIBLE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->visible ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->visible ? Py_True : Py_False);
     self->slots[SLOT_DISPLAY_LAYER__VISIBLE] = slot;
     return Py_NewRef(slot);
 }
@@ -12460,7 +14237,7 @@ static PyObject *DisplayLayer_get_frozen(DisplayLayer *self, void *closure) {
     PyObject *slot = self->slots[SLOT_DISPLAY_LAYER__FROZEN];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->frozen ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->frozen ? Py_True : Py_False);
     self->slots[SLOT_DISPLAY_LAYER__FROZEN] = slot;
     return Py_NewRef(slot);
 }
@@ -12472,6 +14249,28 @@ static PyObject *DisplayLayer_get_ui_color(DisplayLayer *self, void *closure) {
     slot = Vec3_from(&self->data->ui_color);
     self->slots[SLOT_DISPLAY_LAYER__UI_COLOR] = slot;
     return Py_NewRef(slot);
+}
+
+static int DisplayLayer_traverse(DisplayLayer *self, visitproc visit, void *arg) {
+    if (Element_traverse((Element*)self, visit, arg) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_DISPLAY_LAYER; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int DisplayLayer_clear(DisplayLayer *self) {
+    if (Element_clear((Element*)self) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_DISPLAY_LAYER; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void DisplayLayer_dealloc(DisplayLayer *self) {
+    PyObject_GC_UnTrack(self);
+    DisplayLayer_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PyGetSetDef DisplayLayer_getset[] = {
@@ -12488,8 +14287,11 @@ static PyTypeObject DisplayLayer_Type = {
     .tp_doc = PyDoc_STR("DisplayLayer"),
     .tp_basicsize = sizeof(DisplayLayer),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&DisplayLayer_dealloc,
+    .tp_traverse = (traverseproc)&DisplayLayer_traverse,
+    .tp_clear = (inquiry)&DisplayLayer_clear,
     .tp_getset = DisplayLayer_getset,
     .tp_base = &Element_Type,
 };
@@ -12520,6 +14322,28 @@ static PyObject *SelectionSet_get_nodes(SelectionSet *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static int SelectionSet_traverse(SelectionSet *self, visitproc visit, void *arg) {
+    if (Element_traverse((Element*)self, visit, arg) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_SELECTION_SET; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int SelectionSet_clear(SelectionSet *self) {
+    if (Element_clear((Element*)self) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_SELECTION_SET; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void SelectionSet_dealloc(SelectionSet *self) {
+    PyObject_GC_UnTrack(self);
+    SelectionSet_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef SelectionSet_getset[] = {
     { "nodes", (getter)SelectionSet_get_nodes, NULL, "nodes" },
     { NULL },
@@ -12531,8 +14355,11 @@ static PyTypeObject SelectionSet_Type = {
     .tp_doc = PyDoc_STR("SelectionSet"),
     .tp_basicsize = sizeof(SelectionSet),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&SelectionSet_dealloc,
+    .tp_traverse = (traverseproc)&SelectionSet_traverse,
+    .tp_clear = (inquiry)&SelectionSet_clear,
     .tp_getset = SelectionSet_getset,
     .tp_base = &Element_Type,
 };
@@ -12581,7 +14408,7 @@ static PyObject *SelectionNode_get_include_node(SelectionNode *self, void *closu
     PyObject *slot = self->slots[SLOT_SELECTION_NODE__INCLUDE_NODE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->include_node ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->include_node ? Py_True : Py_False);
     self->slots[SLOT_SELECTION_NODE__INCLUDE_NODE] = slot;
     return Py_NewRef(slot);
 }
@@ -12613,6 +14440,28 @@ static PyObject *SelectionNode_get_faces(SelectionNode *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static int SelectionNode_traverse(SelectionNode *self, visitproc visit, void *arg) {
+    if (Element_traverse((Element*)self, visit, arg) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_SELECTION_NODE; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int SelectionNode_clear(SelectionNode *self) {
+    if (Element_clear((Element*)self) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_SELECTION_NODE; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void SelectionNode_dealloc(SelectionNode *self) {
+    PyObject_GC_UnTrack(self);
+    SelectionNode_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef SelectionNode_getset[] = {
     { "target_node", (getter)SelectionNode_get_target_node, NULL, "target_node" },
     { "target_mesh", (getter)SelectionNode_get_target_mesh, NULL, "target_mesh" },
@@ -12629,8 +14478,11 @@ static PyTypeObject SelectionNode_Type = {
     .tp_doc = PyDoc_STR("SelectionNode"),
     .tp_basicsize = sizeof(SelectionNode),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&SelectionNode_dealloc,
+    .tp_traverse = (traverseproc)&SelectionNode_traverse,
+    .tp_clear = (inquiry)&SelectionNode_clear,
     .tp_getset = SelectionNode_getset,
     .tp_base = &Element_Type,
 };
@@ -12646,14 +14498,33 @@ typedef struct {
     };
 } Character;
 
+static int Character_traverse(Character *self, visitproc visit, void *arg) {
+    if (Element_traverse((Element*)self, visit, arg) < 0) return -1;
+    return 0;
+}
+
+static int Character_clear(Character *self) {
+    if (Element_clear((Element*)self) < 0) return -1;
+    return 0;
+}
+
+void Character_dealloc(Character *self) {
+    PyObject_GC_UnTrack(self);
+    Character_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyTypeObject Character_Type = {
     .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "ufbx.Character",
     .tp_doc = PyDoc_STR("Character"),
     .tp_basicsize = sizeof(Character),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&Character_dealloc,
+    .tp_traverse = (traverseproc)&Character_traverse,
+    .tp_clear = (inquiry)&Character_clear,
     .tp_base = &Element_Type,
 };
 
@@ -12698,6 +14569,28 @@ static PyObject *ConstraintTarget_get_transform(ConstraintTarget *self, void *cl
     return Py_NewRef(slot);
 }
 
+static int ConstraintTarget_traverse(ConstraintTarget *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_CONSTRAINT_TARGET; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int ConstraintTarget_clear(ConstraintTarget *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_CONSTRAINT_TARGET; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void ConstraintTarget_dealloc(ConstraintTarget *self) {
+    PyObject_GC_UnTrack(self);
+    ConstraintTarget_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef ConstraintTarget_getset[] = {
     { "node", (getter)ConstraintTarget_get_node, NULL, "node" },
     { "weight", (getter)ConstraintTarget_get_weight, NULL, "weight" },
@@ -12711,8 +14604,11 @@ static PyTypeObject ConstraintTarget_Type = {
     .tp_doc = PyDoc_STR("ConstraintTarget"),
     .tp_basicsize = sizeof(ConstraintTarget),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&ConstraintTarget_dealloc,
+    .tp_traverse = (traverseproc)&ConstraintTarget_traverse,
+    .tp_clear = (inquiry)&ConstraintTarget_clear,
     .tp_getset = ConstraintTarget_getset,
 };
 
@@ -12806,7 +14702,7 @@ static PyObject *Constraint_get_active(Constraint *self, void *closure) {
     PyObject *slot = self->slots[SLOT_CONSTRAINT__ACTIVE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->active ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->active ? Py_True : Py_False);
     self->slots[SLOT_CONSTRAINT__ACTIVE] = slot;
     return Py_NewRef(slot);
 }
@@ -12910,6 +14806,28 @@ static PyObject *Constraint_get_ik_pole_vector(Constraint *self, void *closure) 
     return Py_NewRef(slot);
 }
 
+static int Constraint_traverse(Constraint *self, visitproc visit, void *arg) {
+    if (Element_traverse((Element*)self, visit, arg) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_CONSTRAINT; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int Constraint_clear(Constraint *self) {
+    if (Element_clear((Element*)self) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_CONSTRAINT; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void Constraint_dealloc(Constraint *self) {
+    PyObject_GC_UnTrack(self);
+    Constraint_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef Constraint_getset[] = {
     { "type", (getter)Constraint_get_type, NULL, "type" },
     { "type_name", (getter)Constraint_get_type_name, NULL, "type_name" },
@@ -12937,8 +14855,11 @@ static PyTypeObject Constraint_Type = {
     .tp_doc = PyDoc_STR("Constraint"),
     .tp_basicsize = sizeof(Constraint),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&Constraint_dealloc,
+    .tp_traverse = (traverseproc)&Constraint_traverse,
+    .tp_clear = (inquiry)&Constraint_clear,
     .tp_getset = Constraint_getset,
     .tp_base = &Element_Type,
 };
@@ -12969,6 +14890,28 @@ static PyObject *AudioLayer_get_clips(AudioLayer *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static int AudioLayer_traverse(AudioLayer *self, visitproc visit, void *arg) {
+    if (Element_traverse((Element*)self, visit, arg) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_AUDIO_LAYER; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int AudioLayer_clear(AudioLayer *self) {
+    if (Element_clear((Element*)self) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_AUDIO_LAYER; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void AudioLayer_dealloc(AudioLayer *self) {
+    PyObject_GC_UnTrack(self);
+    AudioLayer_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef AudioLayer_getset[] = {
     { "clips", (getter)AudioLayer_get_clips, NULL, "clips" },
     { NULL },
@@ -12980,8 +14923,11 @@ static PyTypeObject AudioLayer_Type = {
     .tp_doc = PyDoc_STR("AudioLayer"),
     .tp_basicsize = sizeof(AudioLayer),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&AudioLayer_dealloc,
+    .tp_traverse = (traverseproc)&AudioLayer_traverse,
+    .tp_clear = (inquiry)&AudioLayer_clear,
     .tp_getset = AudioLayer_getset,
     .tp_base = &Element_Type,
 };
@@ -13072,6 +15018,28 @@ static PyObject *AudioClip_get_content(AudioClip *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static int AudioClip_traverse(AudioClip *self, visitproc visit, void *arg) {
+    if (Element_traverse((Element*)self, visit, arg) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_AUDIO_CLIP; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int AudioClip_clear(AudioClip *self) {
+    if (Element_clear((Element*)self) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_AUDIO_CLIP; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void AudioClip_dealloc(AudioClip *self) {
+    PyObject_GC_UnTrack(self);
+    AudioClip_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef AudioClip_getset[] = {
     { "filename", (getter)AudioClip_get_filename, NULL, "filename" },
     { "absolute_filename", (getter)AudioClip_get_absolute_filename, NULL, "absolute_filename" },
@@ -13089,8 +15057,11 @@ static PyTypeObject AudioClip_Type = {
     .tp_doc = PyDoc_STR("AudioClip"),
     .tp_basicsize = sizeof(AudioClip),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&AudioClip_dealloc,
+    .tp_traverse = (traverseproc)&AudioClip_traverse,
+    .tp_clear = (inquiry)&AudioClip_clear,
     .tp_getset = AudioClip_getset,
     .tp_base = &Element_Type,
 };
@@ -13136,6 +15107,28 @@ static PyObject *BonePose_get_bone_to_parent(BonePose *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static int BonePose_traverse(BonePose *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_BONE_POSE; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int BonePose_clear(BonePose *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_BONE_POSE; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void BonePose_dealloc(BonePose *self) {
+    PyObject_GC_UnTrack(self);
+    BonePose_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef BonePose_getset[] = {
     { "bone_node", (getter)BonePose_get_bone_node, NULL, "bone_node" },
     { "bone_to_world", (getter)BonePose_get_bone_to_world, NULL, "bone_to_world" },
@@ -13149,8 +15142,11 @@ static PyTypeObject BonePose_Type = {
     .tp_doc = PyDoc_STR("BonePose"),
     .tp_basicsize = sizeof(BonePose),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&BonePose_dealloc,
+    .tp_traverse = (traverseproc)&BonePose_traverse,
+    .tp_clear = (inquiry)&BonePose_clear,
     .tp_getset = BonePose_getset,
 };
 
@@ -13184,7 +15180,7 @@ static PyObject *Pose_get_is_bind_pose(Pose *self, void *closure) {
     PyObject *slot = self->slots[SLOT_POSE__IS_BIND_POSE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->is_bind_pose ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->is_bind_pose ? Py_True : Py_False);
     self->slots[SLOT_POSE__IS_BIND_POSE] = slot;
     return Py_NewRef(slot);
 }
@@ -13196,6 +15192,28 @@ static PyObject *Pose_get_bone_poses(Pose *self, void *closure) {
     slot = BonePoseList_from(self->data->bone_poses, self->ctx);
     self->slots[SLOT_POSE__BONE_POSES] = slot;
     return Py_NewRef(slot);
+}
+
+static int Pose_traverse(Pose *self, visitproc visit, void *arg) {
+    if (Element_traverse((Element*)self, visit, arg) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_POSE; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int Pose_clear(Pose *self) {
+    if (Element_clear((Element*)self) < 0) return -1;
+    for (size_t i = 0; i < SLOT_COUNT_POSE; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void Pose_dealloc(Pose *self) {
+    PyObject_GC_UnTrack(self);
+    Pose_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PyGetSetDef Pose_getset[] = {
@@ -13210,8 +15228,11 @@ static PyTypeObject Pose_Type = {
     .tp_doc = PyDoc_STR("Pose"),
     .tp_basicsize = sizeof(Pose),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&Pose_dealloc,
+    .tp_traverse = (traverseproc)&Pose_traverse,
+    .tp_clear = (inquiry)&Pose_clear,
     .tp_getset = Pose_getset,
     .tp_base = &Element_Type,
 };
@@ -13227,14 +15248,33 @@ typedef struct {
     };
 } MetadataObject;
 
+static int MetadataObject_traverse(MetadataObject *self, visitproc visit, void *arg) {
+    if (Element_traverse((Element*)self, visit, arg) < 0) return -1;
+    return 0;
+}
+
+static int MetadataObject_clear(MetadataObject *self) {
+    if (Element_clear((Element*)self) < 0) return -1;
+    return 0;
+}
+
+void MetadataObject_dealloc(MetadataObject *self) {
+    PyObject_GC_UnTrack(self);
+    MetadataObject_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyTypeObject MetadataObject_Type = {
     .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "ufbx.MetadataObject",
     .tp_doc = PyDoc_STR("MetadataObject"),
     .tp_basicsize = sizeof(MetadataObject),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&MetadataObject_dealloc,
+    .tp_traverse = (traverseproc)&MetadataObject_traverse,
+    .tp_clear = (inquiry)&MetadataObject_clear,
     .tp_base = &Element_Type,
 };
 
@@ -13279,6 +15319,28 @@ static PyObject *NameElement_get_element(NameElement *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static int NameElement_traverse(NameElement *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_NAME_ELEMENT; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int NameElement_clear(NameElement *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_NAME_ELEMENT; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void NameElement_dealloc(NameElement *self) {
+    PyObject_GC_UnTrack(self);
+    NameElement_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef NameElement_getset[] = {
     { "name", (getter)NameElement_get_name, NULL, "name" },
     { "type", (getter)NameElement_get_type, NULL, "type" },
@@ -13292,8 +15354,11 @@ static PyTypeObject NameElement_Type = {
     .tp_doc = PyDoc_STR("NameElement"),
     .tp_basicsize = sizeof(NameElement),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&NameElement_dealloc,
+    .tp_traverse = (traverseproc)&NameElement_traverse,
+    .tp_clear = (inquiry)&NameElement_clear,
     .tp_getset = NameElement_getset,
 };
 
@@ -13346,6 +15411,28 @@ static PyObject *Application_get_version(Application *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static int Application_traverse(Application *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_APPLICATION; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int Application_clear(Application *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_APPLICATION; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void Application_dealloc(Application *self) {
+    PyObject_GC_UnTrack(self);
+    Application_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef Application_getset[] = {
     { "vendor", (getter)Application_get_vendor, NULL, "vendor" },
     { "name", (getter)Application_get_name, NULL, "name" },
@@ -13359,8 +15446,11 @@ static PyTypeObject Application_Type = {
     .tp_doc = PyDoc_STR("Application"),
     .tp_basicsize = sizeof(Application),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&Application_dealloc,
+    .tp_traverse = (traverseproc)&Application_traverse,
+    .tp_clear = (inquiry)&Application_clear,
     .tp_getset = Application_getset,
 };
 
@@ -13423,6 +15513,28 @@ static PyObject *Warning_get_count(Warning *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static int Warning_traverse(Warning *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_WARNING; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int Warning_clear(Warning *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_WARNING; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void Warning_dealloc(Warning *self) {
+    PyObject_GC_UnTrack(self);
+    Warning_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef Warning_getset[] = {
     { "type", (getter)Warning_get_type, NULL, "type" },
     { "description", (getter)Warning_get_description, NULL, "description" },
@@ -13437,8 +15549,11 @@ static PyTypeObject Warning_Type = {
     .tp_doc = PyDoc_STR("Warning"),
     .tp_basicsize = sizeof(Warning),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&Warning_dealloc,
+    .tp_traverse = (traverseproc)&Warning_traverse,
+    .tp_clear = (inquiry)&Warning_clear,
     .tp_getset = Warning_getset,
 };
 
@@ -13511,6 +15626,28 @@ static PyObject *Thumbnail_get_data(Thumbnail *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static int Thumbnail_traverse(Thumbnail *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_THUMBNAIL; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int Thumbnail_clear(Thumbnail *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_THUMBNAIL; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void Thumbnail_dealloc(Thumbnail *self) {
+    PyObject_GC_UnTrack(self);
+    Thumbnail_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef Thumbnail_getset[] = {
     { "props", (getter)Thumbnail_get_props, NULL, "props" },
     { "width", (getter)Thumbnail_get_width, NULL, "width" },
@@ -13526,8 +15663,11 @@ static PyTypeObject Thumbnail_Type = {
     .tp_doc = PyDoc_STR("Thumbnail"),
     .tp_basicsize = sizeof(Thumbnail),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&Thumbnail_dealloc,
+    .tp_traverse = (traverseproc)&Thumbnail_traverse,
+    .tp_clear = (inquiry)&Thumbnail_clear,
     .tp_getset = Thumbnail_getset,
 };
 
@@ -13609,7 +15749,7 @@ static PyObject *Metadata_get_ascii(Metadata *self, void *closure) {
     PyObject *slot = self->slots[SLOT_METADATA__ASCII];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->ascii ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->ascii ? Py_True : Py_False);
     self->slots[SLOT_METADATA__ASCII] = slot;
     return Py_NewRef(slot);
 }
@@ -13636,7 +15776,7 @@ static PyObject *Metadata_get_may_contain_no_index(Metadata *self, void *closure
     PyObject *slot = self->slots[SLOT_METADATA__MAY_CONTAIN_NO_INDEX];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->may_contain_no_index ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->may_contain_no_index ? Py_True : Py_False);
     self->slots[SLOT_METADATA__MAY_CONTAIN_NO_INDEX] = slot;
     return Py_NewRef(slot);
 }
@@ -13645,7 +15785,7 @@ static PyObject *Metadata_get_may_contain_missing_vertex_position(Metadata *self
     PyObject *slot = self->slots[SLOT_METADATA__MAY_CONTAIN_MISSING_VERTEX_POSITION];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->may_contain_missing_vertex_position ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->may_contain_missing_vertex_position ? Py_True : Py_False);
     self->slots[SLOT_METADATA__MAY_CONTAIN_MISSING_VERTEX_POSITION] = slot;
     return Py_NewRef(slot);
 }
@@ -13654,7 +15794,7 @@ static PyObject *Metadata_get_may_contain_broken_elements(Metadata *self, void *
     PyObject *slot = self->slots[SLOT_METADATA__MAY_CONTAIN_BROKEN_ELEMENTS];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->may_contain_broken_elements ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->may_contain_broken_elements ? Py_True : Py_False);
     self->slots[SLOT_METADATA__MAY_CONTAIN_BROKEN_ELEMENTS] = slot;
     return Py_NewRef(slot);
 }
@@ -13663,7 +15803,7 @@ static PyObject *Metadata_get_is_unsafe(Metadata *self, void *closure) {
     PyObject *slot = self->slots[SLOT_METADATA__IS_UNSAFE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->is_unsafe ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->is_unsafe ? Py_True : Py_False);
     self->slots[SLOT_METADATA__IS_UNSAFE] = slot;
     return Py_NewRef(slot);
 }
@@ -13690,7 +15830,7 @@ static PyObject *Metadata_get_big_endian(Metadata *self, void *closure) {
     PyObject *slot = self->slots[SLOT_METADATA__BIG_ENDIAN];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->big_endian ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->big_endian ? Py_True : Py_False);
     self->slots[SLOT_METADATA__BIG_ENDIAN] = slot;
     return Py_NewRef(slot);
 }
@@ -13789,7 +15929,7 @@ static PyObject *Metadata_get_geometry_ignored(Metadata *self, void *closure) {
     PyObject *slot = self->slots[SLOT_METADATA__GEOMETRY_IGNORED];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->geometry_ignored ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->geometry_ignored ? Py_True : Py_False);
     self->slots[SLOT_METADATA__GEOMETRY_IGNORED] = slot;
     return Py_NewRef(slot);
 }
@@ -13798,7 +15938,7 @@ static PyObject *Metadata_get_animation_ignored(Metadata *self, void *closure) {
     PyObject *slot = self->slots[SLOT_METADATA__ANIMATION_IGNORED];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->animation_ignored ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->animation_ignored ? Py_True : Py_False);
     self->slots[SLOT_METADATA__ANIMATION_IGNORED] = slot;
     return Py_NewRef(slot);
 }
@@ -13807,7 +15947,7 @@ static PyObject *Metadata_get_embedded_ignored(Metadata *self, void *closure) {
     PyObject *slot = self->slots[SLOT_METADATA__EMBEDDED_IGNORED];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->embedded_ignored ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->embedded_ignored ? Py_True : Py_False);
     self->slots[SLOT_METADATA__EMBEDDED_IGNORED] = slot;
     return Py_NewRef(slot);
 }
@@ -13888,7 +16028,7 @@ static PyObject *Metadata_get_bone_prop_limb_length_relative(Metadata *self, voi
     PyObject *slot = self->slots[SLOT_METADATA__BONE_PROP_LIMB_LENGTH_RELATIVE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->bone_prop_limb_length_relative ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->bone_prop_limb_length_relative ? Py_True : Py_False);
     self->slots[SLOT_METADATA__BONE_PROP_LIMB_LENGTH_RELATIVE] = slot;
     return Py_NewRef(slot);
 }
@@ -14010,6 +16150,28 @@ static PyObject *Metadata_get_geometry_scale(Metadata *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static int Metadata_traverse(Metadata *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_METADATA; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int Metadata_clear(Metadata *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_METADATA; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void Metadata_dealloc(Metadata *self) {
+    PyObject_GC_UnTrack(self);
+    Metadata_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef Metadata_getset[] = {
     { "warnings", (getter)Metadata_get_warnings, NULL, "warnings" },
     { "ascii", (getter)Metadata_get_ascii, NULL, "ascii" },
@@ -14066,8 +16228,11 @@ static PyTypeObject Metadata_Type = {
     .tp_doc = PyDoc_STR("Metadata"),
     .tp_basicsize = sizeof(Metadata),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&Metadata_dealloc,
+    .tp_traverse = (traverseproc)&Metadata_traverse,
+    .tp_clear = (inquiry)&Metadata_clear,
     .tp_getset = Metadata_getset,
 };
 
@@ -14200,6 +16365,28 @@ static PyObject *SceneSettings_get_original_unit_meters(SceneSettings *self, voi
     return Py_NewRef(slot);
 }
 
+static int SceneSettings_traverse(SceneSettings *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_SCENE_SETTINGS; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int SceneSettings_clear(SceneSettings *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_SCENE_SETTINGS; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void SceneSettings_dealloc(SceneSettings *self) {
+    PyObject_GC_UnTrack(self);
+    SceneSettings_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef SceneSettings_getset[] = {
     { "props", (getter)SceneSettings_get_props, NULL, "props" },
     { "axes", (getter)SceneSettings_get_axes, NULL, "axes" },
@@ -14221,8 +16408,11 @@ static PyTypeObject SceneSettings_Type = {
     .tp_doc = PyDoc_STR("SceneSettings"),
     .tp_basicsize = sizeof(SceneSettings),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&SceneSettings_dealloc,
+    .tp_traverse = (traverseproc)&SceneSettings_traverse,
+    .tp_clear = (inquiry)&SceneSettings_clear,
     .tp_getset = SceneSettings_getset,
 };
 
@@ -14345,6 +16535,28 @@ static PyObject *Scene_get_dom_root(Scene *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static int Scene_traverse(Scene *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_SCENE; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int Scene_clear(Scene *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_SCENE; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void Scene_dealloc(Scene *self) {
+    PyObject_GC_UnTrack(self);
+    Scene_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef Scene_getset[] = {
     { "metadata", (getter)Scene_get_metadata, NULL, "metadata" },
     { "settings", (getter)Scene_get_settings, NULL, "settings" },
@@ -14365,8 +16577,11 @@ static PyTypeObject Scene_Type = {
     .tp_doc = PyDoc_STR("Scene"),
     .tp_basicsize = sizeof(Scene),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&Scene_dealloc,
+    .tp_traverse = (traverseproc)&Scene_traverse,
+    .tp_clear = (inquiry)&Scene_clear,
     .tp_getset = Scene_getset,
 };
 
@@ -14419,6 +16634,28 @@ static PyObject *VertexStream_get_vertex_size(VertexStream *self, void *closure)
     return Py_NewRef(slot);
 }
 
+static int VertexStream_traverse(VertexStream *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_VERTEX_STREAM; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int VertexStream_clear(VertexStream *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_VERTEX_STREAM; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void VertexStream_dealloc(VertexStream *self) {
+    PyObject_GC_UnTrack(self);
+    VertexStream_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef VertexStream_getset[] = {
     { "data", (getter)VertexStream_get_data, NULL, "data" },
     { "vertex_count", (getter)VertexStream_get_vertex_count, NULL, "vertex_count" },
@@ -14432,8 +16669,11 @@ static PyTypeObject VertexStream_Type = {
     .tp_doc = PyDoc_STR("VertexStream"),
     .tp_basicsize = sizeof(VertexStream),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&VertexStream_dealloc,
+    .tp_traverse = (traverseproc)&VertexStream_traverse,
+    .tp_clear = (inquiry)&VertexStream_clear,
     .tp_getset = VertexStream_getset,
 };
 
@@ -14486,6 +16726,28 @@ static PyObject *OpenFileInfo_get_original_filename(OpenFileInfo *self, void *cl
     return Py_NewRef(slot);
 }
 
+static int OpenFileInfo_traverse(OpenFileInfo *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_OPEN_FILE_INFO; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int OpenFileInfo_clear(OpenFileInfo *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_OPEN_FILE_INFO; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void OpenFileInfo_dealloc(OpenFileInfo *self) {
+    PyObject_GC_UnTrack(self);
+    OpenFileInfo_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef OpenFileInfo_getset[] = {
     { "context", (getter)OpenFileInfo_get_context, NULL, "context" },
     { "type", (getter)OpenFileInfo_get_type, NULL, "type" },
@@ -14499,8 +16761,11 @@ static PyTypeObject OpenFileInfo_Type = {
     .tp_doc = PyDoc_STR("OpenFileInfo"),
     .tp_basicsize = sizeof(OpenFileInfo),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&OpenFileInfo_dealloc,
+    .tp_traverse = (traverseproc)&OpenFileInfo_traverse,
+    .tp_clear = (inquiry)&OpenFileInfo_clear,
     .tp_getset = OpenFileInfo_getset,
 };
 
@@ -14543,6 +16808,28 @@ static PyObject *OpenFileOpts_get_filename_null_terminated(OpenFileOpts *self, v
     return Py_NewRef(slot);
 }
 
+static int OpenFileOpts_traverse(OpenFileOpts *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_OPEN_FILE_OPTS; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int OpenFileOpts_clear(OpenFileOpts *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_OPEN_FILE_OPTS; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void OpenFileOpts_dealloc(OpenFileOpts *self) {
+    PyObject_GC_UnTrack(self);
+    OpenFileOpts_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef OpenFileOpts_getset[] = {
     { "allocator", (getter)OpenFileOpts_get_allocator, NULL, "allocator" },
     { "filename_null_terminated", (getter)OpenFileOpts_get_filename_null_terminated, NULL, "filename_null_terminated" },
@@ -14555,8 +16842,11 @@ static PyTypeObject OpenFileOpts_Type = {
     .tp_doc = PyDoc_STR("OpenFileOpts"),
     .tp_basicsize = sizeof(OpenFileOpts),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&OpenFileOpts_dealloc,
+    .tp_traverse = (traverseproc)&OpenFileOpts_traverse,
+    .tp_clear = (inquiry)&OpenFileOpts_clear,
     .tp_getset = OpenFileOpts_getset,
 };
 
@@ -14609,6 +16899,28 @@ static PyObject *ErrorFrame_get_description(ErrorFrame *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static int ErrorFrame_traverse(ErrorFrame *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_ERROR_FRAME; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int ErrorFrame_clear(ErrorFrame *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_ERROR_FRAME; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void ErrorFrame_dealloc(ErrorFrame *self) {
+    PyObject_GC_UnTrack(self);
+    ErrorFrame_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef ErrorFrame_getset[] = {
     { "source_line", (getter)ErrorFrame_get_source_line, NULL, "source_line" },
     { "function", (getter)ErrorFrame_get_function, NULL, "function" },
@@ -14622,8 +16934,11 @@ static PyTypeObject ErrorFrame_Type = {
     .tp_doc = PyDoc_STR("ErrorFrame"),
     .tp_basicsize = sizeof(ErrorFrame),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&ErrorFrame_dealloc,
+    .tp_traverse = (traverseproc)&ErrorFrame_traverse,
+    .tp_clear = (inquiry)&ErrorFrame_clear,
     .tp_getset = ErrorFrame_getset,
 };
 
@@ -14706,6 +17021,28 @@ static PyObject *Error_get_info(Error *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static int Error_traverse(Error *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_ERROR; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int Error_clear(Error *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_ERROR; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void Error_dealloc(Error *self) {
+    PyObject_GC_UnTrack(self);
+    Error_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef Error_getset[] = {
     { "type", (getter)Error_get_type, NULL, "type" },
     { "description", (getter)Error_get_description, NULL, "description" },
@@ -14722,8 +17059,11 @@ static PyTypeObject Error_Type = {
     .tp_doc = PyDoc_STR("Error"),
     .tp_basicsize = sizeof(Error),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&Error_dealloc,
+    .tp_traverse = (traverseproc)&Error_traverse,
+    .tp_clear = (inquiry)&Error_clear,
     .tp_getset = Error_getset,
 };
 
@@ -14766,6 +17106,28 @@ static PyObject *Progress_get_bytes_total(Progress *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static int Progress_traverse(Progress *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_PROGRESS; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int Progress_clear(Progress *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_PROGRESS; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void Progress_dealloc(Progress *self) {
+    PyObject_GC_UnTrack(self);
+    Progress_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef Progress_getset[] = {
     { "bytes_read", (getter)Progress_get_bytes_read, NULL, "bytes_read" },
     { "bytes_total", (getter)Progress_get_bytes_total, NULL, "bytes_total" },
@@ -14778,8 +17140,11 @@ static PyTypeObject Progress_Type = {
     .tp_doc = PyDoc_STR("Progress"),
     .tp_basicsize = sizeof(Progress),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&Progress_dealloc,
+    .tp_traverse = (traverseproc)&Progress_traverse,
+    .tp_clear = (inquiry)&Progress_clear,
     .tp_getset = Progress_getset,
 };
 
@@ -14919,7 +17284,7 @@ static PyObject *InflateInput_get_no_header(InflateInput *self, void *closure) {
     PyObject *slot = self->slots[SLOT_INFLATE_INPUT__NO_HEADER];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->no_header ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->no_header ? Py_True : Py_False);
     self->slots[SLOT_INFLATE_INPUT__NO_HEADER] = slot;
     return Py_NewRef(slot);
 }
@@ -14928,7 +17293,7 @@ static PyObject *InflateInput_get_no_checksum(InflateInput *self, void *closure)
     PyObject *slot = self->slots[SLOT_INFLATE_INPUT__NO_CHECKSUM];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->no_checksum ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->no_checksum ? Py_True : Py_False);
     self->slots[SLOT_INFLATE_INPUT__NO_CHECKSUM] = slot;
     return Py_NewRef(slot);
 }
@@ -14940,6 +17305,28 @@ static PyObject *InflateInput_get_internal_fast_bits(InflateInput *self, void *c
     slot = PyLong_FromSize_t(self->data->internal_fast_bits);
     self->slots[SLOT_INFLATE_INPUT__INTERNAL_FAST_BITS] = slot;
     return Py_NewRef(slot);
+}
+
+static int InflateInput_traverse(InflateInput *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_INFLATE_INPUT; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int InflateInput_clear(InflateInput *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_INFLATE_INPUT; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void InflateInput_dealloc(InflateInput *self) {
+    PyObject_GC_UnTrack(self);
+    InflateInput_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PyGetSetDef InflateInput_getset[] = {
@@ -14966,8 +17353,11 @@ static PyTypeObject InflateInput_Type = {
     .tp_doc = PyDoc_STR("InflateInput"),
     .tp_basicsize = sizeof(InflateInput),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&InflateInput_dealloc,
+    .tp_traverse = (traverseproc)&InflateInput_traverse,
+    .tp_clear = (inquiry)&InflateInput_clear,
     .tp_getset = InflateInput_getset,
 };
 
@@ -14996,7 +17386,7 @@ static PyObject *InflateRetain_get_initialized(InflateRetain *self, void *closur
     PyObject *slot = self->slots[SLOT_INFLATE_RETAIN__INITIALIZED];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->initialized ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->initialized ? Py_True : Py_False);
     self->slots[SLOT_INFLATE_RETAIN__INITIALIZED] = slot;
     return Py_NewRef(slot);
 }
@@ -15008,6 +17398,28 @@ static PyObject *InflateRetain_get_data(InflateRetain *self, void *closure) {
     slot = to_pyobject_todo("uint64_t[1024]");
     self->slots[SLOT_INFLATE_RETAIN__DATA] = slot;
     return Py_NewRef(slot);
+}
+
+static int InflateRetain_traverse(InflateRetain *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_INFLATE_RETAIN; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int InflateRetain_clear(InflateRetain *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_INFLATE_RETAIN; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void InflateRetain_dealloc(InflateRetain *self) {
+    PyObject_GC_UnTrack(self);
+    InflateRetain_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PyGetSetDef InflateRetain_getset[] = {
@@ -15022,8 +17434,11 @@ static PyTypeObject InflateRetain_Type = {
     .tp_doc = PyDoc_STR("InflateRetain"),
     .tp_basicsize = sizeof(InflateRetain),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&InflateRetain_dealloc,
+    .tp_traverse = (traverseproc)&InflateRetain_traverse,
+    .tp_clear = (inquiry)&InflateRetain_clear,
     .tp_getset = InflateRetain_getset,
 };
 
@@ -15076,6 +17491,28 @@ static PyObject *BakedVec3_get_flags(BakedVec3 *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static int BakedVec3_traverse(BakedVec3 *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_BAKED_VEC3; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int BakedVec3_clear(BakedVec3 *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_BAKED_VEC3; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void BakedVec3_dealloc(BakedVec3 *self) {
+    PyObject_GC_UnTrack(self);
+    BakedVec3_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef BakedVec3_getset[] = {
     { "time", (getter)BakedVec3_get_time, NULL, "time" },
     { "value", (getter)BakedVec3_get_value, NULL, "value" },
@@ -15089,8 +17526,11 @@ static PyTypeObject BakedVec3_Type = {
     .tp_doc = PyDoc_STR("BakedVec3"),
     .tp_basicsize = sizeof(BakedVec3),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&BakedVec3_dealloc,
+    .tp_traverse = (traverseproc)&BakedVec3_traverse,
+    .tp_clear = (inquiry)&BakedVec3_clear,
     .tp_getset = BakedVec3_getset,
 };
 
@@ -15143,6 +17583,28 @@ static PyObject *BakedQuat_get_flags(BakedQuat *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static int BakedQuat_traverse(BakedQuat *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_BAKED_QUAT; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int BakedQuat_clear(BakedQuat *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_BAKED_QUAT; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void BakedQuat_dealloc(BakedQuat *self) {
+    PyObject_GC_UnTrack(self);
+    BakedQuat_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef BakedQuat_getset[] = {
     { "time", (getter)BakedQuat_get_time, NULL, "time" },
     { "value", (getter)BakedQuat_get_value, NULL, "value" },
@@ -15156,8 +17618,11 @@ static PyTypeObject BakedQuat_Type = {
     .tp_doc = PyDoc_STR("BakedQuat"),
     .tp_basicsize = sizeof(BakedQuat),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&BakedQuat_dealloc,
+    .tp_traverse = (traverseproc)&BakedQuat_traverse,
+    .tp_clear = (inquiry)&BakedQuat_clear,
     .tp_getset = BakedQuat_getset,
 };
 
@@ -15210,7 +17675,7 @@ static PyObject *BakedNode_get_constant_translation(BakedNode *self, void *closu
     PyObject *slot = self->slots[SLOT_BAKED_NODE__CONSTANT_TRANSLATION];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->constant_translation ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->constant_translation ? Py_True : Py_False);
     self->slots[SLOT_BAKED_NODE__CONSTANT_TRANSLATION] = slot;
     return Py_NewRef(slot);
 }
@@ -15219,7 +17684,7 @@ static PyObject *BakedNode_get_constant_rotation(BakedNode *self, void *closure)
     PyObject *slot = self->slots[SLOT_BAKED_NODE__CONSTANT_ROTATION];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->constant_rotation ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->constant_rotation ? Py_True : Py_False);
     self->slots[SLOT_BAKED_NODE__CONSTANT_ROTATION] = slot;
     return Py_NewRef(slot);
 }
@@ -15228,7 +17693,7 @@ static PyObject *BakedNode_get_constant_scale(BakedNode *self, void *closure) {
     PyObject *slot = self->slots[SLOT_BAKED_NODE__CONSTANT_SCALE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->constant_scale ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->constant_scale ? Py_True : Py_False);
     self->slots[SLOT_BAKED_NODE__CONSTANT_SCALE] = slot;
     return Py_NewRef(slot);
 }
@@ -15260,6 +17725,28 @@ static PyObject *BakedNode_get_scale_keys(BakedNode *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static int BakedNode_traverse(BakedNode *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_BAKED_NODE; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int BakedNode_clear(BakedNode *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_BAKED_NODE; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void BakedNode_dealloc(BakedNode *self) {
+    PyObject_GC_UnTrack(self);
+    BakedNode_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef BakedNode_getset[] = {
     { "typed_id", (getter)BakedNode_get_typed_id, NULL, "typed_id" },
     { "element_id", (getter)BakedNode_get_element_id, NULL, "element_id" },
@@ -15278,8 +17765,11 @@ static PyTypeObject BakedNode_Type = {
     .tp_doc = PyDoc_STR("BakedNode"),
     .tp_basicsize = sizeof(BakedNode),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&BakedNode_dealloc,
+    .tp_traverse = (traverseproc)&BakedNode_traverse,
+    .tp_clear = (inquiry)&BakedNode_clear,
     .tp_getset = BakedNode_getset,
 };
 
@@ -15318,7 +17808,7 @@ static PyObject *BakedProp_get_constant_value(BakedProp *self, void *closure) {
     PyObject *slot = self->slots[SLOT_BAKED_PROP__CONSTANT_VALUE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->constant_value ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->constant_value ? Py_True : Py_False);
     self->slots[SLOT_BAKED_PROP__CONSTANT_VALUE] = slot;
     return Py_NewRef(slot);
 }
@@ -15330,6 +17820,28 @@ static PyObject *BakedProp_get_keys(BakedProp *self, void *closure) {
     slot = BakedVec3List_from(self->data->keys, self->ctx);
     self->slots[SLOT_BAKED_PROP__KEYS] = slot;
     return Py_NewRef(slot);
+}
+
+static int BakedProp_traverse(BakedProp *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_BAKED_PROP; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int BakedProp_clear(BakedProp *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_BAKED_PROP; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void BakedProp_dealloc(BakedProp *self) {
+    PyObject_GC_UnTrack(self);
+    BakedProp_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PyGetSetDef BakedProp_getset[] = {
@@ -15345,8 +17857,11 @@ static PyTypeObject BakedProp_Type = {
     .tp_doc = PyDoc_STR("BakedProp"),
     .tp_basicsize = sizeof(BakedProp),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&BakedProp_dealloc,
+    .tp_traverse = (traverseproc)&BakedProp_traverse,
+    .tp_clear = (inquiry)&BakedProp_clear,
     .tp_getset = BakedProp_getset,
 };
 
@@ -15389,6 +17904,28 @@ static PyObject *BakedElement_get_props(BakedElement *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static int BakedElement_traverse(BakedElement *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_BAKED_ELEMENT; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int BakedElement_clear(BakedElement *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_BAKED_ELEMENT; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void BakedElement_dealloc(BakedElement *self) {
+    PyObject_GC_UnTrack(self);
+    BakedElement_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef BakedElement_getset[] = {
     { "element_id", (getter)BakedElement_get_element_id, NULL, "element_id" },
     { "props", (getter)BakedElement_get_props, NULL, "props" },
@@ -15401,8 +17938,11 @@ static PyTypeObject BakedElement_Type = {
     .tp_doc = PyDoc_STR("BakedElement"),
     .tp_basicsize = sizeof(BakedElement),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&BakedElement_dealloc,
+    .tp_traverse = (traverseproc)&BakedElement_traverse,
+    .tp_clear = (inquiry)&BakedElement_clear,
     .tp_getset = BakedElement_getset,
 };
 
@@ -15465,6 +18005,28 @@ static PyObject *BakedAnimMetadata_get_temp_allocs(BakedAnimMetadata *self, void
     return Py_NewRef(slot);
 }
 
+static int BakedAnimMetadata_traverse(BakedAnimMetadata *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_BAKED_ANIM_METADATA; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int BakedAnimMetadata_clear(BakedAnimMetadata *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_BAKED_ANIM_METADATA; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void BakedAnimMetadata_dealloc(BakedAnimMetadata *self) {
+    PyObject_GC_UnTrack(self);
+    BakedAnimMetadata_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef BakedAnimMetadata_getset[] = {
     { "result_memory_used", (getter)BakedAnimMetadata_get_result_memory_used, NULL, "result_memory_used" },
     { "temp_memory_used", (getter)BakedAnimMetadata_get_temp_memory_used, NULL, "temp_memory_used" },
@@ -15479,8 +18041,11 @@ static PyTypeObject BakedAnimMetadata_Type = {
     .tp_doc = PyDoc_STR("BakedAnimMetadata"),
     .tp_basicsize = sizeof(BakedAnimMetadata),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&BakedAnimMetadata_dealloc,
+    .tp_traverse = (traverseproc)&BakedAnimMetadata_traverse,
+    .tp_clear = (inquiry)&BakedAnimMetadata_clear,
     .tp_getset = BakedAnimMetadata_getset,
 };
 
@@ -15583,6 +18148,28 @@ static PyObject *BakedAnim_get_metadata(BakedAnim *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static int BakedAnim_traverse(BakedAnim *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_BAKED_ANIM; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int BakedAnim_clear(BakedAnim *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_BAKED_ANIM; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void BakedAnim_dealloc(BakedAnim *self) {
+    PyObject_GC_UnTrack(self);
+    BakedAnim_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef BakedAnim_getset[] = {
     { "nodes", (getter)BakedAnim_get_nodes, NULL, "nodes" },
     { "elements", (getter)BakedAnim_get_elements, NULL, "elements" },
@@ -15601,8 +18188,11 @@ static PyTypeObject BakedAnim_Type = {
     .tp_doc = PyDoc_STR("BakedAnim"),
     .tp_basicsize = sizeof(BakedAnim),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&BakedAnim_dealloc,
+    .tp_traverse = (traverseproc)&BakedAnim_traverse,
+    .tp_clear = (inquiry)&BakedAnim_clear,
     .tp_getset = BakedAnim_getset,
 };
 
@@ -15635,6 +18225,28 @@ static PyObject *ThreadPoolInfo_get_max_concurrent_tasks(ThreadPoolInfo *self, v
     return Py_NewRef(slot);
 }
 
+static int ThreadPoolInfo_traverse(ThreadPoolInfo *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_THREAD_POOL_INFO; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int ThreadPoolInfo_clear(ThreadPoolInfo *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_THREAD_POOL_INFO; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void ThreadPoolInfo_dealloc(ThreadPoolInfo *self) {
+    PyObject_GC_UnTrack(self);
+    ThreadPoolInfo_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef ThreadPoolInfo_getset[] = {
     { "max_concurrent_tasks", (getter)ThreadPoolInfo_get_max_concurrent_tasks, NULL, "max_concurrent_tasks" },
     { NULL },
@@ -15646,8 +18258,11 @@ static PyTypeObject ThreadPoolInfo_Type = {
     .tp_doc = PyDoc_STR("ThreadPoolInfo"),
     .tp_basicsize = sizeof(ThreadPoolInfo),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&ThreadPoolInfo_dealloc,
+    .tp_traverse = (traverseproc)&ThreadPoolInfo_traverse,
+    .tp_clear = (inquiry)&ThreadPoolInfo_clear,
     .tp_getset = ThreadPoolInfo_getset,
 };
 
@@ -15677,7 +18292,7 @@ static PyObject *Panic_get_did_panic(Panic *self, void *closure) {
     PyObject *slot = self->slots[SLOT_PANIC__DID_PANIC];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = self->data->did_panic ? Py_True : Py_False;
+    slot = Py_NewRef(self->data->did_panic ? Py_True : Py_False);
     self->slots[SLOT_PANIC__DID_PANIC] = slot;
     return Py_NewRef(slot);
 }
@@ -15700,6 +18315,28 @@ static PyObject *Panic_get_message(Panic *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static int Panic_traverse(Panic *self, visitproc visit, void *arg) {
+    Py_VISIT(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_PANIC; i++) {
+        Py_VISIT(self->slots[i]);
+    }
+    return 0;
+}
+
+static int Panic_clear(Panic *self) {
+    Py_CLEAR(self->ctx);
+    for (size_t i = 0; i < SLOT_COUNT_PANIC; i++) {
+        Py_CLEAR(self->slots[i]);
+    }
+    return 0;
+}
+
+void Panic_dealloc(Panic *self) {
+    PyObject_GC_UnTrack(self);
+    Panic_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyGetSetDef Panic_getset[] = {
     { "did_panic", (getter)Panic_get_did_panic, NULL, "did_panic" },
     { "message_length", (getter)Panic_get_message_length, NULL, "message_length" },
@@ -15713,8 +18350,11 @@ static PyTypeObject Panic_Type = {
     .tp_doc = PyDoc_STR("Panic"),
     .tp_basicsize = sizeof(Panic),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
     .tp_new = PyType_GenericNew,
+    .tp_dealloc = (destructor)&Panic_dealloc,
+    .tp_traverse = (traverseproc)&Panic_traverse,
+    .tp_clear = (inquiry)&Panic_clear,
     .tp_getset = Panic_getset,
 };
 
@@ -15731,10 +18371,10 @@ static PyObject *mod_is_thread_safe(PyObject *self, PyObject *args) {
         return NULL;
     }
     bool ret = ufbx_is_thread_safe();
-    return ret ? Py_True : Py_False;
+    return Py_NewRef(ret ? Py_True : Py_False);
 }
 
-static PyObject *mod_load_memory(PyObject *self, PyObject *args) {
+static PyObject *mod_load_memory(PyObject *self, PyObject *args, PyObject *kwargs) {
     const char *data;
     Py_ssize_t data_len;
     ufbx_load_opts opts = { 0 };
@@ -15749,7 +18389,7 @@ static PyObject *mod_load_memory(PyObject *self, PyObject *args) {
     return Scene_create(ret);
 }
 
-static PyObject *mod_load_file(PyObject *self, PyObject *args) {
+static PyObject *mod_load_file(PyObject *self, PyObject *args, PyObject *kwargs) {
     const char *filename;
     Py_ssize_t filename_len;
     ufbx_load_opts opts = { 0 };
@@ -15776,7 +18416,7 @@ static PyObject *mod_find_prop(PyObject *self, PyObject *args) {
     }
     ufbx_prop* ret = ufbx_find_prop_len(props->data, name, (size_t)name_len);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return to_pyobject_todo("ufbx_prop*");
 }
@@ -15793,7 +18433,7 @@ static PyObject *mod_find_node(PyObject *self, PyObject *args) {
     }
     ufbx_node* ret = ufbx_find_node_len(scene->data, name, (size_t)name_len);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return Element_from(ret, scene->ctx);
 }
@@ -15810,7 +18450,7 @@ static PyObject *mod_find_anim_stack(PyObject *self, PyObject *args) {
     }
     ufbx_anim_stack* ret = ufbx_find_anim_stack_len(scene->data, name, (size_t)name_len);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return Element_from(ret, scene->ctx);
 }
@@ -15827,7 +18467,7 @@ static PyObject *mod_find_material(PyObject *self, PyObject *args) {
     }
     ufbx_material* ret = ufbx_find_material_len(scene->data, name, (size_t)name_len);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return Element_from(ret, scene->ctx);
 }
@@ -15845,7 +18485,7 @@ static PyObject *mod_find_anim_prop(PyObject *self, PyObject *args) {
     }
     ufbx_anim_prop* ret = ufbx_find_anim_prop_len(layer->data, element->data, prop, (size_t)prop_len);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return to_pyobject_todo("ufbx_anim_prop*");
 }
@@ -15875,7 +18515,7 @@ static PyObject *mod_get_compatible_matrix_for_normals(PyObject *self, PyObject 
     return Matrix_from(&ret);
 }
 
-static PyObject *mod_create_anim(PyObject *self, PyObject *args) {
+static PyObject *mod_create_anim(PyObject *self, PyObject *args, PyObject *kwargs) {
     Scene *scene;
     ufbx_anim_opts opts = { 0 };
     ufbx_error error;
@@ -15892,7 +18532,7 @@ static PyObject *mod_create_anim(PyObject *self, PyObject *args) {
     return to_pyobject_todo("ufbx_anim*");
 }
 
-static PyObject *mod_bake_anim(PyObject *self, PyObject *args) {
+static PyObject *mod_bake_anim(PyObject *self, PyObject *args, PyObject *kwargs) {
     Scene *scene;
     Anim *anim;
     ufbx_bake_opts opts = { 0 };
@@ -15921,7 +18561,7 @@ static PyObject *mod_find_baked_node(PyObject *self, PyObject *args) {
     }
     ufbx_baked_node* ret = ufbx_find_baked_node(bake->data, node->data);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return to_pyobject_todo("ufbx_baked_node*");
 }
@@ -15937,7 +18577,7 @@ static PyObject *mod_find_baked_element(PyObject *self, PyObject *args) {
     }
     ufbx_baked_element* ret = ufbx_find_baked_element(bake->data, element->data);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return to_pyobject_todo("ufbx_baked_element*");
 }
@@ -15953,7 +18593,7 @@ static PyObject *mod_get_bone_pose(PyObject *self, PyObject *args) {
     }
     ufbx_bone_pose* ret = ufbx_get_bone_pose(pose->data, node->data);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return to_pyobject_todo("ufbx_bone_pose*");
 }
@@ -15970,7 +18610,7 @@ static PyObject *mod_find_prop_texture(PyObject *self, PyObject *args) {
     }
     ufbx_texture* ret = ufbx_find_prop_texture_len(material->data, name, (size_t)name_len);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return Element_from(ret, material->ctx);
 }
@@ -16015,12 +18655,12 @@ static PyObject *mod_find_shader_texture_input(PyObject *self, PyObject *args) {
     }
     ufbx_shader_texture_input* ret = ufbx_find_shader_texture_input_len(shader->data, name, (size_t)name_len);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return to_pyobject_todo("ufbx_shader_texture_input*");
 }
 
-static PyObject *mod_tessellate_nurbs_curve(PyObject *self, PyObject *args) {
+static PyObject *mod_tessellate_nurbs_curve(PyObject *self, PyObject *args, PyObject *kwargs) {
     NurbsCurve *curve;
     ufbx_tessellate_curve_opts opts = { 0 };
     ufbx_error error;
@@ -16037,7 +18677,7 @@ static PyObject *mod_tessellate_nurbs_curve(PyObject *self, PyObject *args) {
     return Element_from(ret, curve->ctx);
 }
 
-static PyObject *mod_tessellate_nurbs_surface(PyObject *self, PyObject *args) {
+static PyObject *mod_tessellate_nurbs_surface(PyObject *self, PyObject *args, PyObject *kwargs) {
     NurbsSurface *surface;
     ufbx_tessellate_surface_opts opts = { 0 };
     ufbx_error error;
@@ -16054,7 +18694,7 @@ static PyObject *mod_tessellate_nurbs_surface(PyObject *self, PyObject *args) {
     return Element_from(ret, surface->ctx);
 }
 
-static PyObject *mod_load_geometry_cache(PyObject *self, PyObject *args) {
+static PyObject *mod_load_geometry_cache(PyObject *self, PyObject *args, PyObject *kwargs) {
     const char *filename;
     Py_ssize_t filename_len;
     ufbx_geometry_cache_opts opts = { 0 };
@@ -16081,7 +18721,7 @@ static PyObject *mod_dom_find(PyObject *self, PyObject *args) {
     }
     ufbx_dom_node* ret = ufbx_dom_find_len(parent->data, name, (size_t)name_len);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return to_pyobject_todo("ufbx_dom_node*");
 }
@@ -16096,7 +18736,7 @@ static PyObject *mod_as_unknown(PyObject *self, PyObject *args) {
     }
     ufbx_unknown* ret = ufbx_as_unknown(element->data);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return Element_from(ret, element->ctx);
 }
@@ -16111,7 +18751,7 @@ static PyObject *mod_as_node(PyObject *self, PyObject *args) {
     }
     ufbx_node* ret = ufbx_as_node(element->data);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return Element_from(ret, element->ctx);
 }
@@ -16126,7 +18766,7 @@ static PyObject *mod_as_mesh(PyObject *self, PyObject *args) {
     }
     ufbx_mesh* ret = ufbx_as_mesh(element->data);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return Element_from(ret, element->ctx);
 }
@@ -16141,7 +18781,7 @@ static PyObject *mod_as_light(PyObject *self, PyObject *args) {
     }
     ufbx_light* ret = ufbx_as_light(element->data);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return Element_from(ret, element->ctx);
 }
@@ -16156,7 +18796,7 @@ static PyObject *mod_as_camera(PyObject *self, PyObject *args) {
     }
     ufbx_camera* ret = ufbx_as_camera(element->data);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return Element_from(ret, element->ctx);
 }
@@ -16171,7 +18811,7 @@ static PyObject *mod_as_bone(PyObject *self, PyObject *args) {
     }
     ufbx_bone* ret = ufbx_as_bone(element->data);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return Element_from(ret, element->ctx);
 }
@@ -16186,7 +18826,7 @@ static PyObject *mod_as_empty(PyObject *self, PyObject *args) {
     }
     ufbx_empty* ret = ufbx_as_empty(element->data);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return Element_from(ret, element->ctx);
 }
@@ -16201,7 +18841,7 @@ static PyObject *mod_as_line_curve(PyObject *self, PyObject *args) {
     }
     ufbx_line_curve* ret = ufbx_as_line_curve(element->data);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return Element_from(ret, element->ctx);
 }
@@ -16216,7 +18856,7 @@ static PyObject *mod_as_nurbs_curve(PyObject *self, PyObject *args) {
     }
     ufbx_nurbs_curve* ret = ufbx_as_nurbs_curve(element->data);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return Element_from(ret, element->ctx);
 }
@@ -16231,7 +18871,7 @@ static PyObject *mod_as_nurbs_surface(PyObject *self, PyObject *args) {
     }
     ufbx_nurbs_surface* ret = ufbx_as_nurbs_surface(element->data);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return Element_from(ret, element->ctx);
 }
@@ -16246,7 +18886,7 @@ static PyObject *mod_as_nurbs_trim_surface(PyObject *self, PyObject *args) {
     }
     ufbx_nurbs_trim_surface* ret = ufbx_as_nurbs_trim_surface(element->data);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return Element_from(ret, element->ctx);
 }
@@ -16261,7 +18901,7 @@ static PyObject *mod_as_nurbs_trim_boundary(PyObject *self, PyObject *args) {
     }
     ufbx_nurbs_trim_boundary* ret = ufbx_as_nurbs_trim_boundary(element->data);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return Element_from(ret, element->ctx);
 }
@@ -16276,7 +18916,7 @@ static PyObject *mod_as_procedural_geometry(PyObject *self, PyObject *args) {
     }
     ufbx_procedural_geometry* ret = ufbx_as_procedural_geometry(element->data);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return Element_from(ret, element->ctx);
 }
@@ -16291,7 +18931,7 @@ static PyObject *mod_as_stereo_camera(PyObject *self, PyObject *args) {
     }
     ufbx_stereo_camera* ret = ufbx_as_stereo_camera(element->data);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return Element_from(ret, element->ctx);
 }
@@ -16306,7 +18946,7 @@ static PyObject *mod_as_camera_switcher(PyObject *self, PyObject *args) {
     }
     ufbx_camera_switcher* ret = ufbx_as_camera_switcher(element->data);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return Element_from(ret, element->ctx);
 }
@@ -16321,7 +18961,7 @@ static PyObject *mod_as_marker(PyObject *self, PyObject *args) {
     }
     ufbx_marker* ret = ufbx_as_marker(element->data);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return Element_from(ret, element->ctx);
 }
@@ -16336,7 +18976,7 @@ static PyObject *mod_as_lod_group(PyObject *self, PyObject *args) {
     }
     ufbx_lod_group* ret = ufbx_as_lod_group(element->data);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return Element_from(ret, element->ctx);
 }
@@ -16351,7 +18991,7 @@ static PyObject *mod_as_skin_deformer(PyObject *self, PyObject *args) {
     }
     ufbx_skin_deformer* ret = ufbx_as_skin_deformer(element->data);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return Element_from(ret, element->ctx);
 }
@@ -16366,7 +19006,7 @@ static PyObject *mod_as_skin_cluster(PyObject *self, PyObject *args) {
     }
     ufbx_skin_cluster* ret = ufbx_as_skin_cluster(element->data);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return Element_from(ret, element->ctx);
 }
@@ -16381,7 +19021,7 @@ static PyObject *mod_as_blend_deformer(PyObject *self, PyObject *args) {
     }
     ufbx_blend_deformer* ret = ufbx_as_blend_deformer(element->data);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return Element_from(ret, element->ctx);
 }
@@ -16396,7 +19036,7 @@ static PyObject *mod_as_blend_channel(PyObject *self, PyObject *args) {
     }
     ufbx_blend_channel* ret = ufbx_as_blend_channel(element->data);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return Element_from(ret, element->ctx);
 }
@@ -16411,7 +19051,7 @@ static PyObject *mod_as_blend_shape(PyObject *self, PyObject *args) {
     }
     ufbx_blend_shape* ret = ufbx_as_blend_shape(element->data);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return Element_from(ret, element->ctx);
 }
@@ -16426,7 +19066,7 @@ static PyObject *mod_as_cache_deformer(PyObject *self, PyObject *args) {
     }
     ufbx_cache_deformer* ret = ufbx_as_cache_deformer(element->data);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return Element_from(ret, element->ctx);
 }
@@ -16441,7 +19081,7 @@ static PyObject *mod_as_cache_file(PyObject *self, PyObject *args) {
     }
     ufbx_cache_file* ret = ufbx_as_cache_file(element->data);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return Element_from(ret, element->ctx);
 }
@@ -16456,7 +19096,7 @@ static PyObject *mod_as_material(PyObject *self, PyObject *args) {
     }
     ufbx_material* ret = ufbx_as_material(element->data);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return Element_from(ret, element->ctx);
 }
@@ -16471,7 +19111,7 @@ static PyObject *mod_as_texture(PyObject *self, PyObject *args) {
     }
     ufbx_texture* ret = ufbx_as_texture(element->data);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return Element_from(ret, element->ctx);
 }
@@ -16486,7 +19126,7 @@ static PyObject *mod_as_video(PyObject *self, PyObject *args) {
     }
     ufbx_video* ret = ufbx_as_video(element->data);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return Element_from(ret, element->ctx);
 }
@@ -16501,7 +19141,7 @@ static PyObject *mod_as_shader(PyObject *self, PyObject *args) {
     }
     ufbx_shader* ret = ufbx_as_shader(element->data);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return Element_from(ret, element->ctx);
 }
@@ -16516,7 +19156,7 @@ static PyObject *mod_as_shader_binding(PyObject *self, PyObject *args) {
     }
     ufbx_shader_binding* ret = ufbx_as_shader_binding(element->data);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return Element_from(ret, element->ctx);
 }
@@ -16531,7 +19171,7 @@ static PyObject *mod_as_anim_stack(PyObject *self, PyObject *args) {
     }
     ufbx_anim_stack* ret = ufbx_as_anim_stack(element->data);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return Element_from(ret, element->ctx);
 }
@@ -16546,7 +19186,7 @@ static PyObject *mod_as_anim_layer(PyObject *self, PyObject *args) {
     }
     ufbx_anim_layer* ret = ufbx_as_anim_layer(element->data);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return Element_from(ret, element->ctx);
 }
@@ -16561,7 +19201,7 @@ static PyObject *mod_as_anim_value(PyObject *self, PyObject *args) {
     }
     ufbx_anim_value* ret = ufbx_as_anim_value(element->data);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return Element_from(ret, element->ctx);
 }
@@ -16576,7 +19216,7 @@ static PyObject *mod_as_anim_curve(PyObject *self, PyObject *args) {
     }
     ufbx_anim_curve* ret = ufbx_as_anim_curve(element->data);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return Element_from(ret, element->ctx);
 }
@@ -16591,7 +19231,7 @@ static PyObject *mod_as_display_layer(PyObject *self, PyObject *args) {
     }
     ufbx_display_layer* ret = ufbx_as_display_layer(element->data);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return Element_from(ret, element->ctx);
 }
@@ -16606,7 +19246,7 @@ static PyObject *mod_as_selection_set(PyObject *self, PyObject *args) {
     }
     ufbx_selection_set* ret = ufbx_as_selection_set(element->data);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return Element_from(ret, element->ctx);
 }
@@ -16621,7 +19261,7 @@ static PyObject *mod_as_selection_node(PyObject *self, PyObject *args) {
     }
     ufbx_selection_node* ret = ufbx_as_selection_node(element->data);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return Element_from(ret, element->ctx);
 }
@@ -16636,7 +19276,7 @@ static PyObject *mod_as_character(PyObject *self, PyObject *args) {
     }
     ufbx_character* ret = ufbx_as_character(element->data);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return Element_from(ret, element->ctx);
 }
@@ -16651,7 +19291,7 @@ static PyObject *mod_as_constraint(PyObject *self, PyObject *args) {
     }
     ufbx_constraint* ret = ufbx_as_constraint(element->data);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return Element_from(ret, element->ctx);
 }
@@ -16666,7 +19306,7 @@ static PyObject *mod_as_audio_layer(PyObject *self, PyObject *args) {
     }
     ufbx_audio_layer* ret = ufbx_as_audio_layer(element->data);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return Element_from(ret, element->ctx);
 }
@@ -16681,7 +19321,7 @@ static PyObject *mod_as_audio_clip(PyObject *self, PyObject *args) {
     }
     ufbx_audio_clip* ret = ufbx_as_audio_clip(element->data);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return Element_from(ret, element->ctx);
 }
@@ -16696,7 +19336,7 @@ static PyObject *mod_as_pose(PyObject *self, PyObject *args) {
     }
     ufbx_pose* ret = ufbx_as_pose(element->data);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return Element_from(ret, element->ctx);
 }
@@ -16711,7 +19351,7 @@ static PyObject *mod_as_metadata_object(PyObject *self, PyObject *args) {
     }
     ufbx_metadata_object* ret = ufbx_as_metadata_object(element->data);
     if (!ret) {
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
     return Element_from(ret, element->ctx);
 }
@@ -16725,7 +19365,7 @@ static PyObject *mod_dom_is_array(PyObject *self, PyObject *args) {
         return Context_error(node->ctx);
     }
     bool ret = ufbx_dom_is_array(node->data);
-    return ret ? Py_True : Py_False;
+    return Py_NewRef(ret ? Py_True : Py_False);
 }
 
 static PyObject *mod_dom_array_size(PyObject *self, PyObject *args) {
@@ -17166,8 +19806,8 @@ static ModuleType generated_types[] = {
 
 static PyMethodDef mod_methods[] = {
     { "is_thread_safe", &mod_is_thread_safe, METH_VARARGS, NULL },
-    { "load_memory", &mod_load_memory, METH_VARARGS, NULL },
-    { "load_file", &mod_load_file, METH_VARARGS, NULL },
+    { "load_memory", (PyCFunction)&mod_load_memory, METH_VARARGS|METH_KEYWORDS, NULL },
+    { "load_file", (PyCFunction)&mod_load_file, METH_VARARGS|METH_KEYWORDS, NULL },
     { "find_prop", &mod_find_prop, METH_VARARGS, NULL },
     { "find_node", &mod_find_node, METH_VARARGS, NULL },
     { "find_anim_stack", &mod_find_anim_stack, METH_VARARGS, NULL },
@@ -17175,8 +19815,8 @@ static PyMethodDef mod_methods[] = {
     { "find_anim_prop", &mod_find_anim_prop, METH_VARARGS, NULL },
     { "find_anim_props", &mod_find_anim_props, METH_VARARGS, NULL },
     { "get_compatible_matrix_for_normals", &mod_get_compatible_matrix_for_normals, METH_VARARGS, NULL },
-    { "create_anim", &mod_create_anim, METH_VARARGS, NULL },
-    { "bake_anim", &mod_bake_anim, METH_VARARGS, NULL },
+    { "create_anim", (PyCFunction)&mod_create_anim, METH_VARARGS|METH_KEYWORDS, NULL },
+    { "bake_anim", (PyCFunction)&mod_bake_anim, METH_VARARGS|METH_KEYWORDS, NULL },
     { "find_baked_node", &mod_find_baked_node, METH_VARARGS, NULL },
     { "find_baked_element", &mod_find_baked_element, METH_VARARGS, NULL },
     { "get_bone_pose", &mod_get_bone_pose, METH_VARARGS, NULL },
@@ -17184,9 +19824,9 @@ static PyMethodDef mod_methods[] = {
     { "find_shader_prop", &mod_find_shader_prop, METH_VARARGS, NULL },
     { "find_shader_prop_bindings", &mod_find_shader_prop_bindings, METH_VARARGS, NULL },
     { "find_shader_texture_input", &mod_find_shader_texture_input, METH_VARARGS, NULL },
-    { "tessellate_nurbs_curve", &mod_tessellate_nurbs_curve, METH_VARARGS, NULL },
-    { "tessellate_nurbs_surface", &mod_tessellate_nurbs_surface, METH_VARARGS, NULL },
-    { "load_geometry_cache", &mod_load_geometry_cache, METH_VARARGS, NULL },
+    { "tessellate_nurbs_curve", (PyCFunction)&mod_tessellate_nurbs_curve, METH_VARARGS|METH_KEYWORDS, NULL },
+    { "tessellate_nurbs_surface", (PyCFunction)&mod_tessellate_nurbs_surface, METH_VARARGS|METH_KEYWORDS, NULL },
+    { "load_geometry_cache", (PyCFunction)&mod_load_geometry_cache, METH_VARARGS|METH_KEYWORDS, NULL },
     { "dom_find", &mod_dom_find, METH_VARARGS, NULL },
     { "as_unknown", &mod_as_unknown, METH_VARARGS, NULL },
     { "as_node", &mod_as_node, METH_VARARGS, NULL },

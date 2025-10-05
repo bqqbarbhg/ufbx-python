@@ -33,6 +33,7 @@ static PyObject *UfbxError_raise(ufbx_error *error)
     } else {
         PyErr_Format(err_typ, "%s", error->description.data);
     }
+    return NULL;
 }
 
 int register_errors(PyObject *m)
