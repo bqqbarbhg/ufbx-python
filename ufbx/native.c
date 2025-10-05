@@ -42,6 +42,8 @@ static int ufbx_module_exec(PyObject *m)
         register_type(m, prelude_types[i].type, prelude_types[i].name);
     }
 
+    register_enums(m, enum_types, array_count(enum_types));
+
     for (size_t i = 0; i < array_count(generated_types); i++) {
         register_type(m, generated_types[i].type, generated_types[i].name);
     }

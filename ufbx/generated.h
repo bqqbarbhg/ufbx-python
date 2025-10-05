@@ -1,5 +1,803 @@
 #include "prelude.h"
 
+static PyObject *RotationOrder_Enum;
+static const EnumValue RotationOrder_values[] = {
+    { UFBX_ROTATION_ORDER_XYZ, "XYZ" },
+    { UFBX_ROTATION_ORDER_XZY, "XZY" },
+    { UFBX_ROTATION_ORDER_YZX, "YZX" },
+    { UFBX_ROTATION_ORDER_YXZ, "YXZ" },
+    { UFBX_ROTATION_ORDER_ZXY, "ZXY" },
+    { UFBX_ROTATION_ORDER_ZYX, "ZYX" },
+    { UFBX_ROTATION_ORDER_SPHERIC, "SPHERIC" },
+};
+
+static PyObject *DomValueType_Enum;
+static const EnumValue DomValueType_values[] = {
+    { UFBX_DOM_VALUE_NUMBER, "NUMBER" },
+    { UFBX_DOM_VALUE_STRING, "STRING" },
+    { UFBX_DOM_VALUE_BLOB, "BLOB" },
+    { UFBX_DOM_VALUE_ARRAY_I32, "ARRAY_I32" },
+    { UFBX_DOM_VALUE_ARRAY_I64, "ARRAY_I64" },
+    { UFBX_DOM_VALUE_ARRAY_F32, "ARRAY_F32" },
+    { UFBX_DOM_VALUE_ARRAY_F64, "ARRAY_F64" },
+    { UFBX_DOM_VALUE_ARRAY_BLOB, "ARRAY_BLOB" },
+    { UFBX_DOM_VALUE_ARRAY_IGNORED, "ARRAY_IGNORED" },
+};
+
+static PyObject *PropType_Enum;
+static const EnumValue PropType_values[] = {
+    { UFBX_PROP_UNKNOWN, "UNKNOWN" },
+    { UFBX_PROP_BOOLEAN, "BOOLEAN" },
+    { UFBX_PROP_INTEGER, "INTEGER" },
+    { UFBX_PROP_NUMBER, "NUMBER" },
+    { UFBX_PROP_VECTOR, "VECTOR" },
+    { UFBX_PROP_COLOR, "COLOR" },
+    { UFBX_PROP_COLOR_WITH_ALPHA, "COLOR_WITH_ALPHA" },
+    { UFBX_PROP_STRING, "STRING" },
+    { UFBX_PROP_DATE_TIME, "DATE_TIME" },
+    { UFBX_PROP_TRANSLATION, "TRANSLATION" },
+    { UFBX_PROP_ROTATION, "ROTATION" },
+    { UFBX_PROP_SCALING, "SCALING" },
+    { UFBX_PROP_DISTANCE, "DISTANCE" },
+    { UFBX_PROP_COMPOUND, "COMPOUND" },
+    { UFBX_PROP_BLOB, "BLOB" },
+    { UFBX_PROP_REFERENCE, "REFERENCE" },
+};
+
+static PyObject *PropFlags_Enum;
+static const EnumValue PropFlags_values[] = {
+    { UFBX_PROP_FLAG_ANIMATABLE, "ANIMATABLE" },
+    { UFBX_PROP_FLAG_USER_DEFINED, "USER_DEFINED" },
+    { UFBX_PROP_FLAG_HIDDEN, "HIDDEN" },
+    { UFBX_PROP_FLAG_LOCK_X, "LOCK_X" },
+    { UFBX_PROP_FLAG_LOCK_Y, "LOCK_Y" },
+    { UFBX_PROP_FLAG_LOCK_Z, "LOCK_Z" },
+    { UFBX_PROP_FLAG_LOCK_W, "LOCK_W" },
+    { UFBX_PROP_FLAG_MUTE_X, "MUTE_X" },
+    { UFBX_PROP_FLAG_MUTE_Y, "MUTE_Y" },
+    { UFBX_PROP_FLAG_MUTE_Z, "MUTE_Z" },
+    { UFBX_PROP_FLAG_MUTE_W, "MUTE_W" },
+    { UFBX_PROP_FLAG_SYNTHETIC, "SYNTHETIC" },
+    { UFBX_PROP_FLAG_ANIMATED, "ANIMATED" },
+    { UFBX_PROP_FLAG_NOT_FOUND, "NOT_FOUND" },
+    { UFBX_PROP_FLAG_CONNECTED, "CONNECTED" },
+    { UFBX_PROP_FLAG_NO_VALUE, "NO_VALUE" },
+    { UFBX_PROP_FLAG_OVERRIDDEN, "OVERRIDDEN" },
+    { UFBX_PROP_FLAG_VALUE_REAL, "VALUE_REAL" },
+    { UFBX_PROP_FLAG_VALUE_VEC2, "VALUE_VEC2" },
+    { UFBX_PROP_FLAG_VALUE_VEC3, "VALUE_VEC3" },
+    { UFBX_PROP_FLAG_VALUE_VEC4, "VALUE_VEC4" },
+    { UFBX_PROP_FLAG_VALUE_INT, "VALUE_INT" },
+    { UFBX_PROP_FLAG_VALUE_STR, "VALUE_STR" },
+    { UFBX_PROP_FLAG_VALUE_BLOB, "VALUE_BLOB" },
+};
+
+static PyObject *ElementType_Enum;
+static const EnumValue ElementType_values[] = {
+    { UFBX_ELEMENT_UNKNOWN, "UNKNOWN" },
+    { UFBX_ELEMENT_NODE, "NODE" },
+    { UFBX_ELEMENT_MESH, "MESH" },
+    { UFBX_ELEMENT_LIGHT, "LIGHT" },
+    { UFBX_ELEMENT_CAMERA, "CAMERA" },
+    { UFBX_ELEMENT_BONE, "BONE" },
+    { UFBX_ELEMENT_EMPTY, "EMPTY" },
+    { UFBX_ELEMENT_LINE_CURVE, "LINE_CURVE" },
+    { UFBX_ELEMENT_NURBS_CURVE, "NURBS_CURVE" },
+    { UFBX_ELEMENT_NURBS_SURFACE, "NURBS_SURFACE" },
+    { UFBX_ELEMENT_NURBS_TRIM_SURFACE, "NURBS_TRIM_SURFACE" },
+    { UFBX_ELEMENT_NURBS_TRIM_BOUNDARY, "NURBS_TRIM_BOUNDARY" },
+    { UFBX_ELEMENT_PROCEDURAL_GEOMETRY, "PROCEDURAL_GEOMETRY" },
+    { UFBX_ELEMENT_STEREO_CAMERA, "STEREO_CAMERA" },
+    { UFBX_ELEMENT_CAMERA_SWITCHER, "CAMERA_SWITCHER" },
+    { UFBX_ELEMENT_MARKER, "MARKER" },
+    { UFBX_ELEMENT_LOD_GROUP, "LOD_GROUP" },
+    { UFBX_ELEMENT_SKIN_DEFORMER, "SKIN_DEFORMER" },
+    { UFBX_ELEMENT_SKIN_CLUSTER, "SKIN_CLUSTER" },
+    { UFBX_ELEMENT_BLEND_DEFORMER, "BLEND_DEFORMER" },
+    { UFBX_ELEMENT_BLEND_CHANNEL, "BLEND_CHANNEL" },
+    { UFBX_ELEMENT_BLEND_SHAPE, "BLEND_SHAPE" },
+    { UFBX_ELEMENT_CACHE_DEFORMER, "CACHE_DEFORMER" },
+    { UFBX_ELEMENT_CACHE_FILE, "CACHE_FILE" },
+    { UFBX_ELEMENT_MATERIAL, "MATERIAL" },
+    { UFBX_ELEMENT_TEXTURE, "TEXTURE" },
+    { UFBX_ELEMENT_VIDEO, "VIDEO" },
+    { UFBX_ELEMENT_SHADER, "SHADER" },
+    { UFBX_ELEMENT_SHADER_BINDING, "SHADER_BINDING" },
+    { UFBX_ELEMENT_ANIM_STACK, "ANIM_STACK" },
+    { UFBX_ELEMENT_ANIM_LAYER, "ANIM_LAYER" },
+    { UFBX_ELEMENT_ANIM_VALUE, "ANIM_VALUE" },
+    { UFBX_ELEMENT_ANIM_CURVE, "ANIM_CURVE" },
+    { UFBX_ELEMENT_DISPLAY_LAYER, "DISPLAY_LAYER" },
+    { UFBX_ELEMENT_SELECTION_SET, "SELECTION_SET" },
+    { UFBX_ELEMENT_SELECTION_NODE, "SELECTION_NODE" },
+    { UFBX_ELEMENT_CHARACTER, "CHARACTER" },
+    { UFBX_ELEMENT_CONSTRAINT, "CONSTRAINT" },
+    { UFBX_ELEMENT_AUDIO_LAYER, "AUDIO_LAYER" },
+    { UFBX_ELEMENT_AUDIO_CLIP, "AUDIO_CLIP" },
+    { UFBX_ELEMENT_POSE, "POSE" },
+    { UFBX_ELEMENT_METADATA_OBJECT, "METADATA_OBJECT" },
+    { UFBX_ELEMENT_TYPE_FIRST_ATTRIB, "FIRST_ATTRIB" },
+    { UFBX_ELEMENT_TYPE_LAST_ATTRIB, "LAST_ATTRIB" },
+};
+
+static PyObject *InheritMode_Enum;
+static const EnumValue InheritMode_values[] = {
+    { UFBX_INHERIT_MODE_NORMAL, "NORMAL" },
+    { UFBX_INHERIT_MODE_IGNORE_PARENT_SCALE, "IGNORE_PARENT_SCALE" },
+    { UFBX_INHERIT_MODE_COMPONENTWISE_SCALE, "COMPONENTWISE_SCALE" },
+};
+
+static PyObject *MirrorAxis_Enum;
+static const EnumValue MirrorAxis_values[] = {
+    { UFBX_MIRROR_AXIS_NONE, "NONE" },
+    { UFBX_MIRROR_AXIS_X, "X" },
+    { UFBX_MIRROR_AXIS_Y, "Y" },
+    { UFBX_MIRROR_AXIS_Z, "Z" },
+};
+
+static PyObject *SubdivisionDisplayMode_Enum;
+static const EnumValue SubdivisionDisplayMode_values[] = {
+    { UFBX_SUBDIVISION_DISPLAY_DISABLED, "DISABLED" },
+    { UFBX_SUBDIVISION_DISPLAY_HULL, "HULL" },
+    { UFBX_SUBDIVISION_DISPLAY_HULL_AND_SMOOTH, "HULL_AND_SMOOTH" },
+    { UFBX_SUBDIVISION_DISPLAY_SMOOTH, "SMOOTH" },
+};
+
+static PyObject *SubdivisionBoundary_Enum;
+static const EnumValue SubdivisionBoundary_values[] = {
+    { UFBX_SUBDIVISION_BOUNDARY_DEFAULT, "DEFAULT" },
+    { UFBX_SUBDIVISION_BOUNDARY_LEGACY, "LEGACY" },
+    { UFBX_SUBDIVISION_BOUNDARY_SHARP_CORNERS, "SHARP_CORNERS" },
+    { UFBX_SUBDIVISION_BOUNDARY_SHARP_NONE, "SHARP_NONE" },
+    { UFBX_SUBDIVISION_BOUNDARY_SHARP_BOUNDARY, "SHARP_BOUNDARY" },
+    { UFBX_SUBDIVISION_BOUNDARY_SHARP_INTERIOR, "SHARP_INTERIOR" },
+};
+
+static PyObject *LightType_Enum;
+static const EnumValue LightType_values[] = {
+    { UFBX_LIGHT_POINT, "POINT" },
+    { UFBX_LIGHT_DIRECTIONAL, "DIRECTIONAL" },
+    { UFBX_LIGHT_SPOT, "SPOT" },
+    { UFBX_LIGHT_AREA, "AREA" },
+    { UFBX_LIGHT_VOLUME, "VOLUME" },
+};
+
+static PyObject *LightDecay_Enum;
+static const EnumValue LightDecay_values[] = {
+    { UFBX_LIGHT_DECAY_NONE, "NONE" },
+    { UFBX_LIGHT_DECAY_LINEAR, "LINEAR" },
+    { UFBX_LIGHT_DECAY_QUADRATIC, "QUADRATIC" },
+    { UFBX_LIGHT_DECAY_CUBIC, "CUBIC" },
+};
+
+static PyObject *LightAreaShape_Enum;
+static const EnumValue LightAreaShape_values[] = {
+    { UFBX_LIGHT_AREA_SHAPE_RECTANGLE, "RECTANGLE" },
+    { UFBX_LIGHT_AREA_SHAPE_SPHERE, "SPHERE" },
+};
+
+static PyObject *ProjectionMode_Enum;
+static const EnumValue ProjectionMode_values[] = {
+    { UFBX_PROJECTION_MODE_PERSPECTIVE, "PERSPECTIVE" },
+    { UFBX_PROJECTION_MODE_ORTHOGRAPHIC, "ORTHOGRAPHIC" },
+};
+
+static PyObject *AspectMode_Enum;
+static const EnumValue AspectMode_values[] = {
+    { UFBX_ASPECT_MODE_WINDOW_SIZE, "WINDOW_SIZE" },
+    { UFBX_ASPECT_MODE_FIXED_RATIO, "FIXED_RATIO" },
+    { UFBX_ASPECT_MODE_FIXED_RESOLUTION, "FIXED_RESOLUTION" },
+    { UFBX_ASPECT_MODE_FIXED_WIDTH, "FIXED_WIDTH" },
+    { UFBX_ASPECT_MODE_FIXED_HEIGHT, "FIXED_HEIGHT" },
+};
+
+static PyObject *ApertureMode_Enum;
+static const EnumValue ApertureMode_values[] = {
+    { UFBX_APERTURE_MODE_HORIZONTAL_AND_VERTICAL, "HORIZONTAL_AND_VERTICAL" },
+    { UFBX_APERTURE_MODE_HORIZONTAL, "HORIZONTAL" },
+    { UFBX_APERTURE_MODE_VERTICAL, "VERTICAL" },
+    { UFBX_APERTURE_MODE_FOCAL_LENGTH, "FOCAL_LENGTH" },
+};
+
+static PyObject *GateFit_Enum;
+static const EnumValue GateFit_values[] = {
+    { UFBX_GATE_FIT_NONE, "NONE" },
+    { UFBX_GATE_FIT_VERTICAL, "VERTICAL" },
+    { UFBX_GATE_FIT_HORIZONTAL, "HORIZONTAL" },
+    { UFBX_GATE_FIT_FILL, "FILL" },
+    { UFBX_GATE_FIT_OVERSCAN, "OVERSCAN" },
+    { UFBX_GATE_FIT_STRETCH, "STRETCH" },
+};
+
+static PyObject *ApertureFormat_Enum;
+static const EnumValue ApertureFormat_values[] = {
+    { UFBX_APERTURE_FORMAT_CUSTOM, "CUSTOM" },
+    { UFBX_APERTURE_FORMAT_16MM_THEATRICAL, "E16MM_THEATRICAL" },
+    { UFBX_APERTURE_FORMAT_SUPER_16MM, "SUPER_16MM" },
+    { UFBX_APERTURE_FORMAT_35MM_ACADEMY, "E35MM_ACADEMY" },
+    { UFBX_APERTURE_FORMAT_35MM_TV_PROJECTION, "E35MM_TV_PROJECTION" },
+    { UFBX_APERTURE_FORMAT_35MM_FULL_APERTURE, "E35MM_FULL_APERTURE" },
+    { UFBX_APERTURE_FORMAT_35MM_185_PROJECTION, "E35MM_185_PROJECTION" },
+    { UFBX_APERTURE_FORMAT_35MM_ANAMORPHIC, "E35MM_ANAMORPHIC" },
+    { UFBX_APERTURE_FORMAT_70MM_PROJECTION, "E70MM_PROJECTION" },
+    { UFBX_APERTURE_FORMAT_VISTAVISION, "VISTAVISION" },
+    { UFBX_APERTURE_FORMAT_DYNAVISION, "DYNAVISION" },
+    { UFBX_APERTURE_FORMAT_IMAX, "IMAX" },
+};
+
+static PyObject *CoordinateAxis_Enum;
+static const EnumValue CoordinateAxis_values[] = {
+    { UFBX_COORDINATE_AXIS_POSITIVE_X, "POSITIVE_X" },
+    { UFBX_COORDINATE_AXIS_NEGATIVE_X, "NEGATIVE_X" },
+    { UFBX_COORDINATE_AXIS_POSITIVE_Y, "POSITIVE_Y" },
+    { UFBX_COORDINATE_AXIS_NEGATIVE_Y, "NEGATIVE_Y" },
+    { UFBX_COORDINATE_AXIS_POSITIVE_Z, "POSITIVE_Z" },
+    { UFBX_COORDINATE_AXIS_NEGATIVE_Z, "NEGATIVE_Z" },
+    { UFBX_COORDINATE_AXIS_UNKNOWN, "UNKNOWN" },
+};
+
+static PyObject *NurbsTopology_Enum;
+static const EnumValue NurbsTopology_values[] = {
+    { UFBX_NURBS_TOPOLOGY_OPEN, "OPEN" },
+    { UFBX_NURBS_TOPOLOGY_PERIODIC, "PERIODIC" },
+    { UFBX_NURBS_TOPOLOGY_CLOSED, "CLOSED" },
+};
+
+static PyObject *MarkerType_Enum;
+static const EnumValue MarkerType_values[] = {
+    { UFBX_MARKER_UNKNOWN, "UNKNOWN" },
+    { UFBX_MARKER_FK_EFFECTOR, "FK_EFFECTOR" },
+    { UFBX_MARKER_IK_EFFECTOR, "IK_EFFECTOR" },
+};
+
+static PyObject *LodDisplay_Enum;
+static const EnumValue LodDisplay_values[] = {
+    { UFBX_LOD_DISPLAY_USE_LOD, "USE_LOD" },
+    { UFBX_LOD_DISPLAY_SHOW, "SHOW" },
+    { UFBX_LOD_DISPLAY_HIDE, "HIDE" },
+};
+
+static PyObject *SkinningMethod_Enum;
+static const EnumValue SkinningMethod_values[] = {
+    { UFBX_SKINNING_METHOD_LINEAR, "LINEAR" },
+    { UFBX_SKINNING_METHOD_RIGID, "RIGID" },
+    { UFBX_SKINNING_METHOD_DUAL_QUATERNION, "DUAL_QUATERNION" },
+    { UFBX_SKINNING_METHOD_BLENDED_DQ_LINEAR, "BLENDED_DQ_LINEAR" },
+};
+
+static PyObject *CacheFileFormat_Enum;
+static const EnumValue CacheFileFormat_values[] = {
+    { UFBX_CACHE_FILE_FORMAT_UNKNOWN, "UNKNOWN" },
+    { UFBX_CACHE_FILE_FORMAT_PC2, "PC2" },
+    { UFBX_CACHE_FILE_FORMAT_MC, "MC" },
+};
+
+static PyObject *CacheDataFormat_Enum;
+static const EnumValue CacheDataFormat_values[] = {
+    { UFBX_CACHE_DATA_FORMAT_UNKNOWN, "UNKNOWN" },
+    { UFBX_CACHE_DATA_FORMAT_REAL_FLOAT, "REAL_FLOAT" },
+    { UFBX_CACHE_DATA_FORMAT_VEC3_FLOAT, "VEC3_FLOAT" },
+    { UFBX_CACHE_DATA_FORMAT_REAL_DOUBLE, "REAL_DOUBLE" },
+    { UFBX_CACHE_DATA_FORMAT_VEC3_DOUBLE, "VEC3_DOUBLE" },
+};
+
+static PyObject *CacheDataEncoding_Enum;
+static const EnumValue CacheDataEncoding_values[] = {
+    { UFBX_CACHE_DATA_ENCODING_UNKNOWN, "UNKNOWN" },
+    { UFBX_CACHE_DATA_ENCODING_LITTLE_ENDIAN, "LITTLE_ENDIAN" },
+    { UFBX_CACHE_DATA_ENCODING_BIG_ENDIAN, "BIG_ENDIAN" },
+};
+
+static PyObject *CacheInterpretation_Enum;
+static const EnumValue CacheInterpretation_values[] = {
+    { UFBX_CACHE_INTERPRETATION_UNKNOWN, "UNKNOWN" },
+    { UFBX_CACHE_INTERPRETATION_POINTS, "POINTS" },
+    { UFBX_CACHE_INTERPRETATION_VERTEX_POSITION, "VERTEX_POSITION" },
+    { UFBX_CACHE_INTERPRETATION_VERTEX_NORMAL, "VERTEX_NORMAL" },
+};
+
+static PyObject *ShaderType_Enum;
+static const EnumValue ShaderType_values[] = {
+    { UFBX_SHADER_UNKNOWN, "UNKNOWN" },
+    { UFBX_SHADER_FBX_LAMBERT, "FBX_LAMBERT" },
+    { UFBX_SHADER_FBX_PHONG, "FBX_PHONG" },
+    { UFBX_SHADER_OSL_STANDARD_SURFACE, "OSL_STANDARD_SURFACE" },
+    { UFBX_SHADER_ARNOLD_STANDARD_SURFACE, "ARNOLD_STANDARD_SURFACE" },
+    { UFBX_SHADER_3DS_MAX_PHYSICAL_MATERIAL, "E3DS_MAX_PHYSICAL_MATERIAL" },
+    { UFBX_SHADER_3DS_MAX_PBR_METAL_ROUGH, "E3DS_MAX_PBR_METAL_ROUGH" },
+    { UFBX_SHADER_3DS_MAX_PBR_SPEC_GLOSS, "E3DS_MAX_PBR_SPEC_GLOSS" },
+    { UFBX_SHADER_GLTF_MATERIAL, "GLTF_MATERIAL" },
+    { UFBX_SHADER_OPENPBR_MATERIAL, "OPENPBR_MATERIAL" },
+    { UFBX_SHADER_SHADERFX_GRAPH, "SHADERFX_GRAPH" },
+    { UFBX_SHADER_BLENDER_PHONG, "BLENDER_PHONG" },
+    { UFBX_SHADER_WAVEFRONT_MTL, "WAVEFRONT_MTL" },
+};
+
+static PyObject *MaterialFbxMap_Enum;
+static const EnumValue MaterialFbxMap_values[] = {
+    { UFBX_MATERIAL_FBX_DIFFUSE_FACTOR, "DIFFUSE_FACTOR" },
+    { UFBX_MATERIAL_FBX_DIFFUSE_COLOR, "DIFFUSE_COLOR" },
+    { UFBX_MATERIAL_FBX_SPECULAR_FACTOR, "SPECULAR_FACTOR" },
+    { UFBX_MATERIAL_FBX_SPECULAR_COLOR, "SPECULAR_COLOR" },
+    { UFBX_MATERIAL_FBX_SPECULAR_EXPONENT, "SPECULAR_EXPONENT" },
+    { UFBX_MATERIAL_FBX_REFLECTION_FACTOR, "REFLECTION_FACTOR" },
+    { UFBX_MATERIAL_FBX_REFLECTION_COLOR, "REFLECTION_COLOR" },
+    { UFBX_MATERIAL_FBX_TRANSPARENCY_FACTOR, "TRANSPARENCY_FACTOR" },
+    { UFBX_MATERIAL_FBX_TRANSPARENCY_COLOR, "TRANSPARENCY_COLOR" },
+    { UFBX_MATERIAL_FBX_EMISSION_FACTOR, "EMISSION_FACTOR" },
+    { UFBX_MATERIAL_FBX_EMISSION_COLOR, "EMISSION_COLOR" },
+    { UFBX_MATERIAL_FBX_AMBIENT_FACTOR, "AMBIENT_FACTOR" },
+    { UFBX_MATERIAL_FBX_AMBIENT_COLOR, "AMBIENT_COLOR" },
+    { UFBX_MATERIAL_FBX_NORMAL_MAP, "NORMAL_MAP" },
+    { UFBX_MATERIAL_FBX_BUMP, "BUMP" },
+    { UFBX_MATERIAL_FBX_BUMP_FACTOR, "BUMP_FACTOR" },
+    { UFBX_MATERIAL_FBX_DISPLACEMENT_FACTOR, "DISPLACEMENT_FACTOR" },
+    { UFBX_MATERIAL_FBX_DISPLACEMENT, "DISPLACEMENT" },
+    { UFBX_MATERIAL_FBX_VECTOR_DISPLACEMENT_FACTOR, "VECTOR_DISPLACEMENT_FACTOR" },
+    { UFBX_MATERIAL_FBX_VECTOR_DISPLACEMENT, "VECTOR_DISPLACEMENT" },
+};
+
+static PyObject *MaterialPbrMap_Enum;
+static const EnumValue MaterialPbrMap_values[] = {
+    { UFBX_MATERIAL_PBR_BASE_FACTOR, "BASE_FACTOR" },
+    { UFBX_MATERIAL_PBR_BASE_COLOR, "BASE_COLOR" },
+    { UFBX_MATERIAL_PBR_ROUGHNESS, "ROUGHNESS" },
+    { UFBX_MATERIAL_PBR_METALNESS, "METALNESS" },
+    { UFBX_MATERIAL_PBR_DIFFUSE_ROUGHNESS, "DIFFUSE_ROUGHNESS" },
+    { UFBX_MATERIAL_PBR_SPECULAR_FACTOR, "SPECULAR_FACTOR" },
+    { UFBX_MATERIAL_PBR_SPECULAR_COLOR, "SPECULAR_COLOR" },
+    { UFBX_MATERIAL_PBR_SPECULAR_IOR, "SPECULAR_IOR" },
+    { UFBX_MATERIAL_PBR_SPECULAR_ANISOTROPY, "SPECULAR_ANISOTROPY" },
+    { UFBX_MATERIAL_PBR_SPECULAR_ROTATION, "SPECULAR_ROTATION" },
+    { UFBX_MATERIAL_PBR_TRANSMISSION_FACTOR, "TRANSMISSION_FACTOR" },
+    { UFBX_MATERIAL_PBR_TRANSMISSION_COLOR, "TRANSMISSION_COLOR" },
+    { UFBX_MATERIAL_PBR_TRANSMISSION_DEPTH, "TRANSMISSION_DEPTH" },
+    { UFBX_MATERIAL_PBR_TRANSMISSION_SCATTER, "TRANSMISSION_SCATTER" },
+    { UFBX_MATERIAL_PBR_TRANSMISSION_SCATTER_ANISOTROPY, "TRANSMISSION_SCATTER_ANISOTROPY" },
+    { UFBX_MATERIAL_PBR_TRANSMISSION_DISPERSION, "TRANSMISSION_DISPERSION" },
+    { UFBX_MATERIAL_PBR_TRANSMISSION_ROUGHNESS, "TRANSMISSION_ROUGHNESS" },
+    { UFBX_MATERIAL_PBR_TRANSMISSION_EXTRA_ROUGHNESS, "TRANSMISSION_EXTRA_ROUGHNESS" },
+    { UFBX_MATERIAL_PBR_TRANSMISSION_PRIORITY, "TRANSMISSION_PRIORITY" },
+    { UFBX_MATERIAL_PBR_TRANSMISSION_ENABLE_IN_AOV, "TRANSMISSION_ENABLE_IN_AOV" },
+    { UFBX_MATERIAL_PBR_SUBSURFACE_FACTOR, "SUBSURFACE_FACTOR" },
+    { UFBX_MATERIAL_PBR_SUBSURFACE_COLOR, "SUBSURFACE_COLOR" },
+    { UFBX_MATERIAL_PBR_SUBSURFACE_RADIUS, "SUBSURFACE_RADIUS" },
+    { UFBX_MATERIAL_PBR_SUBSURFACE_SCALE, "SUBSURFACE_SCALE" },
+    { UFBX_MATERIAL_PBR_SUBSURFACE_ANISOTROPY, "SUBSURFACE_ANISOTROPY" },
+    { UFBX_MATERIAL_PBR_SUBSURFACE_TINT_COLOR, "SUBSURFACE_TINT_COLOR" },
+    { UFBX_MATERIAL_PBR_SUBSURFACE_TYPE, "SUBSURFACE_TYPE" },
+    { UFBX_MATERIAL_PBR_SHEEN_FACTOR, "SHEEN_FACTOR" },
+    { UFBX_MATERIAL_PBR_SHEEN_COLOR, "SHEEN_COLOR" },
+    { UFBX_MATERIAL_PBR_SHEEN_ROUGHNESS, "SHEEN_ROUGHNESS" },
+    { UFBX_MATERIAL_PBR_COAT_FACTOR, "COAT_FACTOR" },
+    { UFBX_MATERIAL_PBR_COAT_COLOR, "COAT_COLOR" },
+    { UFBX_MATERIAL_PBR_COAT_ROUGHNESS, "COAT_ROUGHNESS" },
+    { UFBX_MATERIAL_PBR_COAT_IOR, "COAT_IOR" },
+    { UFBX_MATERIAL_PBR_COAT_ANISOTROPY, "COAT_ANISOTROPY" },
+    { UFBX_MATERIAL_PBR_COAT_ROTATION, "COAT_ROTATION" },
+    { UFBX_MATERIAL_PBR_COAT_NORMAL, "COAT_NORMAL" },
+    { UFBX_MATERIAL_PBR_COAT_AFFECT_BASE_COLOR, "COAT_AFFECT_BASE_COLOR" },
+    { UFBX_MATERIAL_PBR_COAT_AFFECT_BASE_ROUGHNESS, "COAT_AFFECT_BASE_ROUGHNESS" },
+    { UFBX_MATERIAL_PBR_THIN_FILM_FACTOR, "THIN_FILM_FACTOR" },
+    { UFBX_MATERIAL_PBR_THIN_FILM_THICKNESS, "THIN_FILM_THICKNESS" },
+    { UFBX_MATERIAL_PBR_THIN_FILM_IOR, "THIN_FILM_IOR" },
+    { UFBX_MATERIAL_PBR_EMISSION_FACTOR, "EMISSION_FACTOR" },
+    { UFBX_MATERIAL_PBR_EMISSION_COLOR, "EMISSION_COLOR" },
+    { UFBX_MATERIAL_PBR_OPACITY, "OPACITY" },
+    { UFBX_MATERIAL_PBR_INDIRECT_DIFFUSE, "INDIRECT_DIFFUSE" },
+    { UFBX_MATERIAL_PBR_INDIRECT_SPECULAR, "INDIRECT_SPECULAR" },
+    { UFBX_MATERIAL_PBR_NORMAL_MAP, "NORMAL_MAP" },
+    { UFBX_MATERIAL_PBR_TANGENT_MAP, "TANGENT_MAP" },
+    { UFBX_MATERIAL_PBR_DISPLACEMENT_MAP, "DISPLACEMENT_MAP" },
+    { UFBX_MATERIAL_PBR_MATTE_FACTOR, "MATTE_FACTOR" },
+    { UFBX_MATERIAL_PBR_MATTE_COLOR, "MATTE_COLOR" },
+    { UFBX_MATERIAL_PBR_AMBIENT_OCCLUSION, "AMBIENT_OCCLUSION" },
+    { UFBX_MATERIAL_PBR_GLOSSINESS, "GLOSSINESS" },
+    { UFBX_MATERIAL_PBR_COAT_GLOSSINESS, "COAT_GLOSSINESS" },
+    { UFBX_MATERIAL_PBR_TRANSMISSION_GLOSSINESS, "TRANSMISSION_GLOSSINESS" },
+};
+
+static PyObject *MaterialFeature_Enum;
+static const EnumValue MaterialFeature_values[] = {
+    { UFBX_MATERIAL_FEATURE_PBR, "PBR" },
+    { UFBX_MATERIAL_FEATURE_METALNESS, "METALNESS" },
+    { UFBX_MATERIAL_FEATURE_DIFFUSE, "DIFFUSE" },
+    { UFBX_MATERIAL_FEATURE_SPECULAR, "SPECULAR" },
+    { UFBX_MATERIAL_FEATURE_EMISSION, "EMISSION" },
+    { UFBX_MATERIAL_FEATURE_TRANSMISSION, "TRANSMISSION" },
+    { UFBX_MATERIAL_FEATURE_COAT, "COAT" },
+    { UFBX_MATERIAL_FEATURE_SHEEN, "SHEEN" },
+    { UFBX_MATERIAL_FEATURE_OPACITY, "OPACITY" },
+    { UFBX_MATERIAL_FEATURE_AMBIENT_OCCLUSION, "AMBIENT_OCCLUSION" },
+    { UFBX_MATERIAL_FEATURE_MATTE, "MATTE" },
+    { UFBX_MATERIAL_FEATURE_UNLIT, "UNLIT" },
+    { UFBX_MATERIAL_FEATURE_IOR, "IOR" },
+    { UFBX_MATERIAL_FEATURE_DIFFUSE_ROUGHNESS, "DIFFUSE_ROUGHNESS" },
+    { UFBX_MATERIAL_FEATURE_TRANSMISSION_ROUGHNESS, "TRANSMISSION_ROUGHNESS" },
+    { UFBX_MATERIAL_FEATURE_THIN_WALLED, "THIN_WALLED" },
+    { UFBX_MATERIAL_FEATURE_CAUSTICS, "CAUSTICS" },
+    { UFBX_MATERIAL_FEATURE_EXIT_TO_BACKGROUND, "EXIT_TO_BACKGROUND" },
+    { UFBX_MATERIAL_FEATURE_INTERNAL_REFLECTIONS, "INTERNAL_REFLECTIONS" },
+    { UFBX_MATERIAL_FEATURE_DOUBLE_SIDED, "DOUBLE_SIDED" },
+    { UFBX_MATERIAL_FEATURE_ROUGHNESS_AS_GLOSSINESS, "ROUGHNESS_AS_GLOSSINESS" },
+    { UFBX_MATERIAL_FEATURE_COAT_ROUGHNESS_AS_GLOSSINESS, "COAT_ROUGHNESS_AS_GLOSSINESS" },
+    { UFBX_MATERIAL_FEATURE_TRANSMISSION_ROUGHNESS_AS_GLOSSINESS, "TRANSMISSION_ROUGHNESS_AS_GLOSSINESS" },
+};
+
+static PyObject *TextureType_Enum;
+static const EnumValue TextureType_values[] = {
+    { UFBX_TEXTURE_FILE, "FILE" },
+    { UFBX_TEXTURE_LAYERED, "LAYERED" },
+    { UFBX_TEXTURE_PROCEDURAL, "PROCEDURAL" },
+    { UFBX_TEXTURE_SHADER, "SHADER" },
+};
+
+static PyObject *BlendMode_Enum;
+static const EnumValue BlendMode_values[] = {
+    { UFBX_BLEND_TRANSLUCENT, "TRANSLUCENT" },
+    { UFBX_BLEND_ADDITIVE, "ADDITIVE" },
+    { UFBX_BLEND_MULTIPLY, "MULTIPLY" },
+    { UFBX_BLEND_MULTIPLY_2X, "MULTIPLY_2X" },
+    { UFBX_BLEND_OVER, "OVER" },
+    { UFBX_BLEND_REPLACE, "REPLACE" },
+    { UFBX_BLEND_DISSOLVE, "DISSOLVE" },
+    { UFBX_BLEND_DARKEN, "DARKEN" },
+    { UFBX_BLEND_COLOR_BURN, "COLOR_BURN" },
+    { UFBX_BLEND_LINEAR_BURN, "LINEAR_BURN" },
+    { UFBX_BLEND_DARKER_COLOR, "DARKER_COLOR" },
+    { UFBX_BLEND_LIGHTEN, "LIGHTEN" },
+    { UFBX_BLEND_SCREEN, "SCREEN" },
+    { UFBX_BLEND_COLOR_DODGE, "COLOR_DODGE" },
+    { UFBX_BLEND_LINEAR_DODGE, "LINEAR_DODGE" },
+    { UFBX_BLEND_LIGHTER_COLOR, "LIGHTER_COLOR" },
+    { UFBX_BLEND_SOFT_LIGHT, "SOFT_LIGHT" },
+    { UFBX_BLEND_HARD_LIGHT, "HARD_LIGHT" },
+    { UFBX_BLEND_VIVID_LIGHT, "VIVID_LIGHT" },
+    { UFBX_BLEND_LINEAR_LIGHT, "LINEAR_LIGHT" },
+    { UFBX_BLEND_PIN_LIGHT, "PIN_LIGHT" },
+    { UFBX_BLEND_HARD_MIX, "HARD_MIX" },
+    { UFBX_BLEND_DIFFERENCE, "DIFFERENCE" },
+    { UFBX_BLEND_EXCLUSION, "EXCLUSION" },
+    { UFBX_BLEND_SUBTRACT, "SUBTRACT" },
+    { UFBX_BLEND_DIVIDE, "DIVIDE" },
+    { UFBX_BLEND_HUE, "HUE" },
+    { UFBX_BLEND_SATURATION, "SATURATION" },
+    { UFBX_BLEND_COLOR, "COLOR" },
+    { UFBX_BLEND_LUMINOSITY, "LUMINOSITY" },
+    { UFBX_BLEND_OVERLAY, "OVERLAY" },
+};
+
+static PyObject *WrapMode_Enum;
+static const EnumValue WrapMode_values[] = {
+    { UFBX_WRAP_REPEAT, "REPEAT" },
+    { UFBX_WRAP_CLAMP, "CLAMP" },
+};
+
+static PyObject *ShaderTextureType_Enum;
+static const EnumValue ShaderTextureType_values[] = {
+    { UFBX_SHADER_TEXTURE_UNKNOWN, "UNKNOWN" },
+    { UFBX_SHADER_TEXTURE_SELECT_OUTPUT, "SELECT_OUTPUT" },
+    { UFBX_SHADER_TEXTURE_OSL, "OSL" },
+};
+
+static PyObject *Interpolation_Enum;
+static const EnumValue Interpolation_values[] = {
+    { UFBX_INTERPOLATION_CONSTANT_PREV, "CONSTANT_PREV" },
+    { UFBX_INTERPOLATION_CONSTANT_NEXT, "CONSTANT_NEXT" },
+    { UFBX_INTERPOLATION_LINEAR, "LINEAR" },
+    { UFBX_INTERPOLATION_CUBIC, "CUBIC" },
+};
+
+static PyObject *ExtrapolationMode_Enum;
+static const EnumValue ExtrapolationMode_values[] = {
+    { UFBX_EXTRAPOLATION_CONSTANT, "CONSTANT" },
+    { UFBX_EXTRAPOLATION_REPEAT, "REPEAT" },
+    { UFBX_EXTRAPOLATION_MIRROR, "MIRROR" },
+    { UFBX_EXTRAPOLATION_SLOPE, "SLOPE" },
+    { UFBX_EXTRAPOLATION_REPEAT_RELATIVE, "REPEAT_RELATIVE" },
+};
+
+static PyObject *ConstraintType_Enum;
+static const EnumValue ConstraintType_values[] = {
+    { UFBX_CONSTRAINT_UNKNOWN, "UNKNOWN" },
+    { UFBX_CONSTRAINT_AIM, "AIM" },
+    { UFBX_CONSTRAINT_PARENT, "PARENT" },
+    { UFBX_CONSTRAINT_POSITION, "POSITION" },
+    { UFBX_CONSTRAINT_ROTATION, "ROTATION" },
+    { UFBX_CONSTRAINT_SCALE, "SCALE" },
+    { UFBX_CONSTRAINT_SINGLE_CHAIN_IK, "SINGLE_CHAIN_IK" },
+};
+
+static PyObject *ConstraintAimUpType_Enum;
+static const EnumValue ConstraintAimUpType_values[] = {
+    { UFBX_CONSTRAINT_AIM_UP_SCENE, "SCENE" },
+    { UFBX_CONSTRAINT_AIM_UP_TO_NODE, "TO_NODE" },
+    { UFBX_CONSTRAINT_AIM_UP_ALIGN_NODE, "ALIGN_NODE" },
+    { UFBX_CONSTRAINT_AIM_UP_VECTOR, "VECTOR" },
+    { UFBX_CONSTRAINT_AIM_UP_NONE, "NONE" },
+};
+
+static PyObject *ConstraintIkPoleType_Enum;
+static const EnumValue ConstraintIkPoleType_values[] = {
+    { UFBX_CONSTRAINT_IK_POLE_VECTOR, "VECTOR" },
+    { UFBX_CONSTRAINT_IK_POLE_NODE, "NODE" },
+};
+
+static PyObject *Exporter_Enum;
+static const EnumValue Exporter_values[] = {
+    { UFBX_EXPORTER_UNKNOWN, "UNKNOWN" },
+    { UFBX_EXPORTER_FBX_SDK, "FBX_SDK" },
+    { UFBX_EXPORTER_BLENDER_BINARY, "BLENDER_BINARY" },
+    { UFBX_EXPORTER_BLENDER_ASCII, "BLENDER_ASCII" },
+    { UFBX_EXPORTER_MOTION_BUILDER, "MOTION_BUILDER" },
+};
+
+static PyObject *FileFormat_Enum;
+static const EnumValue FileFormat_values[] = {
+    { UFBX_FILE_FORMAT_UNKNOWN, "UNKNOWN" },
+    { UFBX_FILE_FORMAT_FBX, "FBX" },
+    { UFBX_FILE_FORMAT_OBJ, "OBJ" },
+    { UFBX_FILE_FORMAT_MTL, "MTL" },
+};
+
+static PyObject *WarningType_Enum;
+static const EnumValue WarningType_values[] = {
+    { UFBX_WARNING_MISSING_EXTERNAL_FILE, "MISSING_EXTERNAL_FILE" },
+    { UFBX_WARNING_IMPLICIT_MTL, "IMPLICIT_MTL" },
+    { UFBX_WARNING_TRUNCATED_ARRAY, "TRUNCATED_ARRAY" },
+    { UFBX_WARNING_MISSING_GEOMETRY_DATA, "MISSING_GEOMETRY_DATA" },
+    { UFBX_WARNING_DUPLICATE_CONNECTION, "DUPLICATE_CONNECTION" },
+    { UFBX_WARNING_BAD_VERTEX_W_ATTRIBUTE, "BAD_VERTEX_W_ATTRIBUTE" },
+    { UFBX_WARNING_MISSING_POLYGON_MAPPING, "MISSING_POLYGON_MAPPING" },
+    { UFBX_WARNING_UNSUPPORTED_VERSION, "UNSUPPORTED_VERSION" },
+    { UFBX_WARNING_INDEX_CLAMPED, "INDEX_CLAMPED" },
+    { UFBX_WARNING_BAD_UNICODE, "BAD_UNICODE" },
+    { UFBX_WARNING_BAD_BASE64_CONTENT, "BAD_BASE64_CONTENT" },
+    { UFBX_WARNING_BAD_ELEMENT_CONNECTED_TO_ROOT, "BAD_ELEMENT_CONNECTED_TO_ROOT" },
+    { UFBX_WARNING_DUPLICATE_OBJECT_ID, "DUPLICATE_OBJECT_ID" },
+    { UFBX_WARNING_EMPTY_FACE_REMOVED, "EMPTY_FACE_REMOVED" },
+    { UFBX_WARNING_UNKNOWN_OBJ_DIRECTIVE, "UNKNOWN_OBJ_DIRECTIVE" },
+    { UFBX_WARNING_TYPE_FIRST_DEDUPLICATED, "FIRST_DEDUPLICATED" },
+};
+
+static PyObject *ThumbnailFormat_Enum;
+static const EnumValue ThumbnailFormat_values[] = {
+    { UFBX_THUMBNAIL_FORMAT_UNKNOWN, "UNKNOWN" },
+    { UFBX_THUMBNAIL_FORMAT_RGB_24, "RGB_24" },
+    { UFBX_THUMBNAIL_FORMAT_RGBA_32, "RGBA_32" },
+};
+
+static PyObject *SpaceConversion_Enum;
+static const EnumValue SpaceConversion_values[] = {
+    { UFBX_SPACE_CONVERSION_TRANSFORM_ROOT, "TRANSFORM_ROOT" },
+    { UFBX_SPACE_CONVERSION_ADJUST_TRANSFORMS, "ADJUST_TRANSFORMS" },
+    { UFBX_SPACE_CONVERSION_MODIFY_GEOMETRY, "MODIFY_GEOMETRY" },
+};
+
+static PyObject *GeometryTransformHandling_Enum;
+static const EnumValue GeometryTransformHandling_values[] = {
+    { UFBX_GEOMETRY_TRANSFORM_HANDLING_PRESERVE, "PRESERVE" },
+    { UFBX_GEOMETRY_TRANSFORM_HANDLING_HELPER_NODES, "HELPER_NODES" },
+    { UFBX_GEOMETRY_TRANSFORM_HANDLING_MODIFY_GEOMETRY, "MODIFY_GEOMETRY" },
+    { UFBX_GEOMETRY_TRANSFORM_HANDLING_MODIFY_GEOMETRY_NO_FALLBACK, "MODIFY_GEOMETRY_NO_FALLBACK" },
+};
+
+static PyObject *InheritModeHandling_Enum;
+static const EnumValue InheritModeHandling_values[] = {
+    { UFBX_INHERIT_MODE_HANDLING_PRESERVE, "PRESERVE" },
+    { UFBX_INHERIT_MODE_HANDLING_HELPER_NODES, "HELPER_NODES" },
+    { UFBX_INHERIT_MODE_HANDLING_COMPENSATE, "COMPENSATE" },
+    { UFBX_INHERIT_MODE_HANDLING_COMPENSATE_NO_FALLBACK, "COMPENSATE_NO_FALLBACK" },
+    { UFBX_INHERIT_MODE_HANDLING_IGNORE, "IGNORE" },
+};
+
+static PyObject *PivotHandling_Enum;
+static const EnumValue PivotHandling_values[] = {
+    { UFBX_PIVOT_HANDLING_RETAIN, "RETAIN" },
+    { UFBX_PIVOT_HANDLING_ADJUST_TO_PIVOT, "ADJUST_TO_PIVOT" },
+    { UFBX_PIVOT_HANDLING_ADJUST_TO_ROTATION_PIVOT, "ADJUST_TO_ROTATION_PIVOT" },
+};
+
+static PyObject *TimeMode_Enum;
+static const EnumValue TimeMode_values[] = {
+    { UFBX_TIME_MODE_DEFAULT, "DEFAULT" },
+    { UFBX_TIME_MODE_120_FPS, "E120_FPS" },
+    { UFBX_TIME_MODE_100_FPS, "E100_FPS" },
+    { UFBX_TIME_MODE_60_FPS, "E60_FPS" },
+    { UFBX_TIME_MODE_50_FPS, "E50_FPS" },
+    { UFBX_TIME_MODE_48_FPS, "E48_FPS" },
+    { UFBX_TIME_MODE_30_FPS, "E30_FPS" },
+    { UFBX_TIME_MODE_30_FPS_DROP, "E30_FPS_DROP" },
+    { UFBX_TIME_MODE_NTSC_DROP_FRAME, "NTSC_DROP_FRAME" },
+    { UFBX_TIME_MODE_NTSC_FULL_FRAME, "NTSC_FULL_FRAME" },
+    { UFBX_TIME_MODE_PAL, "PAL" },
+    { UFBX_TIME_MODE_24_FPS, "E24_FPS" },
+    { UFBX_TIME_MODE_1000_FPS, "E1000_FPS" },
+    { UFBX_TIME_MODE_FILM_FULL_FRAME, "FILM_FULL_FRAME" },
+    { UFBX_TIME_MODE_CUSTOM, "CUSTOM" },
+    { UFBX_TIME_MODE_96_FPS, "E96_FPS" },
+    { UFBX_TIME_MODE_72_FPS, "E72_FPS" },
+    { UFBX_TIME_MODE_59_94_FPS, "E59_94_FPS" },
+};
+
+static PyObject *TimeProtocol_Enum;
+static const EnumValue TimeProtocol_values[] = {
+    { UFBX_TIME_PROTOCOL_SMPTE, "SMPTE" },
+    { UFBX_TIME_PROTOCOL_FRAME_COUNT, "FRAME_COUNT" },
+    { UFBX_TIME_PROTOCOL_DEFAULT, "DEFAULT" },
+};
+
+static PyObject *SnapMode_Enum;
+static const EnumValue SnapMode_values[] = {
+    { UFBX_SNAP_MODE_NONE, "NONE" },
+    { UFBX_SNAP_MODE_SNAP, "SNAP" },
+    { UFBX_SNAP_MODE_PLAY, "PLAY" },
+    { UFBX_SNAP_MODE_SNAP_AND_PLAY, "SNAP_AND_PLAY" },
+};
+
+static PyObject *TopoFlags_Enum;
+static const EnumValue TopoFlags_values[] = {
+    { UFBX_TOPO_NON_MANIFOLD, "NON_MANIFOLD" },
+};
+
+static PyObject *OpenFileType_Enum;
+static const EnumValue OpenFileType_values[] = {
+    { UFBX_OPEN_FILE_MAIN_MODEL, "MAIN_MODEL" },
+    { UFBX_OPEN_FILE_GEOMETRY_CACHE, "GEOMETRY_CACHE" },
+    { UFBX_OPEN_FILE_OBJ_MTL, "OBJ_MTL" },
+};
+
+static PyObject *ErrorType_Enum;
+static const EnumValue ErrorType_values[] = {
+    { UFBX_ERROR_NONE, "NONE" },
+    { UFBX_ERROR_UNKNOWN, "UNKNOWN" },
+    { UFBX_ERROR_FILE_NOT_FOUND, "FILE_NOT_FOUND" },
+    { UFBX_ERROR_EMPTY_FILE, "EMPTY_FILE" },
+    { UFBX_ERROR_EXTERNAL_FILE_NOT_FOUND, "EXTERNAL_FILE_NOT_FOUND" },
+    { UFBX_ERROR_OUT_OF_MEMORY, "OUT_OF_MEMORY" },
+    { UFBX_ERROR_MEMORY_LIMIT, "MEMORY_LIMIT" },
+    { UFBX_ERROR_ALLOCATION_LIMIT, "ALLOCATION_LIMIT" },
+    { UFBX_ERROR_TRUNCATED_FILE, "TRUNCATED_FILE" },
+    { UFBX_ERROR_IO, "IO" },
+    { UFBX_ERROR_CANCELLED, "CANCELLED" },
+    { UFBX_ERROR_UNRECOGNIZED_FILE_FORMAT, "UNRECOGNIZED_FILE_FORMAT" },
+    { UFBX_ERROR_UNINITIALIZED_OPTIONS, "UNINITIALIZED_OPTIONS" },
+    { UFBX_ERROR_ZERO_VERTEX_SIZE, "ZERO_VERTEX_SIZE" },
+    { UFBX_ERROR_TRUNCATED_VERTEX_STREAM, "TRUNCATED_VERTEX_STREAM" },
+    { UFBX_ERROR_INVALID_UTF8, "INVALID_UTF8" },
+    { UFBX_ERROR_FEATURE_DISABLED, "FEATURE_DISABLED" },
+    { UFBX_ERROR_BAD_NURBS, "BAD_NURBS" },
+    { UFBX_ERROR_BAD_INDEX, "BAD_INDEX" },
+    { UFBX_ERROR_NODE_DEPTH_LIMIT, "NODE_DEPTH_LIMIT" },
+    { UFBX_ERROR_THREADED_ASCII_PARSE, "THREADED_ASCII_PARSE" },
+    { UFBX_ERROR_UNSAFE_OPTIONS, "UNSAFE_OPTIONS" },
+    { UFBX_ERROR_DUPLICATE_OVERRIDE, "DUPLICATE_OVERRIDE" },
+    { UFBX_ERROR_UNSUPPORTED_VERSION, "UNSUPPORTED_VERSION" },
+};
+
+static PyObject *ProgressResult_Enum;
+static const EnumValue ProgressResult_values[] = {
+    { UFBX_PROGRESS_CONTINUE, "CONTINUE" },
+    { UFBX_PROGRESS_CANCEL, "CANCEL" },
+};
+
+static PyObject *IndexErrorHandling_Enum;
+static const EnumValue IndexErrorHandling_values[] = {
+    { UFBX_INDEX_ERROR_HANDLING_CLAMP, "CLAMP" },
+    { UFBX_INDEX_ERROR_HANDLING_NO_INDEX, "NO_INDEX" },
+    { UFBX_INDEX_ERROR_HANDLING_ABORT_LOADING, "ABORT_LOADING" },
+    { UFBX_INDEX_ERROR_HANDLING_UNSAFE_IGNORE, "UNSAFE_IGNORE" },
+};
+
+static PyObject *UnicodeErrorHandling_Enum;
+static const EnumValue UnicodeErrorHandling_values[] = {
+    { UFBX_UNICODE_ERROR_HANDLING_REPLACEMENT_CHARACTER, "REPLACEMENT_CHARACTER" },
+    { UFBX_UNICODE_ERROR_HANDLING_UNDERSCORE, "UNDERSCORE" },
+    { UFBX_UNICODE_ERROR_HANDLING_QUESTION_MARK, "QUESTION_MARK" },
+    { UFBX_UNICODE_ERROR_HANDLING_REMOVE, "REMOVE" },
+    { UFBX_UNICODE_ERROR_HANDLING_ABORT_LOADING, "ABORT_LOADING" },
+    { UFBX_UNICODE_ERROR_HANDLING_UNSAFE_IGNORE, "UNSAFE_IGNORE" },
+};
+
+static PyObject *BakedKeyFlags_Enum;
+static const EnumValue BakedKeyFlags_values[] = {
+    { UFBX_BAKED_KEY_STEP_LEFT, "STEP_LEFT" },
+    { UFBX_BAKED_KEY_STEP_RIGHT, "STEP_RIGHT" },
+    { UFBX_BAKED_KEY_STEP_KEY, "STEP_KEY" },
+    { UFBX_BAKED_KEY_KEYFRAME, "KEYFRAME" },
+    { UFBX_BAKED_KEY_REDUCED, "REDUCED" },
+};
+
+static PyObject *EvaluateFlags_Enum;
+static const EnumValue EvaluateFlags_values[] = {
+    { UFBX_EVALUATE_FLAG_NO_EXTRAPOLATION, "NO_EXTRAPOLATION" },
+};
+
+static PyObject *BakeStepHandling_Enum;
+static const EnumValue BakeStepHandling_values[] = {
+    { UFBX_BAKE_STEP_HANDLING_DEFAULT, "DEFAULT" },
+    { UFBX_BAKE_STEP_HANDLING_CUSTOM_DURATION, "CUSTOM_DURATION" },
+    { UFBX_BAKE_STEP_HANDLING_IDENTICAL_TIME, "IDENTICAL_TIME" },
+    { UFBX_BAKE_STEP_HANDLING_ADJACENT_DOUBLE, "ADJACENT_DOUBLE" },
+    { UFBX_BAKE_STEP_HANDLING_IGNORE, "IGNORE" },
+};
+
+static PyObject *TransformFlags_Enum;
+static const EnumValue TransformFlags_values[] = {
+    { UFBX_TRANSFORM_FLAG_IGNORE_SCALE_HELPER, "IGNORE_SCALE_HELPER" },
+    { UFBX_TRANSFORM_FLAG_IGNORE_COMPONENTWISE_SCALE, "IGNORE_COMPONENTWISE_SCALE" },
+    { UFBX_TRANSFORM_FLAG_EXPLICIT_INCLUDES, "EXPLICIT_INCLUDES" },
+    { UFBX_TRANSFORM_FLAG_INCLUDE_TRANSLATION, "INCLUDE_TRANSLATION" },
+    { UFBX_TRANSFORM_FLAG_INCLUDE_ROTATION, "INCLUDE_ROTATION" },
+    { UFBX_TRANSFORM_FLAG_INCLUDE_SCALE, "INCLUDE_SCALE" },
+    { UFBX_TRANSFORM_FLAG_NO_EXTRAPOLATION, "NO_EXTRAPOLATION" },
+};
+
+static PyObject *VoidList_from(ufbx_void_list *data, Context *ctx);
+static PyObject *DomValue_from(ufbx_dom_value *data, Context *ctx);
+static PyObject *DomNode_from(ufbx_dom_node *data, Context *ctx);
+static PyObject *Prop_from(ufbx_prop *data, Context *ctx);
+static PyObject *Props_from(ufbx_props *data, Context *ctx);
+static PyObject *Connection_from(ufbx_connection *data, Context *ctx);
+static PyObject *VertexAttrib_from(ufbx_vertex_attrib *data, Context *ctx);
+static PyObject *VertexReal_from(ufbx_vertex_real *data, Context *ctx);
+static PyObject *VertexVec2_from(ufbx_vertex_vec2 *data, Context *ctx);
+static PyObject *VertexVec3_from(ufbx_vertex_vec3 *data, Context *ctx);
+static PyObject *VertexVec4_from(ufbx_vertex_vec4 *data, Context *ctx);
+static PyObject *UvSet_from(ufbx_uv_set *data, Context *ctx);
+static PyObject *ColorSet_from(ufbx_color_set *data, Context *ctx);
+static PyObject *MeshPart_from(ufbx_mesh_part *data, Context *ctx);
+static PyObject *FaceGroup_from(ufbx_face_group *data, Context *ctx);
+static PyObject *SubdivisionWeightRange_from(ufbx_subdivision_weight_range *data, Context *ctx);
+static PyObject *SubdivisionWeight_from(ufbx_subdivision_weight *data, Context *ctx);
+static PyObject *SubdivisionResult_from(ufbx_subdivision_result *data, Context *ctx);
+static PyObject *LineSegment_from(ufbx_line_segment *data, Context *ctx);
+static PyObject *NurbsBasis_from(ufbx_nurbs_basis *data, Context *ctx);
+static PyObject *BlendKeyframe_from(ufbx_blend_keyframe *data, Context *ctx);
+static PyObject *CacheFrame_from(ufbx_cache_frame *data, Context *ctx);
+static PyObject *CacheChannel_from(ufbx_cache_channel *data, Context *ctx);
+static PyObject *GeometryCache_from(ufbx_geometry_cache *data, Context *ctx);
+static PyObject *MaterialMap_from(ufbx_material_map *data, Context *ctx);
+static PyObject *MaterialFeatureInfo_from(ufbx_material_feature_info *data, Context *ctx);
+static PyObject *MaterialTexture_from(ufbx_material_texture *data, Context *ctx);
+static PyObject *MaterialFbxMaps_from(ufbx_material_fbx_maps *data, Context *ctx);
+static PyObject *MaterialPbrMaps_from(ufbx_material_pbr_maps *data, Context *ctx);
+static PyObject *MaterialFeatures_from(ufbx_material_features *data, Context *ctx);
+static PyObject *TextureLayer_from(ufbx_texture_layer *data, Context *ctx);
+static PyObject *ShaderTextureInput_from(ufbx_shader_texture_input *data, Context *ctx);
+static PyObject *ShaderTexture_from(ufbx_shader_texture *data, Context *ctx);
+static PyObject *TextureFile_from(ufbx_texture_file *data, Context *ctx);
+static PyObject *ShaderPropBinding_from(ufbx_shader_prop_binding *data, Context *ctx);
+static PyObject *PropOverride_from(ufbx_prop_override *data, Context *ctx);
+static PyObject *Anim_from(ufbx_anim *data, Context *ctx);
+static PyObject *AnimProp_from(ufbx_anim_prop *data, Context *ctx);
+static PyObject *Extrapolation_from(ufbx_extrapolation *data, Context *ctx);
+static PyObject *ConstraintTarget_from(ufbx_constraint_target *data, Context *ctx);
+static PyObject *BonePose_from(ufbx_bone_pose *data, Context *ctx);
+static PyObject *NameElement_from(ufbx_name_element *data, Context *ctx);
+static PyObject *Application_from(ufbx_application *data, Context *ctx);
+static PyObject *Warning_from(ufbx_warning *data, Context *ctx);
+static PyObject *Thumbnail_from(ufbx_thumbnail *data, Context *ctx);
+static PyObject *Metadata_from(ufbx_metadata *data, Context *ctx);
+static PyObject *SceneSettings_from(ufbx_scene_settings *data, Context *ctx);
+static PyObject *Scene_from(ufbx_scene *data, Context *ctx);
+static PyObject *VertexStream_from(ufbx_vertex_stream *data, Context *ctx);
+static PyObject *OpenFileInfo_from(ufbx_open_file_info *data, Context *ctx);
+static PyObject *OpenFileOpts_from(ufbx_open_file_opts *data, Context *ctx);
+static PyObject *ErrorFrame_from(ufbx_error_frame *data, Context *ctx);
+static PyObject *Error_from(ufbx_error *data, Context *ctx);
+static PyObject *Progress_from(ufbx_progress *data, Context *ctx);
+static PyObject *InflateInput_from(ufbx_inflate_input *data, Context *ctx);
+static PyObject *InflateRetain_from(ufbx_inflate_retain *data, Context *ctx);
+static PyObject *BakedVec3_from(ufbx_baked_vec3 *data, Context *ctx);
+static PyObject *BakedQuat_from(ufbx_baked_quat *data, Context *ctx);
+static PyObject *BakedNode_from(ufbx_baked_node *data, Context *ctx);
+static PyObject *BakedProp_from(ufbx_baked_prop *data, Context *ctx);
+static PyObject *BakedElement_from(ufbx_baked_element *data, Context *ctx);
+static PyObject *BakedAnimMetadata_from(ufbx_baked_anim_metadata *data, Context *ctx);
+static PyObject *BakedAnim_from(ufbx_baked_anim *data, Context *ctx);
+static PyObject *ThreadPoolInfo_from(ufbx_thread_pool_info *data, Context *ctx);
+static PyObject *Panic_from(ufbx_panic *data, Context *ctx);
 
 typedef struct {
     PyObject_HEAD
@@ -751,7 +1549,7 @@ static PyObject *DomValueList_subscript(DomValueList *self, PyObject *key) {
             PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
             return NULL;
         }
-        return to_pyobject_todo("ufbx_dom_value");
+        return DomValue_from(&self->data.data[index], self->ctx);
     } else if (PySlice_Check(key)) {
         return pyobject_todo("todo: slicing");
     } else {
@@ -807,7 +1605,7 @@ static PyObject *PropList_subscript(PropList *self, PyObject *key) {
             PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
             return NULL;
         }
-        return to_pyobject_todo("ufbx_prop");
+        return Prop_from(&self->data.data[index], self->ctx);
     } else if (PySlice_Check(key)) {
         return pyobject_todo("todo: slicing");
     } else {
@@ -3271,7 +4069,7 @@ static PyObject *ConnectionList_subscript(ConnectionList *self, PyObject *key) {
             PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
             return NULL;
         }
-        return to_pyobject_todo("ufbx_connection");
+        return Connection_from(&self->data.data[index], self->ctx);
     } else if (PySlice_Check(key)) {
         return pyobject_todo("todo: slicing");
     } else {
@@ -3327,7 +4125,7 @@ static PyObject *UvSetList_subscript(UvSetList *self, PyObject *key) {
             PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
             return NULL;
         }
-        return to_pyobject_todo("ufbx_uv_set");
+        return UvSet_from(&self->data.data[index], self->ctx);
     } else if (PySlice_Check(key)) {
         return pyobject_todo("todo: slicing");
     } else {
@@ -3383,7 +4181,7 @@ static PyObject *ColorSetList_subscript(ColorSetList *self, PyObject *key) {
             PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
             return NULL;
         }
-        return to_pyobject_todo("ufbx_color_set");
+        return ColorSet_from(&self->data.data[index], self->ctx);
     } else if (PySlice_Check(key)) {
         return pyobject_todo("todo: slicing");
     } else {
@@ -3551,7 +4349,7 @@ static PyObject *MeshPartList_subscript(MeshPartList *self, PyObject *key) {
             PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
             return NULL;
         }
-        return to_pyobject_todo("ufbx_mesh_part");
+        return MeshPart_from(&self->data.data[index], self->ctx);
     } else if (PySlice_Check(key)) {
         return pyobject_todo("todo: slicing");
     } else {
@@ -3607,7 +4405,7 @@ static PyObject *FaceGroupList_subscript(FaceGroupList *self, PyObject *key) {
             PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
             return NULL;
         }
-        return to_pyobject_todo("ufbx_face_group");
+        return FaceGroup_from(&self->data.data[index], self->ctx);
     } else if (PySlice_Check(key)) {
         return pyobject_todo("todo: slicing");
     } else {
@@ -3663,7 +4461,7 @@ static PyObject *SubdivisionWeightRangeList_subscript(SubdivisionWeightRangeList
             PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
             return NULL;
         }
-        return to_pyobject_todo("ufbx_subdivision_weight_range");
+        return SubdivisionWeightRange_from(&self->data.data[index], self->ctx);
     } else if (PySlice_Check(key)) {
         return pyobject_todo("todo: slicing");
     } else {
@@ -3719,7 +4517,7 @@ static PyObject *SubdivisionWeightList_subscript(SubdivisionWeightList *self, Py
             PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
             return NULL;
         }
-        return to_pyobject_todo("ufbx_subdivision_weight");
+        return SubdivisionWeight_from(&self->data.data[index], self->ctx);
     } else if (PySlice_Check(key)) {
         return pyobject_todo("todo: slicing");
     } else {
@@ -3775,7 +4573,7 @@ static PyObject *LineSegmentList_subscript(LineSegmentList *self, PyObject *key)
             PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
             return NULL;
         }
-        return to_pyobject_todo("ufbx_line_segment");
+        return LineSegment_from(&self->data.data[index], self->ctx);
     } else if (PySlice_Check(key)) {
         return pyobject_todo("todo: slicing");
     } else {
@@ -3999,7 +4797,7 @@ static PyObject *BlendKeyframeList_subscript(BlendKeyframeList *self, PyObject *
             PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
             return NULL;
         }
-        return to_pyobject_todo("ufbx_blend_keyframe");
+        return BlendKeyframe_from(&self->data.data[index], self->ctx);
     } else if (PySlice_Check(key)) {
         return pyobject_todo("todo: slicing");
     } else {
@@ -4055,7 +4853,7 @@ static PyObject *CacheFrameList_subscript(CacheFrameList *self, PyObject *key) {
             PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
             return NULL;
         }
-        return to_pyobject_todo("ufbx_cache_frame");
+        return CacheFrame_from(&self->data.data[index], self->ctx);
     } else if (PySlice_Check(key)) {
         return pyobject_todo("todo: slicing");
     } else {
@@ -4111,7 +4909,7 @@ static PyObject *CacheChannelList_subscript(CacheChannelList *self, PyObject *ke
             PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
             return NULL;
         }
-        return to_pyobject_todo("ufbx_cache_channel");
+        return CacheChannel_from(&self->data.data[index], self->ctx);
     } else if (PySlice_Check(key)) {
         return pyobject_todo("todo: slicing");
     } else {
@@ -4167,7 +4965,7 @@ static PyObject *MaterialTextureList_subscript(MaterialTextureList *self, PyObje
             PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
             return NULL;
         }
-        return to_pyobject_todo("ufbx_material_texture");
+        return MaterialTexture_from(&self->data.data[index], self->ctx);
     } else if (PySlice_Check(key)) {
         return pyobject_todo("todo: slicing");
     } else {
@@ -4223,7 +5021,7 @@ static PyObject *TextureLayerList_subscript(TextureLayerList *self, PyObject *ke
             PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
             return NULL;
         }
-        return to_pyobject_todo("ufbx_texture_layer");
+        return TextureLayer_from(&self->data.data[index], self->ctx);
     } else if (PySlice_Check(key)) {
         return pyobject_todo("todo: slicing");
     } else {
@@ -4279,7 +5077,7 @@ static PyObject *ShaderTextureInputList_subscript(ShaderTextureInputList *self, 
             PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
             return NULL;
         }
-        return to_pyobject_todo("ufbx_shader_texture_input");
+        return ShaderTextureInput_from(&self->data.data[index], self->ctx);
     } else if (PySlice_Check(key)) {
         return pyobject_todo("todo: slicing");
     } else {
@@ -4335,7 +5133,7 @@ static PyObject *TextureFileList_subscript(TextureFileList *self, PyObject *key)
             PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
             return NULL;
         }
-        return to_pyobject_todo("ufbx_texture_file");
+        return TextureFile_from(&self->data.data[index], self->ctx);
     } else if (PySlice_Check(key)) {
         return pyobject_todo("todo: slicing");
     } else {
@@ -4391,7 +5189,7 @@ static PyObject *ShaderPropBindingList_subscript(ShaderPropBindingList *self, Py
             PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
             return NULL;
         }
-        return to_pyobject_todo("ufbx_shader_prop_binding");
+        return ShaderPropBinding_from(&self->data.data[index], self->ctx);
     } else if (PySlice_Check(key)) {
         return pyobject_todo("todo: slicing");
     } else {
@@ -4447,7 +5245,7 @@ static PyObject *PropOverrideList_subscript(PropOverrideList *self, PyObject *ke
             PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
             return NULL;
         }
-        return to_pyobject_todo("ufbx_prop_override");
+        return PropOverride_from(&self->data.data[index], self->ctx);
     } else if (PySlice_Check(key)) {
         return pyobject_todo("todo: slicing");
     } else {
@@ -4559,7 +5357,7 @@ static PyObject *AnimPropList_subscript(AnimPropList *self, PyObject *key) {
             PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
             return NULL;
         }
-        return to_pyobject_todo("ufbx_anim_prop");
+        return AnimProp_from(&self->data.data[index], self->ctx);
     } else if (PySlice_Check(key)) {
         return pyobject_todo("todo: slicing");
     } else {
@@ -4671,7 +5469,7 @@ static PyObject *ConstraintTargetList_subscript(ConstraintTargetList *self, PyOb
             PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
             return NULL;
         }
-        return to_pyobject_todo("ufbx_constraint_target");
+        return ConstraintTarget_from(&self->data.data[index], self->ctx);
     } else if (PySlice_Check(key)) {
         return pyobject_todo("todo: slicing");
     } else {
@@ -4727,7 +5525,7 @@ static PyObject *BonePoseList_subscript(BonePoseList *self, PyObject *key) {
             PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
             return NULL;
         }
-        return to_pyobject_todo("ufbx_bone_pose");
+        return BonePose_from(&self->data.data[index], self->ctx);
     } else if (PySlice_Check(key)) {
         return pyobject_todo("todo: slicing");
     } else {
@@ -4783,7 +5581,7 @@ static PyObject *NameElementList_subscript(NameElementList *self, PyObject *key)
             PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
             return NULL;
         }
-        return to_pyobject_todo("ufbx_name_element");
+        return NameElement_from(&self->data.data[index], self->ctx);
     } else if (PySlice_Check(key)) {
         return pyobject_todo("todo: slicing");
     } else {
@@ -4839,7 +5637,7 @@ static PyObject *WarningList_subscript(WarningList *self, PyObject *key) {
             PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
             return NULL;
         }
-        return to_pyobject_todo("ufbx_warning");
+        return Warning_from(&self->data.data[index], self->ctx);
     } else if (PySlice_Check(key)) {
         return pyobject_todo("todo: slicing");
     } else {
@@ -4895,7 +5693,7 @@ static PyObject *BakedVec3List_subscript(BakedVec3List *self, PyObject *key) {
             PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
             return NULL;
         }
-        return to_pyobject_todo("ufbx_baked_vec3");
+        return BakedVec3_from(&self->data.data[index], self->ctx);
     } else if (PySlice_Check(key)) {
         return pyobject_todo("todo: slicing");
     } else {
@@ -4951,7 +5749,7 @@ static PyObject *BakedQuatList_subscript(BakedQuatList *self, PyObject *key) {
             PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
             return NULL;
         }
-        return to_pyobject_todo("ufbx_baked_quat");
+        return BakedQuat_from(&self->data.data[index], self->ctx);
     } else if (PySlice_Check(key)) {
         return pyobject_todo("todo: slicing");
     } else {
@@ -5007,7 +5805,7 @@ static PyObject *BakedNodeList_subscript(BakedNodeList *self, PyObject *key) {
             PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
             return NULL;
         }
-        return to_pyobject_todo("ufbx_baked_node");
+        return BakedNode_from(&self->data.data[index], self->ctx);
     } else if (PySlice_Check(key)) {
         return pyobject_todo("todo: slicing");
     } else {
@@ -5063,7 +5861,7 @@ static PyObject *BakedPropList_subscript(BakedPropList *self, PyObject *key) {
             PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
             return NULL;
         }
-        return to_pyobject_todo("ufbx_baked_prop");
+        return BakedProp_from(&self->data.data[index], self->ctx);
     } else if (PySlice_Check(key)) {
         return pyobject_todo("todo: slicing");
     } else {
@@ -5119,7 +5917,7 @@ static PyObject *BakedElementList_subscript(BakedElementList *self, PyObject *ke
             PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
             return NULL;
         }
-        return to_pyobject_todo("ufbx_baked_element");
+        return BakedElement_from(&self->data.data[index], self->ctx);
     } else if (PySlice_Check(key)) {
         return pyobject_todo("todo: slicing");
     } else {
@@ -5425,6 +6223,14 @@ static PyTypeObject VoidList_Type = {
     .tp_getset = VoidList_getset,
 };
 
+static PyObject *VoidList_from(ufbx_void_list *data, Context *ctx) {
+    VoidList *obj = (VoidList*)PyObject_CallObject((PyObject*)&VoidList_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
+
 #define SLOT_COUNT_DOM_VALUE 5
 enum {
     SLOT_DOM_VALUE__TYPE,
@@ -5445,7 +6251,7 @@ static PyObject *DomValue_get_type(DomValue *self, void *closure) {
     PyObject *slot = self->slots[SLOT_DOM_VALUE__TYPE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_dom_value_type");
+    slot = PyObject_CallFunction(DomValueType_Enum, "i", (int)self->data->type);
     self->slots[SLOT_DOM_VALUE__TYPE] = slot;
     return Py_NewRef(slot);
 }
@@ -5506,6 +6312,14 @@ static PyTypeObject DomValue_Type = {
     .tp_getset = DomValue_getset,
 };
 
+static PyObject *DomValue_from(ufbx_dom_value *data, Context *ctx) {
+    DomValue *obj = (DomValue*)PyObject_CallObject((PyObject*)&DomValue_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
+
 #define SLOT_COUNT_DOM_NODE 3
 enum {
     SLOT_DOM_NODE__NAME,
@@ -5565,6 +6379,14 @@ static PyTypeObject DomNode_Type = {
     .tp_getset = DomNode_getset,
 };
 
+static PyObject *DomNode_from(ufbx_dom_node *data, Context *ctx) {
+    DomNode *obj = (DomNode*)PyObject_CallObject((PyObject*)&DomNode_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
+
 #define SLOT_COUNT_PROP 6
 enum {
     SLOT_PROP__NAME,
@@ -5595,7 +6417,7 @@ static PyObject *Prop_get_type(Prop *self, void *closure) {
     PyObject *slot = self->slots[SLOT_PROP__TYPE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_prop_type");
+    slot = PyObject_CallFunction(PropType_Enum, "i", (int)self->data->type);
     self->slots[SLOT_PROP__TYPE] = slot;
     return Py_NewRef(slot);
 }
@@ -5604,7 +6426,7 @@ static PyObject *Prop_get_flags(Prop *self, void *closure) {
     PyObject *slot = self->slots[SLOT_PROP__FLAGS];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_prop_flags");
+    slot = PyObject_CallFunction(PropFlags_Enum, "i", (int)self->data->flags);
     self->slots[SLOT_PROP__FLAGS] = slot;
     return Py_NewRef(slot);
 }
@@ -5656,6 +6478,14 @@ static PyTypeObject Prop_Type = {
     .tp_new = PyType_GenericNew,
     .tp_getset = Prop_getset,
 };
+
+static PyObject *Prop_from(ufbx_prop *data, Context *ctx) {
+    Prop *obj = (Prop*)PyObject_CallObject((PyObject*)&Prop_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
 
 #define SLOT_COUNT_PROPS 3
 enum {
@@ -5715,6 +6545,14 @@ static PyTypeObject Props_Type = {
     .tp_new = PyType_GenericNew,
     .tp_getset = Props_getset,
 };
+
+static PyObject *Props_from(ufbx_props *data, Context *ctx) {
+    Props *obj = (Props*)PyObject_CallObject((PyObject*)&Props_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
 
 #define SLOT_COUNT_CONNECTION 4
 enum {
@@ -5786,6 +6624,14 @@ static PyTypeObject Connection_Type = {
     .tp_getset = Connection_getset,
 };
 
+static PyObject *Connection_from(ufbx_connection *data, Context *ctx) {
+    Connection *obj = (Connection*)PyObject_CallObject((PyObject*)&Connection_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
+
 #define SLOT_COUNT_ELEMENT 10
 enum {
     SLOT_ELEMENT__NAME,
@@ -5820,7 +6666,7 @@ static PyObject *Element_get_props(Element *self, void *closure) {
     PyObject *slot = self->slots[SLOT_ELEMENT__PROPS];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_props");
+    slot = Props_from(&self->data->props, self->ctx);
     self->slots[SLOT_ELEMENT__PROPS] = slot;
     return Py_NewRef(slot);
 }
@@ -5856,7 +6702,7 @@ static PyObject *Element_get_type(Element *self, void *closure) {
     PyObject *slot = self->slots[SLOT_ELEMENT__TYPE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_element_type");
+    slot = PyObject_CallFunction(ElementType_Enum, "i", (int)self->data->type);
     self->slots[SLOT_ELEMENT__TYPE] = slot;
     return Py_NewRef(slot);
 }
@@ -6130,7 +6976,7 @@ static PyObject *Node_get_attrib_type(Node *self, void *closure) {
     PyObject *slot = self->slots[SLOT_NODE__ATTRIB_TYPE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_element_type");
+    slot = PyObject_CallFunction(ElementType_Enum, "i", (int)self->data->attrib_type);
     self->slots[SLOT_NODE__ATTRIB_TYPE] = slot;
     return Py_NewRef(slot);
 }
@@ -6148,7 +6994,7 @@ static PyObject *Node_get_inherit_mode(Node *self, void *closure) {
     PyObject *slot = self->slots[SLOT_NODE__INHERIT_MODE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_inherit_mode");
+    slot = PyObject_CallFunction(InheritMode_Enum, "i", (int)self->data->inherit_mode);
     self->slots[SLOT_NODE__INHERIT_MODE] = slot;
     return Py_NewRef(slot);
 }
@@ -6157,7 +7003,7 @@ static PyObject *Node_get_original_inherit_mode(Node *self, void *closure) {
     PyObject *slot = self->slots[SLOT_NODE__ORIGINAL_INHERIT_MODE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_inherit_mode");
+    slot = PyObject_CallFunction(InheritMode_Enum, "i", (int)self->data->original_inherit_mode);
     self->slots[SLOT_NODE__ORIGINAL_INHERIT_MODE] = slot;
     return Py_NewRef(slot);
 }
@@ -6202,7 +7048,7 @@ static PyObject *Node_get_rotation_order(Node *self, void *closure) {
     PyObject *slot = self->slots[SLOT_NODE__ROTATION_ORDER];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_rotation_order");
+    slot = PyObject_CallFunction(RotationOrder_Enum, "i", (int)self->data->rotation_order);
     self->slots[SLOT_NODE__ROTATION_ORDER] = slot;
     return Py_NewRef(slot);
 }
@@ -6319,7 +7165,7 @@ static PyObject *Node_get_adjust_mirror_axis(Node *self, void *closure) {
     PyObject *slot = self->slots[SLOT_NODE__ADJUST_MIRROR_AXIS];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_mirror_axis");
+    slot = PyObject_CallFunction(MirrorAxis_Enum, "i", (int)self->data->adjust_mirror_axis);
     self->slots[SLOT_NODE__ADJUST_MIRROR_AXIS] = slot;
     return Py_NewRef(slot);
 }
@@ -6511,7 +7357,7 @@ static PyObject *VertexAttrib_get_values(VertexAttrib *self, void *closure) {
     PyObject *slot = self->slots[SLOT_VERTEX_ATTRIB__VALUES];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_void_list");
+    slot = VoidList_from(&self->data->values, self->ctx);
     self->slots[SLOT_VERTEX_ATTRIB__VALUES] = slot;
     return Py_NewRef(slot);
 }
@@ -6572,6 +7418,14 @@ static PyTypeObject VertexAttrib_Type = {
     .tp_new = PyType_GenericNew,
     .tp_getset = VertexAttrib_getset,
 };
+
+static PyObject *VertexAttrib_from(ufbx_vertex_attrib *data, Context *ctx) {
+    VertexAttrib *obj = (VertexAttrib*)PyObject_CallObject((PyObject*)&VertexAttrib_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
 
 #define SLOT_COUNT_VERTEX_REAL 6
 enum {
@@ -6665,6 +7519,14 @@ static PyTypeObject VertexReal_Type = {
     .tp_getset = VertexReal_getset,
 };
 
+static PyObject *VertexReal_from(ufbx_vertex_real *data, Context *ctx) {
+    VertexReal *obj = (VertexReal*)PyObject_CallObject((PyObject*)&VertexReal_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
+
 #define SLOT_COUNT_VERTEX_VEC2 6
 enum {
     SLOT_VERTEX_VEC2__EXISTS,
@@ -6756,6 +7618,14 @@ static PyTypeObject VertexVec2_Type = {
     .tp_new = PyType_GenericNew,
     .tp_getset = VertexVec2_getset,
 };
+
+static PyObject *VertexVec2_from(ufbx_vertex_vec2 *data, Context *ctx) {
+    VertexVec2 *obj = (VertexVec2*)PyObject_CallObject((PyObject*)&VertexVec2_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
 
 #define SLOT_COUNT_VERTEX_VEC3 6
 enum {
@@ -6849,6 +7719,14 @@ static PyTypeObject VertexVec3_Type = {
     .tp_getset = VertexVec3_getset,
 };
 
+static PyObject *VertexVec3_from(ufbx_vertex_vec3 *data, Context *ctx) {
+    VertexVec3 *obj = (VertexVec3*)PyObject_CallObject((PyObject*)&VertexVec3_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
+
 #define SLOT_COUNT_VERTEX_VEC4 6
 enum {
     SLOT_VERTEX_VEC4__EXISTS,
@@ -6941,6 +7819,14 @@ static PyTypeObject VertexVec4_Type = {
     .tp_getset = VertexVec4_getset,
 };
 
+static PyObject *VertexVec4_from(ufbx_vertex_vec4 *data, Context *ctx) {
+    VertexVec4 *obj = (VertexVec4*)PyObject_CallObject((PyObject*)&VertexVec4_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
+
 #define SLOT_COUNT_UV_SET 5
 enum {
     SLOT_UV_SET__NAME,
@@ -6979,7 +7865,7 @@ static PyObject *UvSet_get_vertex_uv(UvSet *self, void *closure) {
     PyObject *slot = self->slots[SLOT_UV_SET__VERTEX_UV];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_vertex_vec2");
+    slot = VertexVec2_from(&self->data->vertex_uv, self->ctx);
     self->slots[SLOT_UV_SET__VERTEX_UV] = slot;
     return Py_NewRef(slot);
 }
@@ -6988,7 +7874,7 @@ static PyObject *UvSet_get_vertex_tangent(UvSet *self, void *closure) {
     PyObject *slot = self->slots[SLOT_UV_SET__VERTEX_TANGENT];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_vertex_vec3");
+    slot = VertexVec3_from(&self->data->vertex_tangent, self->ctx);
     self->slots[SLOT_UV_SET__VERTEX_TANGENT] = slot;
     return Py_NewRef(slot);
 }
@@ -6997,7 +7883,7 @@ static PyObject *UvSet_get_vertex_bitangent(UvSet *self, void *closure) {
     PyObject *slot = self->slots[SLOT_UV_SET__VERTEX_BITANGENT];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_vertex_vec3");
+    slot = VertexVec3_from(&self->data->vertex_bitangent, self->ctx);
     self->slots[SLOT_UV_SET__VERTEX_BITANGENT] = slot;
     return Py_NewRef(slot);
 }
@@ -7021,6 +7907,14 @@ static PyTypeObject UvSet_Type = {
     .tp_new = PyType_GenericNew,
     .tp_getset = UvSet_getset,
 };
+
+static PyObject *UvSet_from(ufbx_uv_set *data, Context *ctx) {
+    UvSet *obj = (UvSet*)PyObject_CallObject((PyObject*)&UvSet_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
 
 #define SLOT_COUNT_COLOR_SET 3
 enum {
@@ -7058,7 +7952,7 @@ static PyObject *ColorSet_get_vertex_color(ColorSet *self, void *closure) {
     PyObject *slot = self->slots[SLOT_COLOR_SET__VERTEX_COLOR];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_vertex_vec4");
+    slot = VertexVec4_from(&self->data->vertex_color, self->ctx);
     self->slots[SLOT_COLOR_SET__VERTEX_COLOR] = slot;
     return Py_NewRef(slot);
 }
@@ -7080,6 +7974,14 @@ static PyTypeObject ColorSet_Type = {
     .tp_new = PyType_GenericNew,
     .tp_getset = ColorSet_getset,
 };
+
+static PyObject *ColorSet_from(ufbx_color_set *data, Context *ctx) {
+    ColorSet *obj = (ColorSet*)PyObject_CallObject((PyObject*)&ColorSet_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
 
 #define SLOT_COUNT_MESH_PART 7
 enum {
@@ -7184,6 +8086,14 @@ static PyTypeObject MeshPart_Type = {
     .tp_getset = MeshPart_getset,
 };
 
+static PyObject *MeshPart_from(ufbx_mesh_part *data, Context *ctx) {
+    MeshPart *obj = (MeshPart*)PyObject_CallObject((PyObject*)&MeshPart_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
+
 #define SLOT_COUNT_FACE_GROUP 2
 enum {
     SLOT_FACE_GROUP__ID,
@@ -7231,6 +8141,14 @@ static PyTypeObject FaceGroup_Type = {
     .tp_new = PyType_GenericNew,
     .tp_getset = FaceGroup_getset,
 };
+
+static PyObject *FaceGroup_from(ufbx_face_group *data, Context *ctx) {
+    FaceGroup *obj = (FaceGroup*)PyObject_CallObject((PyObject*)&FaceGroup_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
 
 #define SLOT_COUNT_SUBDIVISION_WEIGHT_RANGE 2
 enum {
@@ -7280,6 +8198,14 @@ static PyTypeObject SubdivisionWeightRange_Type = {
     .tp_getset = SubdivisionWeightRange_getset,
 };
 
+static PyObject *SubdivisionWeightRange_from(ufbx_subdivision_weight_range *data, Context *ctx) {
+    SubdivisionWeightRange *obj = (SubdivisionWeightRange*)PyObject_CallObject((PyObject*)&SubdivisionWeightRange_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
+
 #define SLOT_COUNT_SUBDIVISION_WEIGHT 2
 enum {
     SLOT_SUBDIVISION_WEIGHT__WEIGHT,
@@ -7327,6 +8253,14 @@ static PyTypeObject SubdivisionWeight_Type = {
     .tp_new = PyType_GenericNew,
     .tp_getset = SubdivisionWeight_getset,
 };
+
+static PyObject *SubdivisionWeight_from(ufbx_subdivision_weight *data, Context *ctx) {
+    SubdivisionWeight *obj = (SubdivisionWeight*)PyObject_CallObject((PyObject*)&SubdivisionWeight_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
 
 #define SLOT_COUNT_SUBDIVISION_RESULT 8
 enum {
@@ -7441,6 +8375,14 @@ static PyTypeObject SubdivisionResult_Type = {
     .tp_new = PyType_GenericNew,
     .tp_getset = SubdivisionResult_getset,
 };
+
+static PyObject *SubdivisionResult_from(ufbx_subdivision_result *data, Context *ctx) {
+    SubdivisionResult *obj = (SubdivisionResult*)PyObject_CallObject((PyObject*)&SubdivisionResult_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
 
 #define SLOT_COUNT_MESH 52
 enum {
@@ -7703,7 +8645,7 @@ static PyObject *Mesh_get_vertex_position(Mesh *self, void *closure) {
     PyObject *slot = self->slots[SLOT_MESH__VERTEX_POSITION];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_vertex_vec3");
+    slot = VertexVec3_from(&self->data->vertex_position, self->ctx);
     self->slots[SLOT_MESH__VERTEX_POSITION] = slot;
     return Py_NewRef(slot);
 }
@@ -7712,7 +8654,7 @@ static PyObject *Mesh_get_vertex_normal(Mesh *self, void *closure) {
     PyObject *slot = self->slots[SLOT_MESH__VERTEX_NORMAL];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_vertex_vec3");
+    slot = VertexVec3_from(&self->data->vertex_normal, self->ctx);
     self->slots[SLOT_MESH__VERTEX_NORMAL] = slot;
     return Py_NewRef(slot);
 }
@@ -7721,7 +8663,7 @@ static PyObject *Mesh_get_vertex_uv(Mesh *self, void *closure) {
     PyObject *slot = self->slots[SLOT_MESH__VERTEX_UV];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_vertex_vec2");
+    slot = VertexVec2_from(&self->data->vertex_uv, self->ctx);
     self->slots[SLOT_MESH__VERTEX_UV] = slot;
     return Py_NewRef(slot);
 }
@@ -7730,7 +8672,7 @@ static PyObject *Mesh_get_vertex_tangent(Mesh *self, void *closure) {
     PyObject *slot = self->slots[SLOT_MESH__VERTEX_TANGENT];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_vertex_vec3");
+    slot = VertexVec3_from(&self->data->vertex_tangent, self->ctx);
     self->slots[SLOT_MESH__VERTEX_TANGENT] = slot;
     return Py_NewRef(slot);
 }
@@ -7739,7 +8681,7 @@ static PyObject *Mesh_get_vertex_bitangent(Mesh *self, void *closure) {
     PyObject *slot = self->slots[SLOT_MESH__VERTEX_BITANGENT];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_vertex_vec3");
+    slot = VertexVec3_from(&self->data->vertex_bitangent, self->ctx);
     self->slots[SLOT_MESH__VERTEX_BITANGENT] = slot;
     return Py_NewRef(slot);
 }
@@ -7748,7 +8690,7 @@ static PyObject *Mesh_get_vertex_color(Mesh *self, void *closure) {
     PyObject *slot = self->slots[SLOT_MESH__VERTEX_COLOR];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_vertex_vec4");
+    slot = VertexVec4_from(&self->data->vertex_color, self->ctx);
     self->slots[SLOT_MESH__VERTEX_COLOR] = slot;
     return Py_NewRef(slot);
 }
@@ -7757,7 +8699,7 @@ static PyObject *Mesh_get_vertex_crease(Mesh *self, void *closure) {
     PyObject *slot = self->slots[SLOT_MESH__VERTEX_CREASE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_vertex_real");
+    slot = VertexReal_from(&self->data->vertex_crease, self->ctx);
     self->slots[SLOT_MESH__VERTEX_CREASE] = slot;
     return Py_NewRef(slot);
 }
@@ -7838,7 +8780,7 @@ static PyObject *Mesh_get_skinned_position(Mesh *self, void *closure) {
     PyObject *slot = self->slots[SLOT_MESH__SKINNED_POSITION];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_vertex_vec3");
+    slot = VertexVec3_from(&self->data->skinned_position, self->ctx);
     self->slots[SLOT_MESH__SKINNED_POSITION] = slot;
     return Py_NewRef(slot);
 }
@@ -7847,7 +8789,7 @@ static PyObject *Mesh_get_skinned_normal(Mesh *self, void *closure) {
     PyObject *slot = self->slots[SLOT_MESH__SKINNED_NORMAL];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_vertex_vec3");
+    slot = VertexVec3_from(&self->data->skinned_normal, self->ctx);
     self->slots[SLOT_MESH__SKINNED_NORMAL] = slot;
     return Py_NewRef(slot);
 }
@@ -7910,7 +8852,7 @@ static PyObject *Mesh_get_subdivision_display_mode(Mesh *self, void *closure) {
     PyObject *slot = self->slots[SLOT_MESH__SUBDIVISION_DISPLAY_MODE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_subdivision_display_mode");
+    slot = PyObject_CallFunction(SubdivisionDisplayMode_Enum, "i", (int)self->data->subdivision_display_mode);
     self->slots[SLOT_MESH__SUBDIVISION_DISPLAY_MODE] = slot;
     return Py_NewRef(slot);
 }
@@ -7919,7 +8861,7 @@ static PyObject *Mesh_get_subdivision_boundary(Mesh *self, void *closure) {
     PyObject *slot = self->slots[SLOT_MESH__SUBDIVISION_BOUNDARY];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_subdivision_boundary");
+    slot = PyObject_CallFunction(SubdivisionBoundary_Enum, "i", (int)self->data->subdivision_boundary);
     self->slots[SLOT_MESH__SUBDIVISION_BOUNDARY] = slot;
     return Py_NewRef(slot);
 }
@@ -7928,7 +8870,7 @@ static PyObject *Mesh_get_subdivision_uv_boundary(Mesh *self, void *closure) {
     PyObject *slot = self->slots[SLOT_MESH__SUBDIVISION_UV_BOUNDARY];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_subdivision_boundary");
+    slot = PyObject_CallFunction(SubdivisionBoundary_Enum, "i", (int)self->data->subdivision_uv_boundary);
     self->slots[SLOT_MESH__SUBDIVISION_UV_BOUNDARY] = slot;
     return Py_NewRef(slot);
 }
@@ -8103,7 +9045,7 @@ static PyObject *Light_get_type(Light *self, void *closure) {
     PyObject *slot = self->slots[SLOT_LIGHT__TYPE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_light_type");
+    slot = PyObject_CallFunction(LightType_Enum, "i", (int)self->data->type);
     self->slots[SLOT_LIGHT__TYPE] = slot;
     return Py_NewRef(slot);
 }
@@ -8112,7 +9054,7 @@ static PyObject *Light_get_decay(Light *self, void *closure) {
     PyObject *slot = self->slots[SLOT_LIGHT__DECAY];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_light_decay");
+    slot = PyObject_CallFunction(LightDecay_Enum, "i", (int)self->data->decay);
     self->slots[SLOT_LIGHT__DECAY] = slot;
     return Py_NewRef(slot);
 }
@@ -8121,7 +9063,7 @@ static PyObject *Light_get_area_shape(Light *self, void *closure) {
     PyObject *slot = self->slots[SLOT_LIGHT__AREA_SHAPE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_light_area_shape");
+    slot = PyObject_CallFunction(LightAreaShape_Enum, "i", (int)self->data->area_shape);
     self->slots[SLOT_LIGHT__AREA_SHAPE] = slot;
     return Py_NewRef(slot);
 }
@@ -8228,7 +9170,7 @@ static PyObject *Camera_get_projection_mode(Camera *self, void *closure) {
     PyObject *slot = self->slots[SLOT_CAMERA__PROJECTION_MODE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_projection_mode");
+    slot = PyObject_CallFunction(ProjectionMode_Enum, "i", (int)self->data->projection_mode);
     self->slots[SLOT_CAMERA__PROJECTION_MODE] = slot;
     return Py_NewRef(slot);
 }
@@ -8336,7 +9278,7 @@ static PyObject *Camera_get_aspect_mode(Camera *self, void *closure) {
     PyObject *slot = self->slots[SLOT_CAMERA__ASPECT_MODE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_aspect_mode");
+    slot = PyObject_CallFunction(AspectMode_Enum, "i", (int)self->data->aspect_mode);
     self->slots[SLOT_CAMERA__ASPECT_MODE] = slot;
     return Py_NewRef(slot);
 }
@@ -8345,7 +9287,7 @@ static PyObject *Camera_get_aperture_mode(Camera *self, void *closure) {
     PyObject *slot = self->slots[SLOT_CAMERA__APERTURE_MODE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_aperture_mode");
+    slot = PyObject_CallFunction(ApertureMode_Enum, "i", (int)self->data->aperture_mode);
     self->slots[SLOT_CAMERA__APERTURE_MODE] = slot;
     return Py_NewRef(slot);
 }
@@ -8354,7 +9296,7 @@ static PyObject *Camera_get_gate_fit(Camera *self, void *closure) {
     PyObject *slot = self->slots[SLOT_CAMERA__GATE_FIT];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_gate_fit");
+    slot = PyObject_CallFunction(GateFit_Enum, "i", (int)self->data->gate_fit);
     self->slots[SLOT_CAMERA__GATE_FIT] = slot;
     return Py_NewRef(slot);
 }
@@ -8363,7 +9305,7 @@ static PyObject *Camera_get_aperture_format(Camera *self, void *closure) {
     PyObject *slot = self->slots[SLOT_CAMERA__APERTURE_FORMAT];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_aperture_format");
+    slot = PyObject_CallFunction(ApertureFormat_Enum, "i", (int)self->data->aperture_format);
     self->slots[SLOT_CAMERA__APERTURE_FORMAT] = slot;
     return Py_NewRef(slot);
 }
@@ -8575,6 +9517,14 @@ static PyTypeObject LineSegment_Type = {
     .tp_getset = LineSegment_getset,
 };
 
+static PyObject *LineSegment_from(ufbx_line_segment *data, Context *ctx) {
+    LineSegment *obj = (LineSegment*)PyObject_CallObject((PyObject*)&LineSegment_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
+
 #define SLOT_COUNT_LINE_CURVE 5
 enum {
     SLOT_LINE_CURVE__COLOR,
@@ -8695,7 +9645,7 @@ static PyObject *NurbsBasis_get_topology(NurbsBasis *self, void *closure) {
     PyObject *slot = self->slots[SLOT_NURBS_BASIS__TOPOLOGY];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_nurbs_topology");
+    slot = PyObject_CallFunction(NurbsTopology_Enum, "i", (int)self->data->topology);
     self->slots[SLOT_NURBS_BASIS__TOPOLOGY] = slot;
     return Py_NewRef(slot);
 }
@@ -8787,6 +9737,14 @@ static PyTypeObject NurbsBasis_Type = {
     .tp_getset = NurbsBasis_getset,
 };
 
+static PyObject *NurbsBasis_from(ufbx_nurbs_basis *data, Context *ctx) {
+    NurbsBasis *obj = (NurbsBasis*)PyObject_CallObject((PyObject*)&NurbsBasis_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
+
 #define SLOT_COUNT_NURBS_CURVE 2
 enum {
     SLOT_NURBS_CURVE__BASIS,
@@ -8809,7 +9767,7 @@ static PyObject *NurbsCurve_get_basis(NurbsCurve *self, void *closure) {
     PyObject *slot = self->slots[SLOT_NURBS_CURVE__BASIS];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_nurbs_basis");
+    slot = NurbsBasis_from(&self->data->basis, self->ctx);
     self->slots[SLOT_NURBS_CURVE__BASIS] = slot;
     return Py_NewRef(slot);
 }
@@ -8870,7 +9828,7 @@ static PyObject *NurbsSurface_get_basis_u(NurbsSurface *self, void *closure) {
     PyObject *slot = self->slots[SLOT_NURBS_SURFACE__BASIS_U];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_nurbs_basis");
+    slot = NurbsBasis_from(&self->data->basis_u, self->ctx);
     self->slots[SLOT_NURBS_SURFACE__BASIS_U] = slot;
     return Py_NewRef(slot);
 }
@@ -8879,7 +9837,7 @@ static PyObject *NurbsSurface_get_basis_v(NurbsSurface *self, void *closure) {
     PyObject *slot = self->slots[SLOT_NURBS_SURFACE__BASIS_V];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_nurbs_basis");
+    slot = NurbsBasis_from(&self->data->basis_v, self->ctx);
     self->slots[SLOT_NURBS_SURFACE__BASIS_V] = slot;
     return Py_NewRef(slot);
 }
@@ -9135,7 +10093,7 @@ static PyObject *Marker_get_type(Marker *self, void *closure) {
     PyObject *slot = self->slots[SLOT_MARKER__TYPE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_marker_type");
+    slot = PyObject_CallFunction(MarkerType_Enum, "i", (int)self->data->type);
     self->slots[SLOT_MARKER__TYPE] = slot;
     return Py_NewRef(slot);
 }
@@ -9283,7 +10241,7 @@ static PyObject *SkinDeformer_get_skinning_method(SkinDeformer *self, void *clos
     PyObject *slot = self->slots[SLOT_SKIN_DEFORMER__SKINNING_METHOD];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_skinning_method");
+    slot = PyObject_CallFunction(SkinningMethod_Enum, "i", (int)self->data->skinning_method);
     self->slots[SLOT_SKIN_DEFORMER__SKINNING_METHOD] = slot;
     return Py_NewRef(slot);
 }
@@ -9608,6 +10566,14 @@ static PyTypeObject BlendKeyframe_Type = {
     .tp_getset = BlendKeyframe_getset,
 };
 
+static PyObject *BlendKeyframe_from(ufbx_blend_keyframe *data, Context *ctx) {
+    BlendKeyframe *obj = (BlendKeyframe*)PyObject_CallObject((PyObject*)&BlendKeyframe_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
+
 #define SLOT_COUNT_BLEND_CHANNEL 3
 enum {
     SLOT_BLEND_CHANNEL__WEIGHT,
@@ -9814,7 +10780,7 @@ static PyObject *CacheFrame_get_file_format(CacheFrame *self, void *closure) {
     PyObject *slot = self->slots[SLOT_CACHE_FRAME__FILE_FORMAT];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_cache_file_format");
+    slot = PyObject_CallFunction(CacheFileFormat_Enum, "i", (int)self->data->file_format);
     self->slots[SLOT_CACHE_FRAME__FILE_FORMAT] = slot;
     return Py_NewRef(slot);
 }
@@ -9823,7 +10789,7 @@ static PyObject *CacheFrame_get_mirror_axis(CacheFrame *self, void *closure) {
     PyObject *slot = self->slots[SLOT_CACHE_FRAME__MIRROR_AXIS];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_mirror_axis");
+    slot = PyObject_CallFunction(MirrorAxis_Enum, "i", (int)self->data->mirror_axis);
     self->slots[SLOT_CACHE_FRAME__MIRROR_AXIS] = slot;
     return Py_NewRef(slot);
 }
@@ -9841,7 +10807,7 @@ static PyObject *CacheFrame_get_data_format(CacheFrame *self, void *closure) {
     PyObject *slot = self->slots[SLOT_CACHE_FRAME__DATA_FORMAT];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_cache_data_format");
+    slot = PyObject_CallFunction(CacheDataFormat_Enum, "i", (int)self->data->data_format);
     self->slots[SLOT_CACHE_FRAME__DATA_FORMAT] = slot;
     return Py_NewRef(slot);
 }
@@ -9850,7 +10816,7 @@ static PyObject *CacheFrame_get_data_encoding(CacheFrame *self, void *closure) {
     PyObject *slot = self->slots[SLOT_CACHE_FRAME__DATA_ENCODING];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_cache_data_encoding");
+    slot = PyObject_CallFunction(CacheDataEncoding_Enum, "i", (int)self->data->data_encoding);
     self->slots[SLOT_CACHE_FRAME__DATA_ENCODING] = slot;
     return Py_NewRef(slot);
 }
@@ -9918,6 +10884,14 @@ static PyTypeObject CacheFrame_Type = {
     .tp_getset = CacheFrame_getset,
 };
 
+static PyObject *CacheFrame_from(ufbx_cache_frame *data, Context *ctx) {
+    CacheFrame *obj = (CacheFrame*)PyObject_CallObject((PyObject*)&CacheFrame_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
+
 #define SLOT_COUNT_CACHE_CHANNEL 6
 enum {
     SLOT_CACHE_CHANNEL__NAME,
@@ -9948,7 +10922,7 @@ static PyObject *CacheChannel_get_interpretation(CacheChannel *self, void *closu
     PyObject *slot = self->slots[SLOT_CACHE_CHANNEL__INTERPRETATION];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_cache_interpretation");
+    slot = PyObject_CallFunction(CacheInterpretation_Enum, "i", (int)self->data->interpretation);
     self->slots[SLOT_CACHE_CHANNEL__INTERPRETATION] = slot;
     return Py_NewRef(slot);
 }
@@ -9975,7 +10949,7 @@ static PyObject *CacheChannel_get_mirror_axis(CacheChannel *self, void *closure)
     PyObject *slot = self->slots[SLOT_CACHE_CHANNEL__MIRROR_AXIS];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_mirror_axis");
+    slot = PyObject_CallFunction(MirrorAxis_Enum, "i", (int)self->data->mirror_axis);
     self->slots[SLOT_CACHE_CHANNEL__MIRROR_AXIS] = slot;
     return Py_NewRef(slot);
 }
@@ -10009,6 +10983,14 @@ static PyTypeObject CacheChannel_Type = {
     .tp_new = PyType_GenericNew,
     .tp_getset = CacheChannel_getset,
 };
+
+static PyObject *CacheChannel_from(ufbx_cache_channel *data, Context *ctx) {
+    CacheChannel *obj = (CacheChannel*)PyObject_CallObject((PyObject*)&CacheChannel_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
 
 #define SLOT_COUNT_GEOMETRY_CACHE 4
 enum {
@@ -10079,6 +11061,14 @@ static PyTypeObject GeometryCache_Type = {
     .tp_new = PyType_GenericNew,
     .tp_getset = GeometryCache_getset,
 };
+
+static PyObject *GeometryCache_from(ufbx_geometry_cache *data, Context *ctx) {
+    GeometryCache *obj = (GeometryCache*)PyObject_CallObject((PyObject*)&GeometryCache_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
 
 #define SLOT_COUNT_CACHE_DEFORMER 4
 enum {
@@ -10238,7 +11228,7 @@ static PyObject *CacheFile_get_format(CacheFile *self, void *closure) {
     PyObject *slot = self->slots[SLOT_CACHE_FILE__FORMAT];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_cache_file_format");
+    slot = PyObject_CallFunction(CacheFileFormat_Enum, "i", (int)self->data->format);
     self->slots[SLOT_CACHE_FILE__FORMAT] = slot;
     return Py_NewRef(slot);
 }
@@ -10368,6 +11358,14 @@ static PyTypeObject MaterialMap_Type = {
     .tp_getset = MaterialMap_getset,
 };
 
+static PyObject *MaterialMap_from(ufbx_material_map *data, Context *ctx) {
+    MaterialMap *obj = (MaterialMap*)PyObject_CallObject((PyObject*)&MaterialMap_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
+
 #define SLOT_COUNT_MATERIAL_FEATURE_INFO 2
 enum {
     SLOT_MATERIAL_FEATURE_INFO__ENABLED,
@@ -10415,6 +11413,14 @@ static PyTypeObject MaterialFeatureInfo_Type = {
     .tp_new = PyType_GenericNew,
     .tp_getset = MaterialFeatureInfo_getset,
 };
+
+static PyObject *MaterialFeatureInfo_from(ufbx_material_feature_info *data, Context *ctx) {
+    MaterialFeatureInfo *obj = (MaterialFeatureInfo*)PyObject_CallObject((PyObject*)&MaterialFeatureInfo_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
 
 #define SLOT_COUNT_MATERIAL_TEXTURE 3
 enum {
@@ -10475,6 +11481,14 @@ static PyTypeObject MaterialTexture_Type = {
     .tp_getset = MaterialTexture_getset,
 };
 
+static PyObject *MaterialTexture_from(ufbx_material_texture *data, Context *ctx) {
+    MaterialTexture *obj = (MaterialTexture*)PyObject_CallObject((PyObject*)&MaterialTexture_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
+
 typedef struct {
     PyObject_HEAD
     ufbx_material_fbx_maps *data;
@@ -10490,6 +11504,14 @@ static PyTypeObject MaterialFbxMaps_Type = {
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
 };
+
+static PyObject *MaterialFbxMaps_from(ufbx_material_fbx_maps *data, Context *ctx) {
+    MaterialFbxMaps *obj = (MaterialFbxMaps*)PyObject_CallObject((PyObject*)&MaterialFbxMaps_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
 
 typedef struct {
     PyObject_HEAD
@@ -10507,6 +11529,14 @@ static PyTypeObject MaterialPbrMaps_Type = {
     .tp_new = PyType_GenericNew,
 };
 
+static PyObject *MaterialPbrMaps_from(ufbx_material_pbr_maps *data, Context *ctx) {
+    MaterialPbrMaps *obj = (MaterialPbrMaps*)PyObject_CallObject((PyObject*)&MaterialPbrMaps_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
+
 typedef struct {
     PyObject_HEAD
     ufbx_material_features *data;
@@ -10522,6 +11552,14 @@ static PyTypeObject MaterialFeatures_Type = {
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
 };
+
+static PyObject *MaterialFeatures_from(ufbx_material_features *data, Context *ctx) {
+    MaterialFeatures *obj = (MaterialFeatures*)PyObject_CallObject((PyObject*)&MaterialFeatures_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
 
 #define SLOT_COUNT_MATERIAL 8
 enum {
@@ -10551,7 +11589,7 @@ static PyObject *Material_get_fbx(Material *self, void *closure) {
     PyObject *slot = self->slots[SLOT_MATERIAL__FBX];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_material_fbx_maps");
+    slot = MaterialFbxMaps_from(&self->data->fbx, self->ctx);
     self->slots[SLOT_MATERIAL__FBX] = slot;
     return Py_NewRef(slot);
 }
@@ -10560,7 +11598,7 @@ static PyObject *Material_get_pbr(Material *self, void *closure) {
     PyObject *slot = self->slots[SLOT_MATERIAL__PBR];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_material_pbr_maps");
+    slot = MaterialPbrMaps_from(&self->data->pbr, self->ctx);
     self->slots[SLOT_MATERIAL__PBR] = slot;
     return Py_NewRef(slot);
 }
@@ -10569,7 +11607,7 @@ static PyObject *Material_get_features(Material *self, void *closure) {
     PyObject *slot = self->slots[SLOT_MATERIAL__FEATURES];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_material_features");
+    slot = MaterialFeatures_from(&self->data->features, self->ctx);
     self->slots[SLOT_MATERIAL__FEATURES] = slot;
     return Py_NewRef(slot);
 }
@@ -10578,7 +11616,7 @@ static PyObject *Material_get_shader_type(Material *self, void *closure) {
     PyObject *slot = self->slots[SLOT_MATERIAL__SHADER_TYPE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_shader_type");
+    slot = PyObject_CallFunction(ShaderType_Enum, "i", (int)self->data->shader_type);
     self->slots[SLOT_MATERIAL__SHADER_TYPE] = slot;
     return Py_NewRef(slot);
 }
@@ -10670,7 +11708,7 @@ static PyObject *TextureLayer_get_blend_mode(TextureLayer *self, void *closure) 
     PyObject *slot = self->slots[SLOT_TEXTURE_LAYER__BLEND_MODE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_blend_mode");
+    slot = PyObject_CallFunction(BlendMode_Enum, "i", (int)self->data->blend_mode);
     self->slots[SLOT_TEXTURE_LAYER__BLEND_MODE] = slot;
     return Py_NewRef(slot);
 }
@@ -10701,6 +11739,14 @@ static PyTypeObject TextureLayer_Type = {
     .tp_new = PyType_GenericNew,
     .tp_getset = TextureLayer_getset,
 };
+
+static PyObject *TextureLayer_from(ufbx_texture_layer *data, Context *ctx) {
+    TextureLayer *obj = (TextureLayer*)PyObject_CallObject((PyObject*)&TextureLayer_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
 
 #define SLOT_COUNT_SHADER_TEXTURE_INPUT 10
 enum {
@@ -10838,6 +11884,14 @@ static PyTypeObject ShaderTextureInput_Type = {
     .tp_getset = ShaderTextureInput_getset,
 };
 
+static PyObject *ShaderTextureInput_from(ufbx_shader_texture_input *data, Context *ctx) {
+    ShaderTextureInput *obj = (ShaderTextureInput*)PyObject_CallObject((PyObject*)&ShaderTextureInput_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
+
 #define SLOT_COUNT_SHADER_TEXTURE 9
 enum {
     SLOT_SHADER_TEXTURE__TYPE,
@@ -10862,7 +11916,7 @@ static PyObject *ShaderTexture_get_type(ShaderTexture *self, void *closure) {
     PyObject *slot = self->slots[SLOT_SHADER_TEXTURE__TYPE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_shader_texture_type");
+    slot = PyObject_CallFunction(ShaderTextureType_Enum, "i", (int)self->data->type);
     self->slots[SLOT_SHADER_TEXTURE__TYPE] = slot;
     return Py_NewRef(slot);
 }
@@ -10962,6 +12016,14 @@ static PyTypeObject ShaderTexture_Type = {
     .tp_new = PyType_GenericNew,
     .tp_getset = ShaderTexture_getset,
 };
+
+static PyObject *ShaderTexture_from(ufbx_shader_texture *data, Context *ctx) {
+    ShaderTexture *obj = (ShaderTexture*)PyObject_CallObject((PyObject*)&ShaderTexture_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
 
 #define SLOT_COUNT_TEXTURE_FILE 8
 enum {
@@ -11077,6 +12139,14 @@ static PyTypeObject TextureFile_Type = {
     .tp_getset = TextureFile_getset,
 };
 
+static PyObject *TextureFile_from(ufbx_texture_file *data, Context *ctx) {
+    TextureFile *obj = (TextureFile*)PyObject_CallObject((PyObject*)&TextureFile_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
+
 #define SLOT_COUNT_TEXTURE 21
 enum {
     SLOT_TEXTURE__TYPE,
@@ -11118,7 +12188,7 @@ static PyObject *Texture_get_type(Texture *self, void *closure) {
     PyObject *slot = self->slots[SLOT_TEXTURE__TYPE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_texture_type");
+    slot = PyObject_CallFunction(TextureType_Enum, "i", (int)self->data->type);
     self->slots[SLOT_TEXTURE__TYPE] = slot;
     return Py_NewRef(slot);
 }
@@ -11253,7 +12323,7 @@ static PyObject *Texture_get_wrap_u(Texture *self, void *closure) {
     PyObject *slot = self->slots[SLOT_TEXTURE__WRAP_U];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_wrap_mode");
+    slot = PyObject_CallFunction(WrapMode_Enum, "i", (int)self->data->wrap_u);
     self->slots[SLOT_TEXTURE__WRAP_U] = slot;
     return Py_NewRef(slot);
 }
@@ -11262,7 +12332,7 @@ static PyObject *Texture_get_wrap_v(Texture *self, void *closure) {
     PyObject *slot = self->slots[SLOT_TEXTURE__WRAP_V];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_wrap_mode");
+    slot = PyObject_CallFunction(WrapMode_Enum, "i", (int)self->data->wrap_v);
     self->slots[SLOT_TEXTURE__WRAP_V] = slot;
     return Py_NewRef(slot);
 }
@@ -11471,7 +12541,7 @@ static PyObject *Shader_get_type(Shader *self, void *closure) {
     PyObject *slot = self->slots[SLOT_SHADER__TYPE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_shader_type");
+    slot = PyObject_CallFunction(ShaderType_Enum, "i", (int)self->data->type);
     self->slots[SLOT_SHADER__TYPE] = slot;
     return Py_NewRef(slot);
 }
@@ -11550,6 +12620,14 @@ static PyTypeObject ShaderPropBinding_Type = {
     .tp_new = PyType_GenericNew,
     .tp_getset = ShaderPropBinding_getset,
 };
+
+static PyObject *ShaderPropBinding_from(ufbx_shader_prop_binding *data, Context *ctx) {
+    ShaderPropBinding *obj = (ShaderPropBinding*)PyObject_CallObject((PyObject*)&ShaderPropBinding_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
 
 #define SLOT_COUNT_SHADER_BINDING 1
 enum {
@@ -11675,6 +12753,14 @@ static PyTypeObject PropOverride_Type = {
     .tp_getset = PropOverride_getset,
 };
 
+static PyObject *PropOverride_from(ufbx_prop_override *data, Context *ctx) {
+    PropOverride *obj = (PropOverride*)PyObject_CallObject((PyObject*)&PropOverride_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
+
 #define SLOT_COUNT_ANIM 8
 enum {
     SLOT_ANIM__TIME_BEGIN,
@@ -11788,6 +12874,14 @@ static PyTypeObject Anim_Type = {
     .tp_new = PyType_GenericNew,
     .tp_getset = Anim_getset,
 };
+
+static PyObject *Anim_from(ufbx_anim *data, Context *ctx) {
+    Anim *obj = (Anim*)PyObject_CallObject((PyObject*)&Anim_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
 
 #define SLOT_COUNT_ANIM_STACK 4
 enum {
@@ -11923,6 +13017,14 @@ static PyTypeObject AnimProp_Type = {
     .tp_new = PyType_GenericNew,
     .tp_getset = AnimProp_getset,
 };
+
+static PyObject *AnimProp_from(ufbx_anim_prop *data, Context *ctx) {
+    AnimProp *obj = (AnimProp*)PyObject_CallObject((PyObject*)&AnimProp_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
 
 #define SLOT_COUNT_ANIM_LAYER 9
 enum {
@@ -12126,7 +13228,7 @@ static PyObject *Extrapolation_get_mode(Extrapolation *self, void *closure) {
     PyObject *slot = self->slots[SLOT_EXTRAPOLATION__MODE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_extrapolation_mode");
+    slot = PyObject_CallFunction(ExtrapolationMode_Enum, "i", (int)self->data->mode);
     self->slots[SLOT_EXTRAPOLATION__MODE] = slot;
     return Py_NewRef(slot);
 }
@@ -12156,6 +13258,14 @@ static PyTypeObject Extrapolation_Type = {
     .tp_new = PyType_GenericNew,
     .tp_getset = Extrapolation_getset,
 };
+
+static PyObject *Extrapolation_from(ufbx_extrapolation *data, Context *ctx) {
+    Extrapolation *obj = (Extrapolation*)PyObject_CallObject((PyObject*)&Extrapolation_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
 
 #define SLOT_COUNT_ANIM_CURVE 7
 enum {
@@ -12193,7 +13303,7 @@ static PyObject *AnimCurve_get_pre_extrapolation(AnimCurve *self, void *closure)
     PyObject *slot = self->slots[SLOT_ANIM_CURVE__PRE_EXTRAPOLATION];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_extrapolation");
+    slot = Extrapolation_from(&self->data->pre_extrapolation, self->ctx);
     self->slots[SLOT_ANIM_CURVE__PRE_EXTRAPOLATION] = slot;
     return Py_NewRef(slot);
 }
@@ -12202,7 +13312,7 @@ static PyObject *AnimCurve_get_post_extrapolation(AnimCurve *self, void *closure
     PyObject *slot = self->slots[SLOT_ANIM_CURVE__POST_EXTRAPOLATION];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_extrapolation");
+    slot = Extrapolation_from(&self->data->post_extrapolation, self->ctx);
     self->slots[SLOT_ANIM_CURVE__POST_EXTRAPOLATION] = slot;
     return Py_NewRef(slot);
 }
@@ -12564,6 +13674,14 @@ static PyTypeObject ConstraintTarget_Type = {
     .tp_getset = ConstraintTarget_getset,
 };
 
+static PyObject *ConstraintTarget_from(ufbx_constraint_target *data, Context *ctx) {
+    ConstraintTarget *obj = (ConstraintTarget*)PyObject_CallObject((PyObject*)&ConstraintTarget_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
+
 #define SLOT_COUNT_CONSTRAINT 17
 enum {
     SLOT_CONSTRAINT__TYPE,
@@ -12601,7 +13719,7 @@ static PyObject *Constraint_get_type(Constraint *self, void *closure) {
     PyObject *slot = self->slots[SLOT_CONSTRAINT__TYPE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_constraint_type");
+    slot = PyObject_CallFunction(ConstraintType_Enum, "i", (int)self->data->type);
     self->slots[SLOT_CONSTRAINT__TYPE] = slot;
     return Py_NewRef(slot);
 }
@@ -12700,7 +13818,7 @@ static PyObject *Constraint_get_aim_up_type(Constraint *self, void *closure) {
     PyObject *slot = self->slots[SLOT_CONSTRAINT__AIM_UP_TYPE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_constraint_aim_up_type");
+    slot = PyObject_CallFunction(ConstraintAimUpType_Enum, "i", (int)self->data->aim_up_type);
     self->slots[SLOT_CONSTRAINT__AIM_UP_TYPE] = slot;
     return Py_NewRef(slot);
 }
@@ -12994,6 +14112,14 @@ static PyTypeObject BonePose_Type = {
     .tp_getset = BonePose_getset,
 };
 
+static PyObject *BonePose_from(ufbx_bone_pose *data, Context *ctx) {
+    BonePose *obj = (BonePose*)PyObject_CallObject((PyObject*)&BonePose_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
+
 #define SLOT_COUNT_POSE 2
 enum {
     SLOT_POSE__IS_BIND_POSE,
@@ -13097,7 +14223,7 @@ static PyObject *NameElement_get_type(NameElement *self, void *closure) {
     PyObject *slot = self->slots[SLOT_NAME_ELEMENT__TYPE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_element_type");
+    slot = PyObject_CallFunction(ElementType_Enum, "i", (int)self->data->type);
     self->slots[SLOT_NAME_ELEMENT__TYPE] = slot;
     return Py_NewRef(slot);
 }
@@ -13128,6 +14254,14 @@ static PyTypeObject NameElement_Type = {
     .tp_new = PyType_GenericNew,
     .tp_getset = NameElement_getset,
 };
+
+static PyObject *NameElement_from(ufbx_name_element *data, Context *ctx) {
+    NameElement *obj = (NameElement*)PyObject_CallObject((PyObject*)&NameElement_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
 
 #define SLOT_COUNT_APPLICATION 3
 enum {
@@ -13188,6 +14322,14 @@ static PyTypeObject Application_Type = {
     .tp_getset = Application_getset,
 };
 
+static PyObject *Application_from(ufbx_application *data, Context *ctx) {
+    Application *obj = (Application*)PyObject_CallObject((PyObject*)&Application_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
+
 #define SLOT_COUNT_WARNING 4
 enum {
     SLOT_WARNING__TYPE,
@@ -13207,7 +14349,7 @@ static PyObject *Warning_get_type(Warning *self, void *closure) {
     PyObject *slot = self->slots[SLOT_WARNING__TYPE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_warning_type");
+    slot = PyObject_CallFunction(WarningType_Enum, "i", (int)self->data->type);
     self->slots[SLOT_WARNING__TYPE] = slot;
     return Py_NewRef(slot);
 }
@@ -13258,6 +14400,14 @@ static PyTypeObject Warning_Type = {
     .tp_getset = Warning_getset,
 };
 
+static PyObject *Warning_from(ufbx_warning *data, Context *ctx) {
+    Warning *obj = (Warning*)PyObject_CallObject((PyObject*)&Warning_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
+
 #define SLOT_COUNT_THUMBNAIL 5
 enum {
     SLOT_THUMBNAIL__PROPS,
@@ -13278,7 +14428,7 @@ static PyObject *Thumbnail_get_props(Thumbnail *self, void *closure) {
     PyObject *slot = self->slots[SLOT_THUMBNAIL__PROPS];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_props");
+    slot = Props_from(&self->data->props, self->ctx);
     self->slots[SLOT_THUMBNAIL__PROPS] = slot;
     return Py_NewRef(slot);
 }
@@ -13305,7 +14455,7 @@ static PyObject *Thumbnail_get_format(Thumbnail *self, void *closure) {
     PyObject *slot = self->slots[SLOT_THUMBNAIL__FORMAT];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_thumbnail_format");
+    slot = PyObject_CallFunction(ThumbnailFormat_Enum, "i", (int)self->data->format);
     self->slots[SLOT_THUMBNAIL__FORMAT] = slot;
     return Py_NewRef(slot);
 }
@@ -13338,6 +14488,14 @@ static PyTypeObject Thumbnail_Type = {
     .tp_new = PyType_GenericNew,
     .tp_getset = Thumbnail_getset,
 };
+
+static PyObject *Thumbnail_from(ufbx_thumbnail *data, Context *ctx) {
+    Thumbnail *obj = (Thumbnail*)PyObject_CallObject((PyObject*)&Thumbnail_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
 
 #define SLOT_COUNT_METADATA 46
 enum {
@@ -13427,7 +14585,7 @@ static PyObject *Metadata_get_file_format(Metadata *self, void *closure) {
     PyObject *slot = self->slots[SLOT_METADATA__FILE_FORMAT];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_file_format");
+    slot = PyObject_CallFunction(FileFormat_Enum, "i", (int)self->data->file_format);
     self->slots[SLOT_METADATA__FILE_FORMAT] = slot;
     return Py_NewRef(slot);
 }
@@ -13535,7 +14693,7 @@ static PyObject *Metadata_get_exporter(Metadata *self, void *closure) {
     PyObject *slot = self->slots[SLOT_METADATA__EXPORTER];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_exporter");
+    slot = PyObject_CallFunction(Exporter_Enum, "i", (int)self->data->exporter);
     self->slots[SLOT_METADATA__EXPORTER] = slot;
     return Py_NewRef(slot);
 }
@@ -13553,7 +14711,7 @@ static PyObject *Metadata_get_scene_props(Metadata *self, void *closure) {
     PyObject *slot = self->slots[SLOT_METADATA__SCENE_PROPS];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_props");
+    slot = Props_from(&self->data->scene_props, self->ctx);
     self->slots[SLOT_METADATA__SCENE_PROPS] = slot;
     return Py_NewRef(slot);
 }
@@ -13562,7 +14720,7 @@ static PyObject *Metadata_get_original_application(Metadata *self, void *closure
     PyObject *slot = self->slots[SLOT_METADATA__ORIGINAL_APPLICATION];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_application");
+    slot = Application_from(&self->data->original_application, self->ctx);
     self->slots[SLOT_METADATA__ORIGINAL_APPLICATION] = slot;
     return Py_NewRef(slot);
 }
@@ -13571,7 +14729,7 @@ static PyObject *Metadata_get_latest_application(Metadata *self, void *closure) 
     PyObject *slot = self->slots[SLOT_METADATA__LATEST_APPLICATION];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_application");
+    slot = Application_from(&self->data->latest_application, self->ctx);
     self->slots[SLOT_METADATA__LATEST_APPLICATION] = slot;
     return Py_NewRef(slot);
 }
@@ -13580,7 +14738,7 @@ static PyObject *Metadata_get_thumbnail(Metadata *self, void *closure) {
     PyObject *slot = self->slots[SLOT_METADATA__THUMBNAIL];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_thumbnail");
+    slot = Thumbnail_from(&self->data->thumbnail, self->ctx);
     self->slots[SLOT_METADATA__THUMBNAIL] = slot;
     return Py_NewRef(slot);
 }
@@ -13733,7 +14891,7 @@ static PyObject *Metadata_get_space_conversion(Metadata *self, void *closure) {
     PyObject *slot = self->slots[SLOT_METADATA__SPACE_CONVERSION];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_space_conversion");
+    slot = PyObject_CallFunction(SpaceConversion_Enum, "i", (int)self->data->space_conversion);
     self->slots[SLOT_METADATA__SPACE_CONVERSION] = slot;
     return Py_NewRef(slot);
 }
@@ -13742,7 +14900,7 @@ static PyObject *Metadata_get_geometry_transform_handling(Metadata *self, void *
     PyObject *slot = self->slots[SLOT_METADATA__GEOMETRY_TRANSFORM_HANDLING];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_geometry_transform_handling");
+    slot = PyObject_CallFunction(GeometryTransformHandling_Enum, "i", (int)self->data->geometry_transform_handling);
     self->slots[SLOT_METADATA__GEOMETRY_TRANSFORM_HANDLING] = slot;
     return Py_NewRef(slot);
 }
@@ -13751,7 +14909,7 @@ static PyObject *Metadata_get_inherit_mode_handling(Metadata *self, void *closur
     PyObject *slot = self->slots[SLOT_METADATA__INHERIT_MODE_HANDLING];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_inherit_mode_handling");
+    slot = PyObject_CallFunction(InheritModeHandling_Enum, "i", (int)self->data->inherit_mode_handling);
     self->slots[SLOT_METADATA__INHERIT_MODE_HANDLING] = slot;
     return Py_NewRef(slot);
 }
@@ -13760,7 +14918,7 @@ static PyObject *Metadata_get_pivot_handling(Metadata *self, void *closure) {
     PyObject *slot = self->slots[SLOT_METADATA__PIVOT_HANDLING];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_pivot_handling");
+    slot = PyObject_CallFunction(PivotHandling_Enum, "i", (int)self->data->pivot_handling);
     self->slots[SLOT_METADATA__PIVOT_HANDLING] = slot;
     return Py_NewRef(slot);
 }
@@ -13769,7 +14927,7 @@ static PyObject *Metadata_get_handedness_conversion_axis(Metadata *self, void *c
     PyObject *slot = self->slots[SLOT_METADATA__HANDEDNESS_CONVERSION_AXIS];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_mirror_axis");
+    slot = PyObject_CallFunction(MirrorAxis_Enum, "i", (int)self->data->handedness_conversion_axis);
     self->slots[SLOT_METADATA__HANDEDNESS_CONVERSION_AXIS] = slot;
     return Py_NewRef(slot);
 }
@@ -13796,7 +14954,7 @@ static PyObject *Metadata_get_mirror_axis(Metadata *self, void *closure) {
     PyObject *slot = self->slots[SLOT_METADATA__MIRROR_AXIS];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_mirror_axis");
+    slot = PyObject_CallFunction(MirrorAxis_Enum, "i", (int)self->data->mirror_axis);
     self->slots[SLOT_METADATA__MIRROR_AXIS] = slot;
     return Py_NewRef(slot);
 }
@@ -13871,6 +15029,14 @@ static PyTypeObject Metadata_Type = {
     .tp_getset = Metadata_getset,
 };
 
+static PyObject *Metadata_from(ufbx_metadata *data, Context *ctx) {
+    Metadata *obj = (Metadata*)PyObject_CallObject((PyObject*)&Metadata_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
+
 #define SLOT_COUNT_SCENE_SETTINGS 11
 enum {
     SLOT_SCENE_SETTINGS__PROPS,
@@ -13897,7 +15063,7 @@ static PyObject *SceneSettings_get_props(SceneSettings *self, void *closure) {
     PyObject *slot = self->slots[SLOT_SCENE_SETTINGS__PROPS];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_props");
+    slot = Props_from(&self->data->props, self->ctx);
     self->slots[SLOT_SCENE_SETTINGS__PROPS] = slot;
     return Py_NewRef(slot);
 }
@@ -13951,7 +15117,7 @@ static PyObject *SceneSettings_get_time_mode(SceneSettings *self, void *closure)
     PyObject *slot = self->slots[SLOT_SCENE_SETTINGS__TIME_MODE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_time_mode");
+    slot = PyObject_CallFunction(TimeMode_Enum, "i", (int)self->data->time_mode);
     self->slots[SLOT_SCENE_SETTINGS__TIME_MODE] = slot;
     return Py_NewRef(slot);
 }
@@ -13960,7 +15126,7 @@ static PyObject *SceneSettings_get_time_protocol(SceneSettings *self, void *clos
     PyObject *slot = self->slots[SLOT_SCENE_SETTINGS__TIME_PROTOCOL];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_time_protocol");
+    slot = PyObject_CallFunction(TimeProtocol_Enum, "i", (int)self->data->time_protocol);
     self->slots[SLOT_SCENE_SETTINGS__TIME_PROTOCOL] = slot;
     return Py_NewRef(slot);
 }
@@ -13969,7 +15135,7 @@ static PyObject *SceneSettings_get_snap_mode(SceneSettings *self, void *closure)
     PyObject *slot = self->slots[SLOT_SCENE_SETTINGS__SNAP_MODE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_snap_mode");
+    slot = PyObject_CallFunction(SnapMode_Enum, "i", (int)self->data->snap_mode);
     self->slots[SLOT_SCENE_SETTINGS__SNAP_MODE] = slot;
     return Py_NewRef(slot);
 }
@@ -13978,7 +15144,7 @@ static PyObject *SceneSettings_get_original_axis_up(SceneSettings *self, void *c
     PyObject *slot = self->slots[SLOT_SCENE_SETTINGS__ORIGINAL_AXIS_UP];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_coordinate_axis");
+    slot = PyObject_CallFunction(CoordinateAxis_Enum, "i", (int)self->data->original_axis_up);
     self->slots[SLOT_SCENE_SETTINGS__ORIGINAL_AXIS_UP] = slot;
     return Py_NewRef(slot);
 }
@@ -14018,6 +15184,14 @@ static PyTypeObject SceneSettings_Type = {
     .tp_getset = SceneSettings_getset,
 };
 
+static PyObject *SceneSettings_from(ufbx_scene_settings *data, Context *ctx) {
+    SceneSettings *obj = (SceneSettings*)PyObject_CallObject((PyObject*)&SceneSettings_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
+
 #define SLOT_COUNT_SCENE 10
 enum {
     SLOT_SCENE__METADATA,
@@ -14043,7 +15217,7 @@ static PyObject *Scene_get_metadata(Scene *self, void *closure) {
     PyObject *slot = self->slots[SLOT_SCENE__METADATA];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_metadata");
+    slot = Metadata_from(&self->data->metadata, self->ctx);
     self->slots[SLOT_SCENE__METADATA] = slot;
     return Py_NewRef(slot);
 }
@@ -14052,7 +15226,7 @@ static PyObject *Scene_get_settings(Scene *self, void *closure) {
     PyObject *slot = self->slots[SLOT_SCENE__SETTINGS];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_scene_settings");
+    slot = SceneSettings_from(&self->data->settings, self->ctx);
     self->slots[SLOT_SCENE__SETTINGS] = slot;
     return Py_NewRef(slot);
 }
@@ -14154,6 +15328,14 @@ static PyTypeObject Scene_Type = {
     .tp_getset = Scene_getset,
 };
 
+static PyObject *Scene_from(ufbx_scene *data, Context *ctx) {
+    Scene *obj = (Scene*)PyObject_CallObject((PyObject*)&Scene_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
+
 #define SLOT_COUNT_VERTEX_STREAM 3
 enum {
     SLOT_VERTEX_STREAM__DATA,
@@ -14213,6 +15395,14 @@ static PyTypeObject VertexStream_Type = {
     .tp_getset = VertexStream_getset,
 };
 
+static PyObject *VertexStream_from(ufbx_vertex_stream *data, Context *ctx) {
+    VertexStream *obj = (VertexStream*)PyObject_CallObject((PyObject*)&VertexStream_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
+
 #define SLOT_COUNT_OPEN_FILE_INFO 3
 enum {
     SLOT_OPEN_FILE_INFO__CONTEXT,
@@ -14240,7 +15430,7 @@ static PyObject *OpenFileInfo_get_type(OpenFileInfo *self, void *closure) {
     PyObject *slot = self->slots[SLOT_OPEN_FILE_INFO__TYPE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_open_file_type");
+    slot = PyObject_CallFunction(OpenFileType_Enum, "i", (int)self->data->type);
     self->slots[SLOT_OPEN_FILE_INFO__TYPE] = slot;
     return Py_NewRef(slot);
 }
@@ -14271,6 +15461,14 @@ static PyTypeObject OpenFileInfo_Type = {
     .tp_new = PyType_GenericNew,
     .tp_getset = OpenFileInfo_getset,
 };
+
+static PyObject *OpenFileInfo_from(ufbx_open_file_info *data, Context *ctx) {
+    OpenFileInfo *obj = (OpenFileInfo*)PyObject_CallObject((PyObject*)&OpenFileInfo_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
 
 #define SLOT_COUNT_OPEN_FILE_OPTS 2
 enum {
@@ -14319,6 +15517,14 @@ static PyTypeObject OpenFileOpts_Type = {
     .tp_new = PyType_GenericNew,
     .tp_getset = OpenFileOpts_getset,
 };
+
+static PyObject *OpenFileOpts_from(ufbx_open_file_opts *data, Context *ctx) {
+    OpenFileOpts *obj = (OpenFileOpts*)PyObject_CallObject((PyObject*)&OpenFileOpts_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
 
 #define SLOT_COUNT_ERROR_FRAME 3
 enum {
@@ -14379,6 +15585,14 @@ static PyTypeObject ErrorFrame_Type = {
     .tp_getset = ErrorFrame_getset,
 };
 
+static PyObject *ErrorFrame_from(ufbx_error_frame *data, Context *ctx) {
+    ErrorFrame *obj = (ErrorFrame*)PyObject_CallObject((PyObject*)&ErrorFrame_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
+
 #define SLOT_COUNT_ERROR 6
 enum {
     SLOT_ERROR__TYPE,
@@ -14400,7 +15614,7 @@ static PyObject *Error_get_type(Error *self, void *closure) {
     PyObject *slot = self->slots[SLOT_ERROR__TYPE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_error_type");
+    slot = PyObject_CallFunction(ErrorType_Enum, "i", (int)self->data->type);
     self->slots[SLOT_ERROR__TYPE] = slot;
     return Py_NewRef(slot);
 }
@@ -14471,6 +15685,14 @@ static PyTypeObject Error_Type = {
     .tp_getset = Error_getset,
 };
 
+static PyObject *Error_from(ufbx_error *data, Context *ctx) {
+    Error *obj = (Error*)PyObject_CallObject((PyObject*)&Error_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
+
 #define SLOT_COUNT_PROGRESS 2
 enum {
     SLOT_PROGRESS__BYTES_READ,
@@ -14518,6 +15740,14 @@ static PyTypeObject Progress_Type = {
     .tp_new = PyType_GenericNew,
     .tp_getset = Progress_getset,
 };
+
+static PyObject *Progress_from(ufbx_progress *data, Context *ctx) {
+    Progress *obj = (Progress*)PyObject_CallObject((PyObject*)&Progress_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
 
 #define SLOT_COUNT_INFLATE_INPUT 14
 enum {
@@ -14699,6 +15929,14 @@ static PyTypeObject InflateInput_Type = {
     .tp_getset = InflateInput_getset,
 };
 
+static PyObject *InflateInput_from(ufbx_inflate_input *data, Context *ctx) {
+    InflateInput *obj = (InflateInput*)PyObject_CallObject((PyObject*)&InflateInput_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
+
 #define SLOT_COUNT_INFLATE_RETAIN 2
 enum {
     SLOT_INFLATE_RETAIN__INITIALIZED,
@@ -14747,6 +15985,14 @@ static PyTypeObject InflateRetain_Type = {
     .tp_getset = InflateRetain_getset,
 };
 
+static PyObject *InflateRetain_from(ufbx_inflate_retain *data, Context *ctx) {
+    InflateRetain *obj = (InflateRetain*)PyObject_CallObject((PyObject*)&InflateRetain_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
+
 #define SLOT_COUNT_BAKED_VEC3 3
 enum {
     SLOT_BAKED_VEC3__TIME,
@@ -14783,7 +16029,7 @@ static PyObject *BakedVec3_get_flags(BakedVec3 *self, void *closure) {
     PyObject *slot = self->slots[SLOT_BAKED_VEC3__FLAGS];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_baked_key_flags");
+    slot = PyObject_CallFunction(BakedKeyFlags_Enum, "i", (int)self->data->flags);
     self->slots[SLOT_BAKED_VEC3__FLAGS] = slot;
     return Py_NewRef(slot);
 }
@@ -14805,6 +16051,14 @@ static PyTypeObject BakedVec3_Type = {
     .tp_new = PyType_GenericNew,
     .tp_getset = BakedVec3_getset,
 };
+
+static PyObject *BakedVec3_from(ufbx_baked_vec3 *data, Context *ctx) {
+    BakedVec3 *obj = (BakedVec3*)PyObject_CallObject((PyObject*)&BakedVec3_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
 
 #define SLOT_COUNT_BAKED_QUAT 3
 enum {
@@ -14842,7 +16096,7 @@ static PyObject *BakedQuat_get_flags(BakedQuat *self, void *closure) {
     PyObject *slot = self->slots[SLOT_BAKED_QUAT__FLAGS];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_baked_key_flags");
+    slot = PyObject_CallFunction(BakedKeyFlags_Enum, "i", (int)self->data->flags);
     self->slots[SLOT_BAKED_QUAT__FLAGS] = slot;
     return Py_NewRef(slot);
 }
@@ -14864,6 +16118,14 @@ static PyTypeObject BakedQuat_Type = {
     .tp_new = PyType_GenericNew,
     .tp_getset = BakedQuat_getset,
 };
+
+static PyObject *BakedQuat_from(ufbx_baked_quat *data, Context *ctx) {
+    BakedQuat *obj = (BakedQuat*)PyObject_CallObject((PyObject*)&BakedQuat_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
 
 #define SLOT_COUNT_BAKED_NODE 8
 enum {
@@ -14979,6 +16241,14 @@ static PyTypeObject BakedNode_Type = {
     .tp_getset = BakedNode_getset,
 };
 
+static PyObject *BakedNode_from(ufbx_baked_node *data, Context *ctx) {
+    BakedNode *obj = (BakedNode*)PyObject_CallObject((PyObject*)&BakedNode_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
+
 #define SLOT_COUNT_BAKED_PROP 3
 enum {
     SLOT_BAKED_PROP__NAME,
@@ -15038,6 +16308,14 @@ static PyTypeObject BakedProp_Type = {
     .tp_getset = BakedProp_getset,
 };
 
+static PyObject *BakedProp_from(ufbx_baked_prop *data, Context *ctx) {
+    BakedProp *obj = (BakedProp*)PyObject_CallObject((PyObject*)&BakedProp_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
+
 #define SLOT_COUNT_BAKED_ELEMENT 2
 enum {
     SLOT_BAKED_ELEMENT__ELEMENT_ID,
@@ -15085,6 +16363,14 @@ static PyTypeObject BakedElement_Type = {
     .tp_new = PyType_GenericNew,
     .tp_getset = BakedElement_getset,
 };
+
+static PyObject *BakedElement_from(ufbx_baked_element *data, Context *ctx) {
+    BakedElement *obj = (BakedElement*)PyObject_CallObject((PyObject*)&BakedElement_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
 
 #define SLOT_COUNT_BAKED_ANIM_METADATA 4
 enum {
@@ -15155,6 +16441,14 @@ static PyTypeObject BakedAnimMetadata_Type = {
     .tp_new = PyType_GenericNew,
     .tp_getset = BakedAnimMetadata_getset,
 };
+
+static PyObject *BakedAnimMetadata_from(ufbx_baked_anim_metadata *data, Context *ctx) {
+    BakedAnimMetadata *obj = (BakedAnimMetadata*)PyObject_CallObject((PyObject*)&BakedAnimMetadata_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
 
 #define SLOT_COUNT_BAKED_ANIM 8
 enum {
@@ -15242,7 +16536,7 @@ static PyObject *BakedAnim_get_metadata(BakedAnim *self, void *closure) {
     PyObject *slot = self->slots[SLOT_BAKED_ANIM__METADATA];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_baked_anim_metadata");
+    slot = BakedAnimMetadata_from(&self->data->metadata, self->ctx);
     self->slots[SLOT_BAKED_ANIM__METADATA] = slot;
     return Py_NewRef(slot);
 }
@@ -15269,6 +16563,14 @@ static PyTypeObject BakedAnim_Type = {
     .tp_new = PyType_GenericNew,
     .tp_getset = BakedAnim_getset,
 };
+
+static PyObject *BakedAnim_from(ufbx_baked_anim *data, Context *ctx) {
+    BakedAnim *obj = (BakedAnim*)PyObject_CallObject((PyObject*)&BakedAnim_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
 
 #define SLOT_COUNT_THREAD_POOL_INFO 1
 enum {
@@ -15306,6 +16608,14 @@ static PyTypeObject ThreadPoolInfo_Type = {
     .tp_new = PyType_GenericNew,
     .tp_getset = ThreadPoolInfo_getset,
 };
+
+static PyObject *ThreadPoolInfo_from(ufbx_thread_pool_info *data, Context *ctx) {
+    ThreadPoolInfo *obj = (ThreadPoolInfo*)PyObject_CallObject((PyObject*)&ThreadPoolInfo_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
 
 #define SLOT_COUNT_PANIC 3
 enum {
@@ -15366,6 +16676,14 @@ static PyTypeObject Panic_Type = {
     .tp_getset = Panic_getset,
 };
 
+static PyObject *Panic_from(ufbx_panic *data, Context *ctx) {
+    Panic *obj = (Panic*)PyObject_CallObject((PyObject*)&Panic_Type, NULL);
+    if (!obj) return NULL;
+    obj->ctx = (Context*)Py_NewRef(ctx);
+    obj->data = data;
+    return (PyObject*)obj;
+}
+
 static PyTypeObject *Element_typeof(ufbx_element_type type) {
     switch (type) {
         case UFBX_ELEMENT_UNKNOWN: return &Unknown_Type;
@@ -15421,6 +16739,69 @@ static PyObject *Element_create(ufbx_element *elem, Context *ctx) {
     obj->data = elem;
     return (PyObject*)obj;
 }
+
+static EnumType enum_types[] = {
+    { &RotationOrder_Enum, "RotationOrder", RotationOrder_values, array_count(RotationOrder_values), false },
+    { &DomValueType_Enum, "DomValueType", DomValueType_values, array_count(DomValueType_values), false },
+    { &PropType_Enum, "PropType", PropType_values, array_count(PropType_values), false },
+    { &PropFlags_Enum, "PropFlags", PropFlags_values, array_count(PropFlags_values), true },
+    { &ElementType_Enum, "ElementType", ElementType_values, array_count(ElementType_values), false },
+    { &InheritMode_Enum, "InheritMode", InheritMode_values, array_count(InheritMode_values), false },
+    { &MirrorAxis_Enum, "MirrorAxis", MirrorAxis_values, array_count(MirrorAxis_values), false },
+    { &SubdivisionDisplayMode_Enum, "SubdivisionDisplayMode", SubdivisionDisplayMode_values, array_count(SubdivisionDisplayMode_values), false },
+    { &SubdivisionBoundary_Enum, "SubdivisionBoundary", SubdivisionBoundary_values, array_count(SubdivisionBoundary_values), false },
+    { &LightType_Enum, "LightType", LightType_values, array_count(LightType_values), false },
+    { &LightDecay_Enum, "LightDecay", LightDecay_values, array_count(LightDecay_values), false },
+    { &LightAreaShape_Enum, "LightAreaShape", LightAreaShape_values, array_count(LightAreaShape_values), false },
+    { &ProjectionMode_Enum, "ProjectionMode", ProjectionMode_values, array_count(ProjectionMode_values), false },
+    { &AspectMode_Enum, "AspectMode", AspectMode_values, array_count(AspectMode_values), false },
+    { &ApertureMode_Enum, "ApertureMode", ApertureMode_values, array_count(ApertureMode_values), false },
+    { &GateFit_Enum, "GateFit", GateFit_values, array_count(GateFit_values), false },
+    { &ApertureFormat_Enum, "ApertureFormat", ApertureFormat_values, array_count(ApertureFormat_values), false },
+    { &CoordinateAxis_Enum, "CoordinateAxis", CoordinateAxis_values, array_count(CoordinateAxis_values), false },
+    { &NurbsTopology_Enum, "NurbsTopology", NurbsTopology_values, array_count(NurbsTopology_values), false },
+    { &MarkerType_Enum, "MarkerType", MarkerType_values, array_count(MarkerType_values), false },
+    { &LodDisplay_Enum, "LodDisplay", LodDisplay_values, array_count(LodDisplay_values), false },
+    { &SkinningMethod_Enum, "SkinningMethod", SkinningMethod_values, array_count(SkinningMethod_values), false },
+    { &CacheFileFormat_Enum, "CacheFileFormat", CacheFileFormat_values, array_count(CacheFileFormat_values), false },
+    { &CacheDataFormat_Enum, "CacheDataFormat", CacheDataFormat_values, array_count(CacheDataFormat_values), false },
+    { &CacheDataEncoding_Enum, "CacheDataEncoding", CacheDataEncoding_values, array_count(CacheDataEncoding_values), false },
+    { &CacheInterpretation_Enum, "CacheInterpretation", CacheInterpretation_values, array_count(CacheInterpretation_values), false },
+    { &ShaderType_Enum, "ShaderType", ShaderType_values, array_count(ShaderType_values), false },
+    { &MaterialFbxMap_Enum, "MaterialFbxMap", MaterialFbxMap_values, array_count(MaterialFbxMap_values), false },
+    { &MaterialPbrMap_Enum, "MaterialPbrMap", MaterialPbrMap_values, array_count(MaterialPbrMap_values), false },
+    { &MaterialFeature_Enum, "MaterialFeature", MaterialFeature_values, array_count(MaterialFeature_values), false },
+    { &TextureType_Enum, "TextureType", TextureType_values, array_count(TextureType_values), false },
+    { &BlendMode_Enum, "BlendMode", BlendMode_values, array_count(BlendMode_values), false },
+    { &WrapMode_Enum, "WrapMode", WrapMode_values, array_count(WrapMode_values), false },
+    { &ShaderTextureType_Enum, "ShaderTextureType", ShaderTextureType_values, array_count(ShaderTextureType_values), false },
+    { &Interpolation_Enum, "Interpolation", Interpolation_values, array_count(Interpolation_values), false },
+    { &ExtrapolationMode_Enum, "ExtrapolationMode", ExtrapolationMode_values, array_count(ExtrapolationMode_values), false },
+    { &ConstraintType_Enum, "ConstraintType", ConstraintType_values, array_count(ConstraintType_values), false },
+    { &ConstraintAimUpType_Enum, "ConstraintAimUpType", ConstraintAimUpType_values, array_count(ConstraintAimUpType_values), false },
+    { &ConstraintIkPoleType_Enum, "ConstraintIkPoleType", ConstraintIkPoleType_values, array_count(ConstraintIkPoleType_values), false },
+    { &Exporter_Enum, "Exporter", Exporter_values, array_count(Exporter_values), false },
+    { &FileFormat_Enum, "FileFormat", FileFormat_values, array_count(FileFormat_values), false },
+    { &WarningType_Enum, "WarningType", WarningType_values, array_count(WarningType_values), false },
+    { &ThumbnailFormat_Enum, "ThumbnailFormat", ThumbnailFormat_values, array_count(ThumbnailFormat_values), false },
+    { &SpaceConversion_Enum, "SpaceConversion", SpaceConversion_values, array_count(SpaceConversion_values), false },
+    { &GeometryTransformHandling_Enum, "GeometryTransformHandling", GeometryTransformHandling_values, array_count(GeometryTransformHandling_values), false },
+    { &InheritModeHandling_Enum, "InheritModeHandling", InheritModeHandling_values, array_count(InheritModeHandling_values), false },
+    { &PivotHandling_Enum, "PivotHandling", PivotHandling_values, array_count(PivotHandling_values), false },
+    { &TimeMode_Enum, "TimeMode", TimeMode_values, array_count(TimeMode_values), false },
+    { &TimeProtocol_Enum, "TimeProtocol", TimeProtocol_values, array_count(TimeProtocol_values), false },
+    { &SnapMode_Enum, "SnapMode", SnapMode_values, array_count(SnapMode_values), false },
+    { &TopoFlags_Enum, "TopoFlags", TopoFlags_values, array_count(TopoFlags_values), true },
+    { &OpenFileType_Enum, "OpenFileType", OpenFileType_values, array_count(OpenFileType_values), false },
+    { &ErrorType_Enum, "ErrorType", ErrorType_values, array_count(ErrorType_values), false },
+    { &ProgressResult_Enum, "ProgressResult", ProgressResult_values, array_count(ProgressResult_values), false },
+    { &IndexErrorHandling_Enum, "IndexErrorHandling", IndexErrorHandling_values, array_count(IndexErrorHandling_values), false },
+    { &UnicodeErrorHandling_Enum, "UnicodeErrorHandling", UnicodeErrorHandling_values, array_count(UnicodeErrorHandling_values), false },
+    { &BakedKeyFlags_Enum, "BakedKeyFlags", BakedKeyFlags_values, array_count(BakedKeyFlags_values), true },
+    { &EvaluateFlags_Enum, "EvaluateFlags", EvaluateFlags_values, array_count(EvaluateFlags_values), true },
+    { &BakeStepHandling_Enum, "BakeStepHandling", BakeStepHandling_values, array_count(BakeStepHandling_values), false },
+    { &TransformFlags_Enum, "TransformFlags", TransformFlags_values, array_count(TransformFlags_values), true },
+};
 
 static ModuleType generated_types[] = {
     { &BoolList_Type, "BoolList" },

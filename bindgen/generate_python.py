@@ -11,6 +11,7 @@ g_indent = 0
 
 py_types: dict[str, "PythonType"] = { }
 py_structs: dict[str, "PythonStruct"] = { }
+py_enums: dict[str, "PythonEnum"] = { }
 
 module_types = []
 
@@ -52,7 +53,6 @@ def emit_prefix():
     emit_lines("""
         #include "prelude.h"
     """)
-    emit()
 
 c_types = {
     "void": "void",
@@ -102,9 +102,43 @@ class PythonStruct:
         self.upper = self.ir.short_name.upper()
         self.fields = []
 
+        do_emit = True
+        if self.ir.is_pod or self.ir.is_anonymous or self.ir.is_list or self.ir.is_input or self.ir.is_callback or self.ir.is_interface:
+            do_emit = False
+        if self.ir.name in manual_types:
+            do_emit = False
+        self.is_emitted = do_emit
+
+        do_from = True
+        if not do_emit:
+            do_from = False
+        if self.ir.name == "ufbx_element":
+            do_from = False
+        if self.ir.is_element:
+            do_from = False
+        self.has_from = do_from
+
         for field in self.ir.fields:
             if not field.private and field.name:
                 self.fields.append(PythonField(self, field))
+
+class PythonEnumValue:
+    def __init__(self, ir_value: ir.EnumValue):
+        self.ir = ir_value
+        self.name = self.ir.short_name
+
+class PythonEnum:
+    def __init__(self, ir_enum: ir.Enum):
+        self.ir = ir_enum
+        self.name = get_struct_python_name(self.ir)
+        self.upper = self.ir.short_name.upper()
+        self.values = []
+
+        for key in self.ir.values:
+            value = g_file.enum_values[key]
+            pv = PythonEnumValue(value)
+            self.values.append(pv)
+
 
 primitive_types = {
     "void": "None",
@@ -162,6 +196,9 @@ pyobject_manual = {
     "ufbx_blob": lambda v: f"Blob_from({v})",
 }
 
+def cbool(b):
+    return "true" if b else "false"
+
 def to_pyobject(irt: ir.Type, expr: str, ctx: str):
     prim = pyobject_primtive.get(irt.key)
     if prim:
@@ -182,6 +219,13 @@ def to_pyobject(irt: ir.Type, expr: str, ctx: str):
         if irs.is_list:
             ps = py_structs[irs.name]
             return f"{ps.name}_from({expr}, {ctx})"
+
+        ps = py_structs.get(irs.name)
+        if ps and ps.has_from:
+            return f"{ps.name}_from(&{expr}, {ctx})"
+    elif irt.kind == "enum":
+        pe = py_enums[irt.key]
+        return f"PyObject_CallFunction({pe.name}_Enum, \"i\", (int){expr})"
 
     return f"to_pyobject_todo(\"{irt.key}\")"
 
@@ -204,6 +248,16 @@ def emit_getter(ps: PythonStruct, pf: PythonField):
 
     unindent()
     emit("}")
+
+def emit_enum(pe: PythonEnum):
+    emit()
+    emit(f"static PyObject *{pe.name}_Enum;")
+    emit(f"static const EnumValue {pe.name}_values[] = {{")
+    indent()
+    for pv in pe.values:
+        emit(f"{{ {pv.ir.name}, \"{pv.name}\" }},")
+    unindent()
+    emit("};")
 
 def emit_list(ps: PythonStruct):
     if not ps.ir.is_list:
@@ -296,11 +350,16 @@ def emit_list(ps: PythonStruct):
     }}
     """)
 
+def emit_struct_forward(ps: PythonStruct):
+    if not ps.is_emitted:
+        return False
+
+    if ps.has_from:
+        emit(f"static PyObject *{ps.name}_from({ps.ir.name} *data, Context *ctx);")
+
 def emit_struct(ps: PythonStruct):
-    if ps.ir.is_pod or ps.ir.is_anonymous or ps.ir.is_list or ps.ir.is_input or ps.ir.is_callback or ps.ir.is_interface:
-        return
-    if ps.ir.name in manual_types:
-        return
+    if not ps.is_emitted:
+        return False
 
     module_types.append(ps.name)
 
@@ -390,6 +449,19 @@ def emit_struct(ps: PythonStruct):
     unindent()
     emit("};")
 
+    # Create helper
+    if ps.has_from:
+        emit()
+        emit_lines(f"""
+        static PyObject *{ps.name}_from({ps.ir.name} *data, Context *ctx) {{
+            {ps.name} *obj = ({ps.name}*)PyObject_CallObject((PyObject*)&{ps.name}_Type, NULL);
+            if (!obj) return NULL;
+            obj->ctx = (Context*)Py_NewRef(ctx);
+            obj->data = data;
+            return (PyObject*)obj;
+        }}
+        """)
+
 def emit_element():
     emit()
     emit(f"static PyTypeObject *Element_typeof(ufbx_element_type type) {{")
@@ -426,6 +498,19 @@ def emit_element():
     emit("}")
 
 def emit_module_types():
+
+    # Enums types
+    emit()
+    emit("static EnumType enum_types[] = {")
+    indent()
+
+    for pe in py_enums.values():
+        emit(f"""{{ &{pe.name}_Enum, \"{pe.name}\", {pe.name}_values, array_count({pe.name}_values), {cbool(pe.ir.flag)} }},""")
+
+    unindent()
+    emit("};")
+
+    # Generated types
     emit()
     emit("static ModuleType generated_types[] = {")
     indent()
@@ -436,7 +521,10 @@ def emit_module_types():
     unindent()
     emit("};")
 
-if __name__ == "__main__":
+def main():
+    global g_argv
+    global g_file
+    global g_outfile
 
     parser = argparse.ArgumentParser("generate_python.py")
     parser.add_argument("-i", help="Input ufbx_typed.json file")
@@ -466,18 +554,26 @@ if __name__ == "__main__":
 
         emit_prefix()
 
+        for key, enum in file.enums.items():
+            py_enums[key] = PythonEnum(enum)
+
         for key, struct in file.structs.items():
             py_structs[key] = PythonStruct(struct)
 
         for key, typ in file.types.items():
             py_types[key] = PythonType(typ)
 
-        for struct in file.structs.values():
-            ps = PythonStruct(struct)
+        for pe in py_enums.values():
+            emit_enum(pe)
+
+        emit()
+        for ps in py_structs.values():
+            emit_struct_forward(ps)
+
+        for ps in py_structs.values():
             emit_list(ps)
 
-        for struct in file.structs.values():
-            ps = PythonStruct(struct)
+        for ps in py_structs.values():
             emit_struct(ps)
 
         emit_element()
@@ -485,3 +581,6 @@ if __name__ == "__main__":
         emit_module_types()
 
         emit()
+
+if __name__ == "__main__":
+    main()

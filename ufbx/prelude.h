@@ -148,6 +148,19 @@ static PyObject* pyobject_todo(const char *message)
 }
 
 typedef struct {
+	int32_t value;
+	const char *name;
+} EnumValue;
+
+typedef struct {
+	PyObject **p_type;
+	const char *name;
+	const EnumValue *values;
+	size_t num_values;
+	bool is_flag;
+} EnumType;
+
+typedef struct {
 	PyTypeObject *type;
 	const char *name;
 } ModuleType;
@@ -244,3 +257,30 @@ static void register_pod_types(PyObject *m)
 
 }
 
+static bool register_enums(PyObject *m, const EnumType *enums, size_t num_enums)
+{
+	PyObject *enum_module = PyImport_ImportModule("enum");
+	if (!enum_module) return false;
+
+	for (size_t enum_ix = 0; enum_ix < num_enums; enum_ix++) {
+		EnumType et = enums[enum_ix];
+		const char *type = et.is_flag ? "IntFlag" : "IntEnum";
+
+		PyObject* values = PyDict_New();
+		for (size_t value_ix = 0; value_ix < et.num_values; value_ix++) {
+			EnumValue ev = et.values[value_ix];
+			PyDict_SetItemString(values, ev.name, PyLong_FromLong(ev.value));
+		}
+
+		PyObject *enum_obj = PyObject_CallMethod(enum_module, type, "sO", et.name, values);
+		Py_XDECREF(values);
+
+		*et.p_type = Py_NewRef(enum_obj);
+		if (PyModule_AddObject(m, et.name, enum_obj) < 0) {
+			return false;
+		}
+	}
+
+	Py_DECREF(enum_module);
+	return true;
+}
