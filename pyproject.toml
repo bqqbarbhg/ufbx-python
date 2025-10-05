@@ -1,0 +1,12 @@
+[tool.ufbx]
+name = "ufbx"
+version = "0.1.0"
+description = "Python bindings for ufbx"
+homepage="https://ufbx.github.io/"
+authors = ["Samuli Raivio <bqqbarbhg@gmail.com>"]
+
+[tool.ufbx.dependencies]
+python = "^3.8"
+
+[build-system]
+requires = ["setuptools", "wheel", "setuptools-rust"]
