@@ -23,7 +23,7 @@ jobs:
           - vers: arm64
             os: macos-15
           - vers: auto64
-            os: macos-15
+            os: macos-15-intel
           - vers: auto64
             os: windows-2022
 
