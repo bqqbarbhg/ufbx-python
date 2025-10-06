@@ -87,61 +87,59 @@ static PyObject *Context_error(Context *ctx)
 	return NULL;
 }
 
-static PyTypeObject *Vec2_Type;
-static PyTypeObject *Vec3_Type;
-static PyTypeObject *Vec4_Type;
-static PyTypeObject *Quat_Type;
-static PyTypeObject *Transform_Type;
+static PyObject *Vec2_Type;
+static PyObject *Vec3_Type;
+static PyObject *Vec4_Type;
+static PyObject *Quat_Type;
+static PyObject *Matrix_Type;
 
 static PyObject* Vec2_from(const ufbx_vec2 *v)
 {
-	PyObject *r = PyStructSequence_New(Vec2_Type);
+	PyObject *r = PyTuple_New(2);
 	if (!r) return NULL;
-	PyStructSequence_SetItem(r, 0, PyFloat_FromDouble(v->x));
-	PyStructSequence_SetItem(r, 1, PyFloat_FromDouble(v->y));
-	return r;
+	PyTuple_SetItem(r, 0, PyFloat_FromDouble(v->x));
+	PyTuple_SetItem(r, 1, PyFloat_FromDouble(v->y));
+    PyObject *result = PyObject_CallObject(Vec2_Type, r);
+    Py_XDECREF(r);
+    return result;
 }
 
 static PyObject* Vec3_from(const ufbx_vec3 *v)
 {
-	PyObject *r = PyStructSequence_New(Vec3_Type);
+	PyObject *r = PyTuple_New(3);
 	if (!r) return NULL;
-	PyStructSequence_SetItem(r, 0, PyFloat_FromDouble(v->x));
-	PyStructSequence_SetItem(r, 1, PyFloat_FromDouble(v->y));
-	PyStructSequence_SetItem(r, 2, PyFloat_FromDouble(v->z));
-	return r;
+	PyTuple_SetItem(r, 0, PyFloat_FromDouble(v->x));
+	PyTuple_SetItem(r, 1, PyFloat_FromDouble(v->y));
+	PyTuple_SetItem(r, 2, PyFloat_FromDouble(v->z));
+    PyObject *result = PyObject_CallObject(Vec3_Type, r);
+    Py_XDECREF(r);
+    return result;
 }
 
 static PyObject* Vec4_from(const ufbx_vec4 *v)
 {
-	PyObject *r = PyStructSequence_New(Vec3_Type);
+	PyObject *r = PyTuple_New(4);
 	if (!r) return NULL;
-	PyStructSequence_SetItem(r, 0, PyFloat_FromDouble(v->x));
-	PyStructSequence_SetItem(r, 1, PyFloat_FromDouble(v->y));
-	PyStructSequence_SetItem(r, 2, PyFloat_FromDouble(v->z));
-	PyStructSequence_SetItem(r, 3, PyFloat_FromDouble(v->w));
-	return r;
+	PyTuple_SetItem(r, 0, PyFloat_FromDouble(v->x));
+	PyTuple_SetItem(r, 1, PyFloat_FromDouble(v->y));
+	PyTuple_SetItem(r, 2, PyFloat_FromDouble(v->z));
+	PyTuple_SetItem(r, 3, PyFloat_FromDouble(v->w));
+    PyObject *result = PyObject_CallObject(Vec4_Type, r);
+    Py_XDECREF(r);
+    return result;
 }
 
 static PyObject* Quat_from(const ufbx_quat *v)
 {
-	PyObject *r = PyStructSequence_New(Quat_Type);
+	PyObject *r = PyTuple_New(4);
 	if (!r) return NULL;
-	PyStructSequence_SetItem(r, 0, PyFloat_FromDouble(v->x));
-	PyStructSequence_SetItem(r, 1, PyFloat_FromDouble(v->y));
-	PyStructSequence_SetItem(r, 2, PyFloat_FromDouble(v->z));
-	PyStructSequence_SetItem(r, 3, PyFloat_FromDouble(v->w));
-	return r;
-}
-
-static PyObject* Transform_from(const ufbx_transform *v)
-{
-	PyObject *r = PyStructSequence_New(Transform_Type);
-	if (!r) return NULL;
-	PyStructSequence_SetItem(r, 0, Vec3_from(&v->translation));
-	PyStructSequence_SetItem(r, 1, Quat_from(&v->rotation));
-	PyStructSequence_SetItem(r, 2, Vec3_from(&v->scale));
-	return r;
+	PyTuple_SetItem(r, 0, PyFloat_FromDouble(v->x));
+	PyTuple_SetItem(r, 1, PyFloat_FromDouble(v->y));
+	PyTuple_SetItem(r, 2, PyFloat_FromDouble(v->z));
+	PyTuple_SetItem(r, 3, PyFloat_FromDouble(v->w));
+    PyObject *result = PyObject_CallObject(Quat_Type, r);
+    Py_XDECREF(r);
+    return result;
 }
 
 static PyObject* Matrix_from(const ufbx_matrix *v)
@@ -152,52 +150,45 @@ static PyObject* Matrix_from(const ufbx_matrix *v)
 	PyTuple_SetItem(r, 1, Vec3_from(&v->cols[1]));
 	PyTuple_SetItem(r, 2, Vec3_from(&v->cols[2]));
 	PyTuple_SetItem(r, 3, Vec3_from(&v->cols[3]));
-	return r;
+    PyObject *result = PyObject_CallObject(Matrix_Type, r);
+    Py_XDECREF(r);
+    return result;
 }
 
 static ufbx_vec2 Vec2_to(PyObject *v)
 {
 	ufbx_vec2 r;
-	r.x = (ufbx_real)PyFloat_AsDouble(PyStructSequence_GetItem(v, 0));
-	r.y = (ufbx_real)PyFloat_AsDouble(PyStructSequence_GetItem(v, 1));
+	r.x = (ufbx_real)PyFloat_AsDouble(PyTuple_GetItem(v, 0));
+	r.y = (ufbx_real)PyFloat_AsDouble(PyTuple_GetItem(v, 1));
 	return r;
 }
 
 static ufbx_vec3 Vec3_to(PyObject *v)
 {
 	ufbx_vec3 r;
-	r.x = (ufbx_real)PyFloat_AsDouble(PyStructSequence_GetItem(v, 0));
-	r.y = (ufbx_real)PyFloat_AsDouble(PyStructSequence_GetItem(v, 1));
-	r.z = (ufbx_real)PyFloat_AsDouble(PyStructSequence_GetItem(v, 2));
+	r.x = (ufbx_real)PyFloat_AsDouble(PyTuple_GetItem(v, 0));
+	r.y = (ufbx_real)PyFloat_AsDouble(PyTuple_GetItem(v, 1));
+	r.z = (ufbx_real)PyFloat_AsDouble(PyTuple_GetItem(v, 2));
 	return r;
 }
 
 static ufbx_vec4 Vec4_to(PyObject *v)
 {
 	ufbx_vec4 r;
-	r.x = (ufbx_real)PyFloat_AsDouble(PyStructSequence_GetItem(v, 0));
-	r.y = (ufbx_real)PyFloat_AsDouble(PyStructSequence_GetItem(v, 1));
-	r.z = (ufbx_real)PyFloat_AsDouble(PyStructSequence_GetItem(v, 2));
-	r.w = (ufbx_real)PyFloat_AsDouble(PyStructSequence_GetItem(v, 3));
+	r.x = (ufbx_real)PyFloat_AsDouble(PyTuple_GetItem(v, 0));
+	r.y = (ufbx_real)PyFloat_AsDouble(PyTuple_GetItem(v, 1));
+	r.z = (ufbx_real)PyFloat_AsDouble(PyTuple_GetItem(v, 2));
+	r.w = (ufbx_real)PyFloat_AsDouble(PyTuple_GetItem(v, 3));
 	return r;
 }
 
 static ufbx_quat Quat_to(PyObject *v)
 {
 	ufbx_quat r;
-	r.x = (ufbx_real)PyFloat_AsDouble(PyStructSequence_GetItem(v, 0));
-	r.y = (ufbx_real)PyFloat_AsDouble(PyStructSequence_GetItem(v, 1));
-	r.z = (ufbx_real)PyFloat_AsDouble(PyStructSequence_GetItem(v, 2));
-	r.w = (ufbx_real)PyFloat_AsDouble(PyStructSequence_GetItem(v, 3));
-	return r;
-}
-
-static ufbx_transform Transform_to(PyObject *v)
-{
-	ufbx_transform r;
-	r.translation = Vec3_to(PyStructSequence_GetItem(v, 0));
-	r.rotation = Quat_to(PyStructSequence_GetItem(v, 1));
-	r.scale = Vec3_to(PyStructSequence_GetItem(v, 2));
+	r.x = (ufbx_real)PyFloat_AsDouble(PyTuple_GetItem(v, 0));
+	r.y = (ufbx_real)PyFloat_AsDouble(PyTuple_GetItem(v, 1));
+	r.z = (ufbx_real)PyFloat_AsDouble(PyTuple_GetItem(v, 2));
+	r.w = (ufbx_real)PyFloat_AsDouble(PyTuple_GetItem(v, 3));
 	return r;
 }
 
@@ -258,10 +249,7 @@ typedef struct {
 typedef struct {
 	PyObject **p_type;
 	const char *name;
-	const EnumValue *values;
-	size_t num_values;
-	bool is_flag;
-} EnumType;
+} ExternalType;
 
 typedef struct {
 	PyTypeObject *type;
@@ -290,105 +278,22 @@ static bool register_type(PyObject *m, PyTypeObject *type, const char *name)
 	return true;
 }
 
-static void register_pod_types(PyObject *m)
+static bool load_external_types(PyObject *mod_types, const ExternalType *exts, size_t num_exts)
 {
-	{
-		PyStructSequence_Field fields[] = {
-			{ "x", "X component" },
-			{ "y", "Y component" },
-			{ NULL },
-		};
-		PyStructSequence_Desc desc = {
-			"ufbx.Vec2", "2-dimensional vector", fields, (int)array_count(fields) - 1,
-		};
-		Vec2_Type = PyStructSequence_NewType(&desc);
-		register_type(m, Vec2_Type, "Vec2");
+	for (size_t i = 0; i < num_exts; i++) {
+		ExternalType et = exts[i];
+		PyObject *obj = PyObject_GetAttrString(mod_types, et.name);
+		if (!obj) return false;
+
+		*et.p_type = obj;
 	}
-
-	{
-		PyStructSequence_Field fields[] = {
-			{ "x", "X component" },
-			{ "y", "Y component" },
-			{ "z", "Z component" },
-			{ NULL },
-		};
-		PyStructSequence_Desc desc = {
-			"ufbx.Vec3", "3-dimensional vector", fields, (int)array_count(fields) - 1,
-		};
-		Vec3_Type = PyStructSequence_NewType(&desc);
-		register_type(m, Vec3_Type, "Vec3");
-	}
-
-	{
-		PyStructSequence_Field fields[] = {
-			{ "x", "X component" },
-			{ "y", "Y component" },
-			{ "z", "Z component" },
-			{ "w", "W component" },
-			{ NULL },
-		};
-		PyStructSequence_Desc desc = {
-			"ufbx.Vec4", "4-dimensional vector", fields, (int)array_count(fields) - 1,
-		};
-		Vec4_Type = PyStructSequence_NewType(&desc);
-		register_type(m, Vec4_Type, "Vec4");
-	}
-
-	{
-		PyStructSequence_Field fields[] = {
-			{ "x", "X component" },
-			{ "y", "Y component" },
-			{ "z", "Z component" },
-			{ "w", "W component" },
-			{ NULL },
-		};
-		PyStructSequence_Desc desc = {
-			"ufbx.Quat", "Quaternion", fields, (int)array_count(fields) - 1,
-		};
-		Quat_Type = PyStructSequence_NewType(&desc);
-		register_type(m, Quat_Type, "Quat");
-	}
-
-	{
-		PyStructSequence_Field fields[] = {
-			{ "translation", "Translationj" },
-			{ "rotation", "Rotation" },
-			{ "scale", "Scale" },
-			{ NULL },
-		};
-		PyStructSequence_Desc desc = {
-			"ufbx.Transform", "Transform", fields, (int)array_count(fields) - 1,
-		};
-		Transform_Type = PyStructSequence_NewType(&desc);
-		register_type(m, Transform_Type, "Transform");
-	}
-
-}
-
-static bool register_enums(PyObject *m, const EnumType *enums, size_t num_enums)
-{
-	PyObject *enum_module = PyImport_ImportModule("enum");
-	if (!enum_module) return false;
-
-	for (size_t enum_ix = 0; enum_ix < num_enums; enum_ix++) {
-		EnumType et = enums[enum_ix];
-		const char *type = et.is_flag ? "IntFlag" : "IntEnum";
-
-		PyObject* values = PyDict_New();
-		for (size_t value_ix = 0; value_ix < et.num_values; value_ix++) {
-			EnumValue ev = et.values[value_ix];
-			PyDict_SetItemString(values, ev.name, PyLong_FromLong(ev.value));
-		}
-
-		PyObject *enum_obj = PyObject_CallMethod(enum_module, type, "sO", et.name, values);
-		Py_XDECREF(values);
-
-		*et.p_type = Py_NewRef(enum_obj);
-		if (PyModule_AddObject(m, et.name, enum_obj) < 0) {
-			return false;
-		}
-	}
-
-	Py_DECREF(enum_module);
 	return true;
 }
+
+static ExternalType prelude_ext_types[] = {
+    { &Vec2_Type, "Vec2" },
+    { &Vec3_Type, "Vec3" },
+    { &Vec4_Type, "Vec4" },
+    { &Quat_Type, "Quat" },
+    { &Matrix_Type, "Matrix" },
+};

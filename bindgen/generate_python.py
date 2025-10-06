@@ -138,7 +138,6 @@ pod_types = {
     "ufbx_vec3": "Vec3",
     "ufbx_vec4": "Vec4",
     "ufbx_quat": "Quat",
-    "ufbx_transform": "Transform",
     "ufbx_matrix": "Matrix",
 }
 
@@ -351,7 +350,6 @@ pyobject_manual = {
     "ufbx_vec3": lambda v: f"Vec3_from(&{v})",
     "ufbx_vec4": lambda v: f"Vec4_from(&{v})",
     "ufbx_quat": lambda v: f"Quat_from(&{v})",
-    "ufbx_transform": lambda v: f"Transform_from(&{v})",
     "ufbx_matrix": lambda v: f"Matrix_from(&{v})",
     "ufbx_string": lambda v: f"String_from({v})",
     "ufbx_blob": lambda v: f"Blob_from({v})",
@@ -362,7 +360,6 @@ manual_to = {
     "ufbx_vec3": ("Vec3", "ufbx_vec3", lambda v: f"Vec3_to({v})", lambda v: v),
     "ufbx_vec4": ("Vec4", "ufbx_vec4", lambda v: f"Vec4_to({v})", lambda v: v),
     "ufbx_quat": ("Quat", "ufbx_quat", lambda v: f"Quat_to({v})", lambda v: v),
-    "ufbx_transform": ("Transform", "ufbx_transform", lambda v: f"Transform_to({v})", lambda v: v),
     "ufbx_matrix": ("Matrix", "ufbx_matrix", lambda v: f"Matrix_to({v})", lambda v: v),
     "ufbx_matrix*": ("Matrix", "ufbx_matrix", lambda v: f"Matrix_to({v})", lambda v: f"&{v}"),
 }
@@ -467,14 +464,7 @@ def emit_getter(ps: PythonStruct, pf: PythonField):
     emit("}")
 
 def emit_enum(pe: PythonEnum):
-    emit()
     emit(f"static PyObject *{pe.name}_Enum;")
-    emit(f"static const EnumValue {pe.name}_values[] = {{")
-    indent()
-    for pv in pe.values:
-        emit(f"{{ {pv.ir.name}, \"{pv.name}\" }},")
-    unindent()
-    emit("};")
 
 def emit_list(ps: PythonStruct):
     if not ps.ir.is_list:
@@ -611,14 +601,16 @@ def emit_pod_struct(ps: PythonStruct):
     # Struct declaration
     emit()
     emit_lines(f"""
-        static PyTypeObject *{ps.name}_Type;
+        static PyObject *{ps.name}_Type;
     """)
+
+    num_fields = len(ps.fields)
 
     # From
     emit()
     emit_lines(f"""
         static PyObject *{ps.name}_from(const {ps.ir.name} *v) {{
-            PyObject *r = PyStructSequence_New({ps.name}_Type);
+            PyObject *r = PyTuple_New({num_fields});
             if (!r) return NULL;
     """)
     indent()
@@ -626,8 +618,12 @@ def emit_pod_struct(ps: PythonStruct):
         field_irt = g_file.types[field.ir.type]
         expr = f"v->{field.name}"
         top = to_pyobject(field_irt, expr, "")
-        emit(f"PyStructSequence_SetItem(r, {ix}, {top});")
-    emit("return r;")
+        emit(f"PyTuple_SetItem(r, {ix}, {top});")
+    emit_lines(f"""
+        PyObject *result = PyObject_CallObject({ps.name}_Type, r);
+        Py_XDECREF(r);
+        return result;
+    """)
     unindent()
     emit("}")
 
@@ -640,7 +636,7 @@ def emit_pod_struct(ps: PythonStruct):
     indent()
     for ix, field in enumerate(ps.fields):
         field_irt = g_file.types[field.ir.type]
-        expr = f"PyStructSequence_GetItem(v, {ix})"
+        expr = f"PyTuple_GetItem(v, {ix})"
         top = from_pyobject(field_irt, expr)
         emit(f"r.{field.name} = {top};")
     emit("return r;")
@@ -1065,11 +1061,23 @@ def emit_module_types():
 
     # Enums types
     emit()
-    emit("static EnumType enum_types[] = {")
+    emit("static ExternalType enum_types[] = {")
     indent()
 
     for pe in py_enums.values():
-        emit(f"""{{ &{pe.name}_Enum, \"{pe.name}\", {pe.name}_values, array_count({pe.name}_values), {cbool(pe.ir.flag)} }},""")
+        emit(f"""{{ &{pe.name}_Enum, \"{pe.name}\" }},""")
+
+    unindent()
+    emit("};")
+
+    # POD types
+    emit()
+    emit("static ExternalType pod_types[] = {")
+    indent()
+
+    for ps in py_structs.values():
+        if ps.is_emitted_pod:
+            emit(f"""{{ &{ps.name}_Type, \"{ps.name}\" }},""")
 
     unindent()
     emit("};")
@@ -1116,42 +1124,59 @@ def emit_module_types():
     unindent()
     emit("};")
 
-def emit_pyi_prefix():
-    emit_lines(f"""
-        from typing import Any, Union, Iterator, Tuple, NamedTuple, Optional, TypedDict
-        from typing_extensions import Unpack
+def emit_gen_prefix():
+    emit_lines("""
+        from ._types import *
+        from typing import NamedTuple
         from enum import IntEnum, IntFlag
     """)
 
+def emit_gen_enum(pe: PythonEnum):
+    base = "IntFlag" if pe.ir.flag else "IntEnum"
+
+    emit()
+    emit(f"class {pe.name}({base}):")
+    indent()
+
+    for value in pe.values:
+        if pe.ir.flag:
+            emit(f"{value.name} = 0x{value.ir.value:x}")
+        else:
+            emit(f"{value.name} = {value.ir.value}")
+
+    unindent()
+
+def emit_gen_pod_struct(ps: PythonStruct):
+    if not ps.is_emitted_pod:
+        return
+
     emit()
     emit_lines(f"""
-        class Vec2(NamedTuple):
-            x: float
-            y: float
+        class {ps.name}(NamedTuple):
+    """)
+    indent()
 
-        class Vec3(NamedTuple):
-            x: float
-            y: float
-            z: float
+    has_any = False
+    if ps.fields:
+        for pf in ps.fields:
+            pt = py_types[pf.ir.type]
+            emit_lines(f"""
+                {pf.name}: {pt.pyi_name()}
+            """)
 
-        class Vec4(NamedTuple):
-            x: float
-            y: float
-            z: float
-            w: float
+        has_any = True
 
-        class Quat(NamedTuple):
-            x: float
-            y: float
-            z: float
-            w: float
+    if not has_any:
+        emit("...")
 
-        class Transform(NamedTuple):
-            translation: Vec3
-            rotation: Quat
-            scale: Vec3
+    unindent()
 
-        Matrix = Tuple[Vec3, Vec3, Vec3, Vec3]
+
+def emit_pyi_prefix():
+    emit_lines(f"""
+        from typing import Any, Iterator, Optional, TypedDict
+        from typing_extensions import Unpack
+        from ._generated import *
     """)
 
     emit()
@@ -1173,21 +1198,6 @@ def emit_pyi_prefix():
             class {name}(UfbxError):
                 pass
         """)
-
-def emit_pyi_enum(pe: PythonEnum):
-    base = "IntFlag" if pe.ir.flag else "IntEnum"
-
-    emit()
-    emit(f"class {pe.name}({base}):")
-    indent()
-
-    for value in pe.values:
-        if pe.ir.flag:
-            emit(f"{value.name} = 0x{value.ir.value:x}")
-        else:
-            emit(f"{value.name} = {value.ir.value}")
-
-    unindent()
 
 def emit_pyi_list(ps: PythonStruct):
     if not ps.ir.is_list:
@@ -1212,29 +1222,6 @@ def emit_pyi_list(ps: PythonStruct):
         def __getitem__(self, index: int) -> {data_py}: ...
         def __iter__(self) -> Iterator[{data_py}]: ...
     """)
-
-    unindent()
-
-def emit_pyi_pod_struct(ps: PythonStruct):
-    if not ps.is_emitted_pod:
-        return
-
-    emit()
-    emit(f"class {ps.name}(NamedTuple):")
-    indent()
-
-    has_any = False
-    if ps.fields:
-        for pf in ps.fields:
-            pt = py_types[pf.ir.type]
-            emit_lines(f"""
-                {pf.name}: {pt.pyi_name()}
-            """)
-
-        has_any = True
-
-    if not has_any:
-        emit("...")
 
     unindent()
 
@@ -1370,6 +1357,7 @@ def main():
         for key, func in file.functions.items():
             py_funcs[key] = PythonFunc(func)
 
+        emit()
         for pe in py_enums.values():
             emit_enum(pe)
 
@@ -1404,19 +1392,24 @@ def main():
 
         emit()
 
+    with open(os.path.join(output_path, "_generated.py"), "wt", encoding="utf-8") as f:
+        g_outfile = f
+
+        emit_gen_prefix()
+
+        for pe in py_enums.values():
+            emit_gen_enum(pe)
+
+        for ps in py_structs.values():
+            emit_gen_pod_struct(ps)
+
     with open(os.path.join(output_path, "_native.pyi"), "wt", encoding="utf-8") as f:
         g_outfile = f
 
         emit_pyi_prefix()
 
-        for pe in py_enums.values():
-            emit_pyi_enum(pe)
-
         for ps in py_structs.values():
             emit_pyi_list(ps)
-
-        for ps in py_structs.values():
-            emit_pyi_pod_struct(ps)
 
         for ps in py_structs.values():
             emit_pyi_struct(ps)

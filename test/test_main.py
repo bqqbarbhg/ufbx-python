@@ -2,6 +2,9 @@ import pytest
 import ufbx
 import os
 
+import faulthandler
+faulthandler.enable()
+
 root = os.path.dirname(os.path.abspath(__file__))
 
 def test_loading():
@@ -41,7 +44,7 @@ def test_ignore_geometry():
     assert mesh
     assert len(mesh.vertices) == 0
 
-def test_element_idenitty():
+def test_element_identity():
     scene = ufbx.load_file(os.path.join(root, "blender-default.fbx"),
         ignore_geometry=True)
 

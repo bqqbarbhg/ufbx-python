@@ -79,6 +79,29 @@ int register_errors(PyObject *m)
     return 0;
 }
 
+#ifndef GENERATED_IMPORT_LEVEL
+#define GENERATED_IMPORT_LEVEL 1
+#endif GENERATED_IMPORT_LEVEL
+
+static int load_types(PyObject *m)
+{
+    PyObject *globals = PyModule_GetDict(m);
+    if (!globals) return -1;
+
+    PyObject *mod_types = PyImport_ImportModuleLevel("_generated", globals, NULL, NULL, GENERATED_IMPORT_LEVEL);
+    PyErr_Print();
+    if (!mod_types) return -1;
+
+
+    load_external_types(mod_types, prelude_ext_types, array_count(prelude_ext_types));
+    load_external_types(mod_types, enum_types, array_count(enum_types));
+    load_external_types(mod_types, pod_types, array_count(pod_types));
+
+    Py_XDECREF(mod_types);
+
+    return 0;
+}
+
 static int ufbx_module_exec(PyObject *m)
 {
     if (UfbxError != NULL) {
@@ -96,14 +119,12 @@ static int ufbx_module_exec(PyObject *m)
         register_type(m, prelude_types[i].type, prelude_types[i].name);
     }
 
-    register_enums(m, enum_types, array_count(enum_types));
-
     for (size_t i = 0; i < array_count(generated_types); i++) {
         register_type(m, generated_types[i].type, generated_types[i].name);
     }
 
-    register_pod_types(m);
     register_errors(m);
+    load_types(m);
 
     return 0;
 }

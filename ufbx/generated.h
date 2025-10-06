@@ -1,738 +1,68 @@
 #include "prelude.h"
 
 static PyObject *RotationOrder_Enum;
-static const EnumValue RotationOrder_values[] = {
-    { UFBX_ROTATION_ORDER_XYZ, "XYZ" },
-    { UFBX_ROTATION_ORDER_XZY, "XZY" },
-    { UFBX_ROTATION_ORDER_YZX, "YZX" },
-    { UFBX_ROTATION_ORDER_YXZ, "YXZ" },
-    { UFBX_ROTATION_ORDER_ZXY, "ZXY" },
-    { UFBX_ROTATION_ORDER_ZYX, "ZYX" },
-    { UFBX_ROTATION_ORDER_SPHERIC, "SPHERIC" },
-};
-
 static PyObject *DomValueType_Enum;
-static const EnumValue DomValueType_values[] = {
-    { UFBX_DOM_VALUE_NUMBER, "NUMBER" },
-    { UFBX_DOM_VALUE_STRING, "STRING" },
-    { UFBX_DOM_VALUE_BLOB, "BLOB" },
-    { UFBX_DOM_VALUE_ARRAY_I32, "ARRAY_I32" },
-    { UFBX_DOM_VALUE_ARRAY_I64, "ARRAY_I64" },
-    { UFBX_DOM_VALUE_ARRAY_F32, "ARRAY_F32" },
-    { UFBX_DOM_VALUE_ARRAY_F64, "ARRAY_F64" },
-    { UFBX_DOM_VALUE_ARRAY_BLOB, "ARRAY_BLOB" },
-    { UFBX_DOM_VALUE_ARRAY_IGNORED, "ARRAY_IGNORED" },
-};
-
 static PyObject *PropType_Enum;
-static const EnumValue PropType_values[] = {
-    { UFBX_PROP_UNKNOWN, "UNKNOWN" },
-    { UFBX_PROP_BOOLEAN, "BOOLEAN" },
-    { UFBX_PROP_INTEGER, "INTEGER" },
-    { UFBX_PROP_NUMBER, "NUMBER" },
-    { UFBX_PROP_VECTOR, "VECTOR" },
-    { UFBX_PROP_COLOR, "COLOR" },
-    { UFBX_PROP_COLOR_WITH_ALPHA, "COLOR_WITH_ALPHA" },
-    { UFBX_PROP_STRING, "STRING" },
-    { UFBX_PROP_DATE_TIME, "DATE_TIME" },
-    { UFBX_PROP_TRANSLATION, "TRANSLATION" },
-    { UFBX_PROP_ROTATION, "ROTATION" },
-    { UFBX_PROP_SCALING, "SCALING" },
-    { UFBX_PROP_DISTANCE, "DISTANCE" },
-    { UFBX_PROP_COMPOUND, "COMPOUND" },
-    { UFBX_PROP_BLOB, "BLOB" },
-    { UFBX_PROP_REFERENCE, "REFERENCE" },
-};
-
 static PyObject *PropFlags_Enum;
-static const EnumValue PropFlags_values[] = {
-    { UFBX_PROP_FLAG_ANIMATABLE, "ANIMATABLE" },
-    { UFBX_PROP_FLAG_USER_DEFINED, "USER_DEFINED" },
-    { UFBX_PROP_FLAG_HIDDEN, "HIDDEN" },
-    { UFBX_PROP_FLAG_LOCK_X, "LOCK_X" },
-    { UFBX_PROP_FLAG_LOCK_Y, "LOCK_Y" },
-    { UFBX_PROP_FLAG_LOCK_Z, "LOCK_Z" },
-    { UFBX_PROP_FLAG_LOCK_W, "LOCK_W" },
-    { UFBX_PROP_FLAG_MUTE_X, "MUTE_X" },
-    { UFBX_PROP_FLAG_MUTE_Y, "MUTE_Y" },
-    { UFBX_PROP_FLAG_MUTE_Z, "MUTE_Z" },
-    { UFBX_PROP_FLAG_MUTE_W, "MUTE_W" },
-    { UFBX_PROP_FLAG_SYNTHETIC, "SYNTHETIC" },
-    { UFBX_PROP_FLAG_ANIMATED, "ANIMATED" },
-    { UFBX_PROP_FLAG_NOT_FOUND, "NOT_FOUND" },
-    { UFBX_PROP_FLAG_CONNECTED, "CONNECTED" },
-    { UFBX_PROP_FLAG_NO_VALUE, "NO_VALUE" },
-    { UFBX_PROP_FLAG_OVERRIDDEN, "OVERRIDDEN" },
-    { UFBX_PROP_FLAG_VALUE_REAL, "VALUE_REAL" },
-    { UFBX_PROP_FLAG_VALUE_VEC2, "VALUE_VEC2" },
-    { UFBX_PROP_FLAG_VALUE_VEC3, "VALUE_VEC3" },
-    { UFBX_PROP_FLAG_VALUE_VEC4, "VALUE_VEC4" },
-    { UFBX_PROP_FLAG_VALUE_INT, "VALUE_INT" },
-    { UFBX_PROP_FLAG_VALUE_STR, "VALUE_STR" },
-    { UFBX_PROP_FLAG_VALUE_BLOB, "VALUE_BLOB" },
-};
-
 static PyObject *ElementType_Enum;
-static const EnumValue ElementType_values[] = {
-    { UFBX_ELEMENT_UNKNOWN, "UNKNOWN" },
-    { UFBX_ELEMENT_NODE, "NODE" },
-    { UFBX_ELEMENT_MESH, "MESH" },
-    { UFBX_ELEMENT_LIGHT, "LIGHT" },
-    { UFBX_ELEMENT_CAMERA, "CAMERA" },
-    { UFBX_ELEMENT_BONE, "BONE" },
-    { UFBX_ELEMENT_EMPTY, "EMPTY" },
-    { UFBX_ELEMENT_LINE_CURVE, "LINE_CURVE" },
-    { UFBX_ELEMENT_NURBS_CURVE, "NURBS_CURVE" },
-    { UFBX_ELEMENT_NURBS_SURFACE, "NURBS_SURFACE" },
-    { UFBX_ELEMENT_NURBS_TRIM_SURFACE, "NURBS_TRIM_SURFACE" },
-    { UFBX_ELEMENT_NURBS_TRIM_BOUNDARY, "NURBS_TRIM_BOUNDARY" },
-    { UFBX_ELEMENT_PROCEDURAL_GEOMETRY, "PROCEDURAL_GEOMETRY" },
-    { UFBX_ELEMENT_STEREO_CAMERA, "STEREO_CAMERA" },
-    { UFBX_ELEMENT_CAMERA_SWITCHER, "CAMERA_SWITCHER" },
-    { UFBX_ELEMENT_MARKER, "MARKER" },
-    { UFBX_ELEMENT_LOD_GROUP, "LOD_GROUP" },
-    { UFBX_ELEMENT_SKIN_DEFORMER, "SKIN_DEFORMER" },
-    { UFBX_ELEMENT_SKIN_CLUSTER, "SKIN_CLUSTER" },
-    { UFBX_ELEMENT_BLEND_DEFORMER, "BLEND_DEFORMER" },
-    { UFBX_ELEMENT_BLEND_CHANNEL, "BLEND_CHANNEL" },
-    { UFBX_ELEMENT_BLEND_SHAPE, "BLEND_SHAPE" },
-    { UFBX_ELEMENT_CACHE_DEFORMER, "CACHE_DEFORMER" },
-    { UFBX_ELEMENT_CACHE_FILE, "CACHE_FILE" },
-    { UFBX_ELEMENT_MATERIAL, "MATERIAL" },
-    { UFBX_ELEMENT_TEXTURE, "TEXTURE" },
-    { UFBX_ELEMENT_VIDEO, "VIDEO" },
-    { UFBX_ELEMENT_SHADER, "SHADER" },
-    { UFBX_ELEMENT_SHADER_BINDING, "SHADER_BINDING" },
-    { UFBX_ELEMENT_ANIM_STACK, "ANIM_STACK" },
-    { UFBX_ELEMENT_ANIM_LAYER, "ANIM_LAYER" },
-    { UFBX_ELEMENT_ANIM_VALUE, "ANIM_VALUE" },
-    { UFBX_ELEMENT_ANIM_CURVE, "ANIM_CURVE" },
-    { UFBX_ELEMENT_DISPLAY_LAYER, "DISPLAY_LAYER" },
-    { UFBX_ELEMENT_SELECTION_SET, "SELECTION_SET" },
-    { UFBX_ELEMENT_SELECTION_NODE, "SELECTION_NODE" },
-    { UFBX_ELEMENT_CHARACTER, "CHARACTER" },
-    { UFBX_ELEMENT_CONSTRAINT, "CONSTRAINT" },
-    { UFBX_ELEMENT_AUDIO_LAYER, "AUDIO_LAYER" },
-    { UFBX_ELEMENT_AUDIO_CLIP, "AUDIO_CLIP" },
-    { UFBX_ELEMENT_POSE, "POSE" },
-    { UFBX_ELEMENT_METADATA_OBJECT, "METADATA_OBJECT" },
-    { UFBX_ELEMENT_TYPE_FIRST_ATTRIB, "FIRST_ATTRIB" },
-    { UFBX_ELEMENT_TYPE_LAST_ATTRIB, "LAST_ATTRIB" },
-};
-
 static PyObject *InheritMode_Enum;
-static const EnumValue InheritMode_values[] = {
-    { UFBX_INHERIT_MODE_NORMAL, "NORMAL" },
-    { UFBX_INHERIT_MODE_IGNORE_PARENT_SCALE, "IGNORE_PARENT_SCALE" },
-    { UFBX_INHERIT_MODE_COMPONENTWISE_SCALE, "COMPONENTWISE_SCALE" },
-};
-
 static PyObject *MirrorAxis_Enum;
-static const EnumValue MirrorAxis_values[] = {
-    { UFBX_MIRROR_AXIS_NONE, "NONE" },
-    { UFBX_MIRROR_AXIS_X, "X" },
-    { UFBX_MIRROR_AXIS_Y, "Y" },
-    { UFBX_MIRROR_AXIS_Z, "Z" },
-};
-
 static PyObject *SubdivisionDisplayMode_Enum;
-static const EnumValue SubdivisionDisplayMode_values[] = {
-    { UFBX_SUBDIVISION_DISPLAY_DISABLED, "DISABLED" },
-    { UFBX_SUBDIVISION_DISPLAY_HULL, "HULL" },
-    { UFBX_SUBDIVISION_DISPLAY_HULL_AND_SMOOTH, "HULL_AND_SMOOTH" },
-    { UFBX_SUBDIVISION_DISPLAY_SMOOTH, "SMOOTH" },
-};
-
 static PyObject *SubdivisionBoundary_Enum;
-static const EnumValue SubdivisionBoundary_values[] = {
-    { UFBX_SUBDIVISION_BOUNDARY_DEFAULT, "DEFAULT" },
-    { UFBX_SUBDIVISION_BOUNDARY_LEGACY, "LEGACY" },
-    { UFBX_SUBDIVISION_BOUNDARY_SHARP_CORNERS, "SHARP_CORNERS" },
-    { UFBX_SUBDIVISION_BOUNDARY_SHARP_NONE, "SHARP_NONE" },
-    { UFBX_SUBDIVISION_BOUNDARY_SHARP_BOUNDARY, "SHARP_BOUNDARY" },
-    { UFBX_SUBDIVISION_BOUNDARY_SHARP_INTERIOR, "SHARP_INTERIOR" },
-};
-
 static PyObject *LightType_Enum;
-static const EnumValue LightType_values[] = {
-    { UFBX_LIGHT_POINT, "POINT" },
-    { UFBX_LIGHT_DIRECTIONAL, "DIRECTIONAL" },
-    { UFBX_LIGHT_SPOT, "SPOT" },
-    { UFBX_LIGHT_AREA, "AREA" },
-    { UFBX_LIGHT_VOLUME, "VOLUME" },
-};
-
 static PyObject *LightDecay_Enum;
-static const EnumValue LightDecay_values[] = {
-    { UFBX_LIGHT_DECAY_NONE, "NONE" },
-    { UFBX_LIGHT_DECAY_LINEAR, "LINEAR" },
-    { UFBX_LIGHT_DECAY_QUADRATIC, "QUADRATIC" },
-    { UFBX_LIGHT_DECAY_CUBIC, "CUBIC" },
-};
-
 static PyObject *LightAreaShape_Enum;
-static const EnumValue LightAreaShape_values[] = {
-    { UFBX_LIGHT_AREA_SHAPE_RECTANGLE, "RECTANGLE" },
-    { UFBX_LIGHT_AREA_SHAPE_SPHERE, "SPHERE" },
-};
-
 static PyObject *ProjectionMode_Enum;
-static const EnumValue ProjectionMode_values[] = {
-    { UFBX_PROJECTION_MODE_PERSPECTIVE, "PERSPECTIVE" },
-    { UFBX_PROJECTION_MODE_ORTHOGRAPHIC, "ORTHOGRAPHIC" },
-};
-
 static PyObject *AspectMode_Enum;
-static const EnumValue AspectMode_values[] = {
-    { UFBX_ASPECT_MODE_WINDOW_SIZE, "WINDOW_SIZE" },
-    { UFBX_ASPECT_MODE_FIXED_RATIO, "FIXED_RATIO" },
-    { UFBX_ASPECT_MODE_FIXED_RESOLUTION, "FIXED_RESOLUTION" },
-    { UFBX_ASPECT_MODE_FIXED_WIDTH, "FIXED_WIDTH" },
-    { UFBX_ASPECT_MODE_FIXED_HEIGHT, "FIXED_HEIGHT" },
-};
-
 static PyObject *ApertureMode_Enum;
-static const EnumValue ApertureMode_values[] = {
-    { UFBX_APERTURE_MODE_HORIZONTAL_AND_VERTICAL, "HORIZONTAL_AND_VERTICAL" },
-    { UFBX_APERTURE_MODE_HORIZONTAL, "HORIZONTAL" },
-    { UFBX_APERTURE_MODE_VERTICAL, "VERTICAL" },
-    { UFBX_APERTURE_MODE_FOCAL_LENGTH, "FOCAL_LENGTH" },
-};
-
 static PyObject *GateFit_Enum;
-static const EnumValue GateFit_values[] = {
-    { UFBX_GATE_FIT_NONE, "NONE" },
-    { UFBX_GATE_FIT_VERTICAL, "VERTICAL" },
-    { UFBX_GATE_FIT_HORIZONTAL, "HORIZONTAL" },
-    { UFBX_GATE_FIT_FILL, "FILL" },
-    { UFBX_GATE_FIT_OVERSCAN, "OVERSCAN" },
-    { UFBX_GATE_FIT_STRETCH, "STRETCH" },
-};
-
 static PyObject *ApertureFormat_Enum;
-static const EnumValue ApertureFormat_values[] = {
-    { UFBX_APERTURE_FORMAT_CUSTOM, "CUSTOM" },
-    { UFBX_APERTURE_FORMAT_16MM_THEATRICAL, "E16MM_THEATRICAL" },
-    { UFBX_APERTURE_FORMAT_SUPER_16MM, "SUPER_16MM" },
-    { UFBX_APERTURE_FORMAT_35MM_ACADEMY, "E35MM_ACADEMY" },
-    { UFBX_APERTURE_FORMAT_35MM_TV_PROJECTION, "E35MM_TV_PROJECTION" },
-    { UFBX_APERTURE_FORMAT_35MM_FULL_APERTURE, "E35MM_FULL_APERTURE" },
-    { UFBX_APERTURE_FORMAT_35MM_185_PROJECTION, "E35MM_185_PROJECTION" },
-    { UFBX_APERTURE_FORMAT_35MM_ANAMORPHIC, "E35MM_ANAMORPHIC" },
-    { UFBX_APERTURE_FORMAT_70MM_PROJECTION, "E70MM_PROJECTION" },
-    { UFBX_APERTURE_FORMAT_VISTAVISION, "VISTAVISION" },
-    { UFBX_APERTURE_FORMAT_DYNAVISION, "DYNAVISION" },
-    { UFBX_APERTURE_FORMAT_IMAX, "IMAX" },
-};
-
 static PyObject *CoordinateAxis_Enum;
-static const EnumValue CoordinateAxis_values[] = {
-    { UFBX_COORDINATE_AXIS_POSITIVE_X, "POSITIVE_X" },
-    { UFBX_COORDINATE_AXIS_NEGATIVE_X, "NEGATIVE_X" },
-    { UFBX_COORDINATE_AXIS_POSITIVE_Y, "POSITIVE_Y" },
-    { UFBX_COORDINATE_AXIS_NEGATIVE_Y, "NEGATIVE_Y" },
-    { UFBX_COORDINATE_AXIS_POSITIVE_Z, "POSITIVE_Z" },
-    { UFBX_COORDINATE_AXIS_NEGATIVE_Z, "NEGATIVE_Z" },
-    { UFBX_COORDINATE_AXIS_UNKNOWN, "UNKNOWN" },
-};
-
 static PyObject *NurbsTopology_Enum;
-static const EnumValue NurbsTopology_values[] = {
-    { UFBX_NURBS_TOPOLOGY_OPEN, "OPEN" },
-    { UFBX_NURBS_TOPOLOGY_PERIODIC, "PERIODIC" },
-    { UFBX_NURBS_TOPOLOGY_CLOSED, "CLOSED" },
-};
-
 static PyObject *MarkerType_Enum;
-static const EnumValue MarkerType_values[] = {
-    { UFBX_MARKER_UNKNOWN, "UNKNOWN" },
-    { UFBX_MARKER_FK_EFFECTOR, "FK_EFFECTOR" },
-    { UFBX_MARKER_IK_EFFECTOR, "IK_EFFECTOR" },
-};
-
 static PyObject *LodDisplay_Enum;
-static const EnumValue LodDisplay_values[] = {
-    { UFBX_LOD_DISPLAY_USE_LOD, "USE_LOD" },
-    { UFBX_LOD_DISPLAY_SHOW, "SHOW" },
-    { UFBX_LOD_DISPLAY_HIDE, "HIDE" },
-};
-
 static PyObject *SkinningMethod_Enum;
-static const EnumValue SkinningMethod_values[] = {
-    { UFBX_SKINNING_METHOD_LINEAR, "LINEAR" },
-    { UFBX_SKINNING_METHOD_RIGID, "RIGID" },
-    { UFBX_SKINNING_METHOD_DUAL_QUATERNION, "DUAL_QUATERNION" },
-    { UFBX_SKINNING_METHOD_BLENDED_DQ_LINEAR, "BLENDED_DQ_LINEAR" },
-};
-
 static PyObject *CacheFileFormat_Enum;
-static const EnumValue CacheFileFormat_values[] = {
-    { UFBX_CACHE_FILE_FORMAT_UNKNOWN, "UNKNOWN" },
-    { UFBX_CACHE_FILE_FORMAT_PC2, "PC2" },
-    { UFBX_CACHE_FILE_FORMAT_MC, "MC" },
-};
-
 static PyObject *CacheDataFormat_Enum;
-static const EnumValue CacheDataFormat_values[] = {
-    { UFBX_CACHE_DATA_FORMAT_UNKNOWN, "UNKNOWN" },
-    { UFBX_CACHE_DATA_FORMAT_REAL_FLOAT, "REAL_FLOAT" },
-    { UFBX_CACHE_DATA_FORMAT_VEC3_FLOAT, "VEC3_FLOAT" },
-    { UFBX_CACHE_DATA_FORMAT_REAL_DOUBLE, "REAL_DOUBLE" },
-    { UFBX_CACHE_DATA_FORMAT_VEC3_DOUBLE, "VEC3_DOUBLE" },
-};
-
 static PyObject *CacheDataEncoding_Enum;
-static const EnumValue CacheDataEncoding_values[] = {
-    { UFBX_CACHE_DATA_ENCODING_UNKNOWN, "UNKNOWN" },
-    { UFBX_CACHE_DATA_ENCODING_LITTLE_ENDIAN, "LITTLE_ENDIAN" },
-    { UFBX_CACHE_DATA_ENCODING_BIG_ENDIAN, "BIG_ENDIAN" },
-};
-
 static PyObject *CacheInterpretation_Enum;
-static const EnumValue CacheInterpretation_values[] = {
-    { UFBX_CACHE_INTERPRETATION_UNKNOWN, "UNKNOWN" },
-    { UFBX_CACHE_INTERPRETATION_POINTS, "POINTS" },
-    { UFBX_CACHE_INTERPRETATION_VERTEX_POSITION, "VERTEX_POSITION" },
-    { UFBX_CACHE_INTERPRETATION_VERTEX_NORMAL, "VERTEX_NORMAL" },
-};
-
 static PyObject *ShaderType_Enum;
-static const EnumValue ShaderType_values[] = {
-    { UFBX_SHADER_UNKNOWN, "UNKNOWN" },
-    { UFBX_SHADER_FBX_LAMBERT, "FBX_LAMBERT" },
-    { UFBX_SHADER_FBX_PHONG, "FBX_PHONG" },
-    { UFBX_SHADER_OSL_STANDARD_SURFACE, "OSL_STANDARD_SURFACE" },
-    { UFBX_SHADER_ARNOLD_STANDARD_SURFACE, "ARNOLD_STANDARD_SURFACE" },
-    { UFBX_SHADER_3DS_MAX_PHYSICAL_MATERIAL, "E3DS_MAX_PHYSICAL_MATERIAL" },
-    { UFBX_SHADER_3DS_MAX_PBR_METAL_ROUGH, "E3DS_MAX_PBR_METAL_ROUGH" },
-    { UFBX_SHADER_3DS_MAX_PBR_SPEC_GLOSS, "E3DS_MAX_PBR_SPEC_GLOSS" },
-    { UFBX_SHADER_GLTF_MATERIAL, "GLTF_MATERIAL" },
-    { UFBX_SHADER_OPENPBR_MATERIAL, "OPENPBR_MATERIAL" },
-    { UFBX_SHADER_SHADERFX_GRAPH, "SHADERFX_GRAPH" },
-    { UFBX_SHADER_BLENDER_PHONG, "BLENDER_PHONG" },
-    { UFBX_SHADER_WAVEFRONT_MTL, "WAVEFRONT_MTL" },
-};
-
 static PyObject *MaterialFbxMap_Enum;
-static const EnumValue MaterialFbxMap_values[] = {
-    { UFBX_MATERIAL_FBX_DIFFUSE_FACTOR, "DIFFUSE_FACTOR" },
-    { UFBX_MATERIAL_FBX_DIFFUSE_COLOR, "DIFFUSE_COLOR" },
-    { UFBX_MATERIAL_FBX_SPECULAR_FACTOR, "SPECULAR_FACTOR" },
-    { UFBX_MATERIAL_FBX_SPECULAR_COLOR, "SPECULAR_COLOR" },
-    { UFBX_MATERIAL_FBX_SPECULAR_EXPONENT, "SPECULAR_EXPONENT" },
-    { UFBX_MATERIAL_FBX_REFLECTION_FACTOR, "REFLECTION_FACTOR" },
-    { UFBX_MATERIAL_FBX_REFLECTION_COLOR, "REFLECTION_COLOR" },
-    { UFBX_MATERIAL_FBX_TRANSPARENCY_FACTOR, "TRANSPARENCY_FACTOR" },
-    { UFBX_MATERIAL_FBX_TRANSPARENCY_COLOR, "TRANSPARENCY_COLOR" },
-    { UFBX_MATERIAL_FBX_EMISSION_FACTOR, "EMISSION_FACTOR" },
-    { UFBX_MATERIAL_FBX_EMISSION_COLOR, "EMISSION_COLOR" },
-    { UFBX_MATERIAL_FBX_AMBIENT_FACTOR, "AMBIENT_FACTOR" },
-    { UFBX_MATERIAL_FBX_AMBIENT_COLOR, "AMBIENT_COLOR" },
-    { UFBX_MATERIAL_FBX_NORMAL_MAP, "NORMAL_MAP" },
-    { UFBX_MATERIAL_FBX_BUMP, "BUMP" },
-    { UFBX_MATERIAL_FBX_BUMP_FACTOR, "BUMP_FACTOR" },
-    { UFBX_MATERIAL_FBX_DISPLACEMENT_FACTOR, "DISPLACEMENT_FACTOR" },
-    { UFBX_MATERIAL_FBX_DISPLACEMENT, "DISPLACEMENT" },
-    { UFBX_MATERIAL_FBX_VECTOR_DISPLACEMENT_FACTOR, "VECTOR_DISPLACEMENT_FACTOR" },
-    { UFBX_MATERIAL_FBX_VECTOR_DISPLACEMENT, "VECTOR_DISPLACEMENT" },
-};
-
 static PyObject *MaterialPbrMap_Enum;
-static const EnumValue MaterialPbrMap_values[] = {
-    { UFBX_MATERIAL_PBR_BASE_FACTOR, "BASE_FACTOR" },
-    { UFBX_MATERIAL_PBR_BASE_COLOR, "BASE_COLOR" },
-    { UFBX_MATERIAL_PBR_ROUGHNESS, "ROUGHNESS" },
-    { UFBX_MATERIAL_PBR_METALNESS, "METALNESS" },
-    { UFBX_MATERIAL_PBR_DIFFUSE_ROUGHNESS, "DIFFUSE_ROUGHNESS" },
-    { UFBX_MATERIAL_PBR_SPECULAR_FACTOR, "SPECULAR_FACTOR" },
-    { UFBX_MATERIAL_PBR_SPECULAR_COLOR, "SPECULAR_COLOR" },
-    { UFBX_MATERIAL_PBR_SPECULAR_IOR, "SPECULAR_IOR" },
-    { UFBX_MATERIAL_PBR_SPECULAR_ANISOTROPY, "SPECULAR_ANISOTROPY" },
-    { UFBX_MATERIAL_PBR_SPECULAR_ROTATION, "SPECULAR_ROTATION" },
-    { UFBX_MATERIAL_PBR_TRANSMISSION_FACTOR, "TRANSMISSION_FACTOR" },
-    { UFBX_MATERIAL_PBR_TRANSMISSION_COLOR, "TRANSMISSION_COLOR" },
-    { UFBX_MATERIAL_PBR_TRANSMISSION_DEPTH, "TRANSMISSION_DEPTH" },
-    { UFBX_MATERIAL_PBR_TRANSMISSION_SCATTER, "TRANSMISSION_SCATTER" },
-    { UFBX_MATERIAL_PBR_TRANSMISSION_SCATTER_ANISOTROPY, "TRANSMISSION_SCATTER_ANISOTROPY" },
-    { UFBX_MATERIAL_PBR_TRANSMISSION_DISPERSION, "TRANSMISSION_DISPERSION" },
-    { UFBX_MATERIAL_PBR_TRANSMISSION_ROUGHNESS, "TRANSMISSION_ROUGHNESS" },
-    { UFBX_MATERIAL_PBR_TRANSMISSION_EXTRA_ROUGHNESS, "TRANSMISSION_EXTRA_ROUGHNESS" },
-    { UFBX_MATERIAL_PBR_TRANSMISSION_PRIORITY, "TRANSMISSION_PRIORITY" },
-    { UFBX_MATERIAL_PBR_TRANSMISSION_ENABLE_IN_AOV, "TRANSMISSION_ENABLE_IN_AOV" },
-    { UFBX_MATERIAL_PBR_SUBSURFACE_FACTOR, "SUBSURFACE_FACTOR" },
-    { UFBX_MATERIAL_PBR_SUBSURFACE_COLOR, "SUBSURFACE_COLOR" },
-    { UFBX_MATERIAL_PBR_SUBSURFACE_RADIUS, "SUBSURFACE_RADIUS" },
-    { UFBX_MATERIAL_PBR_SUBSURFACE_SCALE, "SUBSURFACE_SCALE" },
-    { UFBX_MATERIAL_PBR_SUBSURFACE_ANISOTROPY, "SUBSURFACE_ANISOTROPY" },
-    { UFBX_MATERIAL_PBR_SUBSURFACE_TINT_COLOR, "SUBSURFACE_TINT_COLOR" },
-    { UFBX_MATERIAL_PBR_SUBSURFACE_TYPE, "SUBSURFACE_TYPE" },
-    { UFBX_MATERIAL_PBR_SHEEN_FACTOR, "SHEEN_FACTOR" },
-    { UFBX_MATERIAL_PBR_SHEEN_COLOR, "SHEEN_COLOR" },
-    { UFBX_MATERIAL_PBR_SHEEN_ROUGHNESS, "SHEEN_ROUGHNESS" },
-    { UFBX_MATERIAL_PBR_COAT_FACTOR, "COAT_FACTOR" },
-    { UFBX_MATERIAL_PBR_COAT_COLOR, "COAT_COLOR" },
-    { UFBX_MATERIAL_PBR_COAT_ROUGHNESS, "COAT_ROUGHNESS" },
-    { UFBX_MATERIAL_PBR_COAT_IOR, "COAT_IOR" },
-    { UFBX_MATERIAL_PBR_COAT_ANISOTROPY, "COAT_ANISOTROPY" },
-    { UFBX_MATERIAL_PBR_COAT_ROTATION, "COAT_ROTATION" },
-    { UFBX_MATERIAL_PBR_COAT_NORMAL, "COAT_NORMAL" },
-    { UFBX_MATERIAL_PBR_COAT_AFFECT_BASE_COLOR, "COAT_AFFECT_BASE_COLOR" },
-    { UFBX_MATERIAL_PBR_COAT_AFFECT_BASE_ROUGHNESS, "COAT_AFFECT_BASE_ROUGHNESS" },
-    { UFBX_MATERIAL_PBR_THIN_FILM_FACTOR, "THIN_FILM_FACTOR" },
-    { UFBX_MATERIAL_PBR_THIN_FILM_THICKNESS, "THIN_FILM_THICKNESS" },
-    { UFBX_MATERIAL_PBR_THIN_FILM_IOR, "THIN_FILM_IOR" },
-    { UFBX_MATERIAL_PBR_EMISSION_FACTOR, "EMISSION_FACTOR" },
-    { UFBX_MATERIAL_PBR_EMISSION_COLOR, "EMISSION_COLOR" },
-    { UFBX_MATERIAL_PBR_OPACITY, "OPACITY" },
-    { UFBX_MATERIAL_PBR_INDIRECT_DIFFUSE, "INDIRECT_DIFFUSE" },
-    { UFBX_MATERIAL_PBR_INDIRECT_SPECULAR, "INDIRECT_SPECULAR" },
-    { UFBX_MATERIAL_PBR_NORMAL_MAP, "NORMAL_MAP" },
-    { UFBX_MATERIAL_PBR_TANGENT_MAP, "TANGENT_MAP" },
-    { UFBX_MATERIAL_PBR_DISPLACEMENT_MAP, "DISPLACEMENT_MAP" },
-    { UFBX_MATERIAL_PBR_MATTE_FACTOR, "MATTE_FACTOR" },
-    { UFBX_MATERIAL_PBR_MATTE_COLOR, "MATTE_COLOR" },
-    { UFBX_MATERIAL_PBR_AMBIENT_OCCLUSION, "AMBIENT_OCCLUSION" },
-    { UFBX_MATERIAL_PBR_GLOSSINESS, "GLOSSINESS" },
-    { UFBX_MATERIAL_PBR_COAT_GLOSSINESS, "COAT_GLOSSINESS" },
-    { UFBX_MATERIAL_PBR_TRANSMISSION_GLOSSINESS, "TRANSMISSION_GLOSSINESS" },
-};
-
 static PyObject *MaterialFeature_Enum;
-static const EnumValue MaterialFeature_values[] = {
-    { UFBX_MATERIAL_FEATURE_PBR, "PBR" },
-    { UFBX_MATERIAL_FEATURE_METALNESS, "METALNESS" },
-    { UFBX_MATERIAL_FEATURE_DIFFUSE, "DIFFUSE" },
-    { UFBX_MATERIAL_FEATURE_SPECULAR, "SPECULAR" },
-    { UFBX_MATERIAL_FEATURE_EMISSION, "EMISSION" },
-    { UFBX_MATERIAL_FEATURE_TRANSMISSION, "TRANSMISSION" },
-    { UFBX_MATERIAL_FEATURE_COAT, "COAT" },
-    { UFBX_MATERIAL_FEATURE_SHEEN, "SHEEN" },
-    { UFBX_MATERIAL_FEATURE_OPACITY, "OPACITY" },
-    { UFBX_MATERIAL_FEATURE_AMBIENT_OCCLUSION, "AMBIENT_OCCLUSION" },
-    { UFBX_MATERIAL_FEATURE_MATTE, "MATTE" },
-    { UFBX_MATERIAL_FEATURE_UNLIT, "UNLIT" },
-    { UFBX_MATERIAL_FEATURE_IOR, "IOR" },
-    { UFBX_MATERIAL_FEATURE_DIFFUSE_ROUGHNESS, "DIFFUSE_ROUGHNESS" },
-    { UFBX_MATERIAL_FEATURE_TRANSMISSION_ROUGHNESS, "TRANSMISSION_ROUGHNESS" },
-    { UFBX_MATERIAL_FEATURE_THIN_WALLED, "THIN_WALLED" },
-    { UFBX_MATERIAL_FEATURE_CAUSTICS, "CAUSTICS" },
-    { UFBX_MATERIAL_FEATURE_EXIT_TO_BACKGROUND, "EXIT_TO_BACKGROUND" },
-    { UFBX_MATERIAL_FEATURE_INTERNAL_REFLECTIONS, "INTERNAL_REFLECTIONS" },
-    { UFBX_MATERIAL_FEATURE_DOUBLE_SIDED, "DOUBLE_SIDED" },
-    { UFBX_MATERIAL_FEATURE_ROUGHNESS_AS_GLOSSINESS, "ROUGHNESS_AS_GLOSSINESS" },
-    { UFBX_MATERIAL_FEATURE_COAT_ROUGHNESS_AS_GLOSSINESS, "COAT_ROUGHNESS_AS_GLOSSINESS" },
-    { UFBX_MATERIAL_FEATURE_TRANSMISSION_ROUGHNESS_AS_GLOSSINESS, "TRANSMISSION_ROUGHNESS_AS_GLOSSINESS" },
-};
-
 static PyObject *TextureType_Enum;
-static const EnumValue TextureType_values[] = {
-    { UFBX_TEXTURE_FILE, "FILE" },
-    { UFBX_TEXTURE_LAYERED, "LAYERED" },
-    { UFBX_TEXTURE_PROCEDURAL, "PROCEDURAL" },
-    { UFBX_TEXTURE_SHADER, "SHADER" },
-};
-
 static PyObject *BlendMode_Enum;
-static const EnumValue BlendMode_values[] = {
-    { UFBX_BLEND_TRANSLUCENT, "TRANSLUCENT" },
-    { UFBX_BLEND_ADDITIVE, "ADDITIVE" },
-    { UFBX_BLEND_MULTIPLY, "MULTIPLY" },
-    { UFBX_BLEND_MULTIPLY_2X, "MULTIPLY_2X" },
-    { UFBX_BLEND_OVER, "OVER" },
-    { UFBX_BLEND_REPLACE, "REPLACE" },
-    { UFBX_BLEND_DISSOLVE, "DISSOLVE" },
-    { UFBX_BLEND_DARKEN, "DARKEN" },
-    { UFBX_BLEND_COLOR_BURN, "COLOR_BURN" },
-    { UFBX_BLEND_LINEAR_BURN, "LINEAR_BURN" },
-    { UFBX_BLEND_DARKER_COLOR, "DARKER_COLOR" },
-    { UFBX_BLEND_LIGHTEN, "LIGHTEN" },
-    { UFBX_BLEND_SCREEN, "SCREEN" },
-    { UFBX_BLEND_COLOR_DODGE, "COLOR_DODGE" },
-    { UFBX_BLEND_LINEAR_DODGE, "LINEAR_DODGE" },
-    { UFBX_BLEND_LIGHTER_COLOR, "LIGHTER_COLOR" },
-    { UFBX_BLEND_SOFT_LIGHT, "SOFT_LIGHT" },
-    { UFBX_BLEND_HARD_LIGHT, "HARD_LIGHT" },
-    { UFBX_BLEND_VIVID_LIGHT, "VIVID_LIGHT" },
-    { UFBX_BLEND_LINEAR_LIGHT, "LINEAR_LIGHT" },
-    { UFBX_BLEND_PIN_LIGHT, "PIN_LIGHT" },
-    { UFBX_BLEND_HARD_MIX, "HARD_MIX" },
-    { UFBX_BLEND_DIFFERENCE, "DIFFERENCE" },
-    { UFBX_BLEND_EXCLUSION, "EXCLUSION" },
-    { UFBX_BLEND_SUBTRACT, "SUBTRACT" },
-    { UFBX_BLEND_DIVIDE, "DIVIDE" },
-    { UFBX_BLEND_HUE, "HUE" },
-    { UFBX_BLEND_SATURATION, "SATURATION" },
-    { UFBX_BLEND_COLOR, "COLOR" },
-    { UFBX_BLEND_LUMINOSITY, "LUMINOSITY" },
-    { UFBX_BLEND_OVERLAY, "OVERLAY" },
-};
-
 static PyObject *WrapMode_Enum;
-static const EnumValue WrapMode_values[] = {
-    { UFBX_WRAP_REPEAT, "REPEAT" },
-    { UFBX_WRAP_CLAMP, "CLAMP" },
-};
-
 static PyObject *ShaderTextureType_Enum;
-static const EnumValue ShaderTextureType_values[] = {
-    { UFBX_SHADER_TEXTURE_UNKNOWN, "UNKNOWN" },
-    { UFBX_SHADER_TEXTURE_SELECT_OUTPUT, "SELECT_OUTPUT" },
-    { UFBX_SHADER_TEXTURE_OSL, "OSL" },
-};
-
 static PyObject *Interpolation_Enum;
-static const EnumValue Interpolation_values[] = {
-    { UFBX_INTERPOLATION_CONSTANT_PREV, "CONSTANT_PREV" },
-    { UFBX_INTERPOLATION_CONSTANT_NEXT, "CONSTANT_NEXT" },
-    { UFBX_INTERPOLATION_LINEAR, "LINEAR" },
-    { UFBX_INTERPOLATION_CUBIC, "CUBIC" },
-};
-
 static PyObject *ExtrapolationMode_Enum;
-static const EnumValue ExtrapolationMode_values[] = {
-    { UFBX_EXTRAPOLATION_CONSTANT, "CONSTANT" },
-    { UFBX_EXTRAPOLATION_REPEAT, "REPEAT" },
-    { UFBX_EXTRAPOLATION_MIRROR, "MIRROR" },
-    { UFBX_EXTRAPOLATION_SLOPE, "SLOPE" },
-    { UFBX_EXTRAPOLATION_REPEAT_RELATIVE, "REPEAT_RELATIVE" },
-};
-
 static PyObject *ConstraintType_Enum;
-static const EnumValue ConstraintType_values[] = {
-    { UFBX_CONSTRAINT_UNKNOWN, "UNKNOWN" },
-    { UFBX_CONSTRAINT_AIM, "AIM" },
-    { UFBX_CONSTRAINT_PARENT, "PARENT" },
-    { UFBX_CONSTRAINT_POSITION, "POSITION" },
-    { UFBX_CONSTRAINT_ROTATION, "ROTATION" },
-    { UFBX_CONSTRAINT_SCALE, "SCALE" },
-    { UFBX_CONSTRAINT_SINGLE_CHAIN_IK, "SINGLE_CHAIN_IK" },
-};
-
 static PyObject *ConstraintAimUpType_Enum;
-static const EnumValue ConstraintAimUpType_values[] = {
-    { UFBX_CONSTRAINT_AIM_UP_SCENE, "SCENE" },
-    { UFBX_CONSTRAINT_AIM_UP_TO_NODE, "TO_NODE" },
-    { UFBX_CONSTRAINT_AIM_UP_ALIGN_NODE, "ALIGN_NODE" },
-    { UFBX_CONSTRAINT_AIM_UP_VECTOR, "VECTOR" },
-    { UFBX_CONSTRAINT_AIM_UP_NONE, "NONE" },
-};
-
 static PyObject *ConstraintIkPoleType_Enum;
-static const EnumValue ConstraintIkPoleType_values[] = {
-    { UFBX_CONSTRAINT_IK_POLE_VECTOR, "VECTOR" },
-    { UFBX_CONSTRAINT_IK_POLE_NODE, "NODE" },
-};
-
 static PyObject *Exporter_Enum;
-static const EnumValue Exporter_values[] = {
-    { UFBX_EXPORTER_UNKNOWN, "UNKNOWN" },
-    { UFBX_EXPORTER_FBX_SDK, "FBX_SDK" },
-    { UFBX_EXPORTER_BLENDER_BINARY, "BLENDER_BINARY" },
-    { UFBX_EXPORTER_BLENDER_ASCII, "BLENDER_ASCII" },
-    { UFBX_EXPORTER_MOTION_BUILDER, "MOTION_BUILDER" },
-};
-
 static PyObject *FileFormat_Enum;
-static const EnumValue FileFormat_values[] = {
-    { UFBX_FILE_FORMAT_UNKNOWN, "UNKNOWN" },
-    { UFBX_FILE_FORMAT_FBX, "FBX" },
-    { UFBX_FILE_FORMAT_OBJ, "OBJ" },
-    { UFBX_FILE_FORMAT_MTL, "MTL" },
-};
-
 static PyObject *WarningType_Enum;
-static const EnumValue WarningType_values[] = {
-    { UFBX_WARNING_MISSING_EXTERNAL_FILE, "MISSING_EXTERNAL_FILE" },
-    { UFBX_WARNING_IMPLICIT_MTL, "IMPLICIT_MTL" },
-    { UFBX_WARNING_TRUNCATED_ARRAY, "TRUNCATED_ARRAY" },
-    { UFBX_WARNING_MISSING_GEOMETRY_DATA, "MISSING_GEOMETRY_DATA" },
-    { UFBX_WARNING_DUPLICATE_CONNECTION, "DUPLICATE_CONNECTION" },
-    { UFBX_WARNING_BAD_VERTEX_W_ATTRIBUTE, "BAD_VERTEX_W_ATTRIBUTE" },
-    { UFBX_WARNING_MISSING_POLYGON_MAPPING, "MISSING_POLYGON_MAPPING" },
-    { UFBX_WARNING_UNSUPPORTED_VERSION, "UNSUPPORTED_VERSION" },
-    { UFBX_WARNING_INDEX_CLAMPED, "INDEX_CLAMPED" },
-    { UFBX_WARNING_BAD_UNICODE, "BAD_UNICODE" },
-    { UFBX_WARNING_BAD_BASE64_CONTENT, "BAD_BASE64_CONTENT" },
-    { UFBX_WARNING_BAD_ELEMENT_CONNECTED_TO_ROOT, "BAD_ELEMENT_CONNECTED_TO_ROOT" },
-    { UFBX_WARNING_DUPLICATE_OBJECT_ID, "DUPLICATE_OBJECT_ID" },
-    { UFBX_WARNING_EMPTY_FACE_REMOVED, "EMPTY_FACE_REMOVED" },
-    { UFBX_WARNING_UNKNOWN_OBJ_DIRECTIVE, "UNKNOWN_OBJ_DIRECTIVE" },
-    { UFBX_WARNING_TYPE_FIRST_DEDUPLICATED, "FIRST_DEDUPLICATED" },
-};
-
 static PyObject *ThumbnailFormat_Enum;
-static const EnumValue ThumbnailFormat_values[] = {
-    { UFBX_THUMBNAIL_FORMAT_UNKNOWN, "UNKNOWN" },
-    { UFBX_THUMBNAIL_FORMAT_RGB_24, "RGB_24" },
-    { UFBX_THUMBNAIL_FORMAT_RGBA_32, "RGBA_32" },
-};
-
 static PyObject *SpaceConversion_Enum;
-static const EnumValue SpaceConversion_values[] = {
-    { UFBX_SPACE_CONVERSION_TRANSFORM_ROOT, "TRANSFORM_ROOT" },
-    { UFBX_SPACE_CONVERSION_ADJUST_TRANSFORMS, "ADJUST_TRANSFORMS" },
-    { UFBX_SPACE_CONVERSION_MODIFY_GEOMETRY, "MODIFY_GEOMETRY" },
-};
-
 static PyObject *GeometryTransformHandling_Enum;
-static const EnumValue GeometryTransformHandling_values[] = {
-    { UFBX_GEOMETRY_TRANSFORM_HANDLING_PRESERVE, "PRESERVE" },
-    { UFBX_GEOMETRY_TRANSFORM_HANDLING_HELPER_NODES, "HELPER_NODES" },
-    { UFBX_GEOMETRY_TRANSFORM_HANDLING_MODIFY_GEOMETRY, "MODIFY_GEOMETRY" },
-    { UFBX_GEOMETRY_TRANSFORM_HANDLING_MODIFY_GEOMETRY_NO_FALLBACK, "MODIFY_GEOMETRY_NO_FALLBACK" },
-};
-
 static PyObject *InheritModeHandling_Enum;
-static const EnumValue InheritModeHandling_values[] = {
-    { UFBX_INHERIT_MODE_HANDLING_PRESERVE, "PRESERVE" },
-    { UFBX_INHERIT_MODE_HANDLING_HELPER_NODES, "HELPER_NODES" },
-    { UFBX_INHERIT_MODE_HANDLING_COMPENSATE, "COMPENSATE" },
-    { UFBX_INHERIT_MODE_HANDLING_COMPENSATE_NO_FALLBACK, "COMPENSATE_NO_FALLBACK" },
-    { UFBX_INHERIT_MODE_HANDLING_IGNORE, "IGNORE" },
-};
-
 static PyObject *PivotHandling_Enum;
-static const EnumValue PivotHandling_values[] = {
-    { UFBX_PIVOT_HANDLING_RETAIN, "RETAIN" },
-    { UFBX_PIVOT_HANDLING_ADJUST_TO_PIVOT, "ADJUST_TO_PIVOT" },
-    { UFBX_PIVOT_HANDLING_ADJUST_TO_ROTATION_PIVOT, "ADJUST_TO_ROTATION_PIVOT" },
-};
-
 static PyObject *TimeMode_Enum;
-static const EnumValue TimeMode_values[] = {
-    { UFBX_TIME_MODE_DEFAULT, "DEFAULT" },
-    { UFBX_TIME_MODE_120_FPS, "E120_FPS" },
-    { UFBX_TIME_MODE_100_FPS, "E100_FPS" },
-    { UFBX_TIME_MODE_60_FPS, "E60_FPS" },
-    { UFBX_TIME_MODE_50_FPS, "E50_FPS" },
-    { UFBX_TIME_MODE_48_FPS, "E48_FPS" },
-    { UFBX_TIME_MODE_30_FPS, "E30_FPS" },
-    { UFBX_TIME_MODE_30_FPS_DROP, "E30_FPS_DROP" },
-    { UFBX_TIME_MODE_NTSC_DROP_FRAME, "NTSC_DROP_FRAME" },
-    { UFBX_TIME_MODE_NTSC_FULL_FRAME, "NTSC_FULL_FRAME" },
-    { UFBX_TIME_MODE_PAL, "PAL" },
-    { UFBX_TIME_MODE_24_FPS, "E24_FPS" },
-    { UFBX_TIME_MODE_1000_FPS, "E1000_FPS" },
-    { UFBX_TIME_MODE_FILM_FULL_FRAME, "FILM_FULL_FRAME" },
-    { UFBX_TIME_MODE_CUSTOM, "CUSTOM" },
-    { UFBX_TIME_MODE_96_FPS, "E96_FPS" },
-    { UFBX_TIME_MODE_72_FPS, "E72_FPS" },
-    { UFBX_TIME_MODE_59_94_FPS, "E59_94_FPS" },
-};
-
 static PyObject *TimeProtocol_Enum;
-static const EnumValue TimeProtocol_values[] = {
-    { UFBX_TIME_PROTOCOL_SMPTE, "SMPTE" },
-    { UFBX_TIME_PROTOCOL_FRAME_COUNT, "FRAME_COUNT" },
-    { UFBX_TIME_PROTOCOL_DEFAULT, "DEFAULT" },
-};
-
 static PyObject *SnapMode_Enum;
-static const EnumValue SnapMode_values[] = {
-    { UFBX_SNAP_MODE_NONE, "NONE" },
-    { UFBX_SNAP_MODE_SNAP, "SNAP" },
-    { UFBX_SNAP_MODE_PLAY, "PLAY" },
-    { UFBX_SNAP_MODE_SNAP_AND_PLAY, "SNAP_AND_PLAY" },
-};
-
 static PyObject *TopoFlags_Enum;
-static const EnumValue TopoFlags_values[] = {
-    { UFBX_TOPO_NON_MANIFOLD, "NON_MANIFOLD" },
-};
-
 static PyObject *OpenFileType_Enum;
-static const EnumValue OpenFileType_values[] = {
-    { UFBX_OPEN_FILE_MAIN_MODEL, "MAIN_MODEL" },
-    { UFBX_OPEN_FILE_GEOMETRY_CACHE, "GEOMETRY_CACHE" },
-    { UFBX_OPEN_FILE_OBJ_MTL, "OBJ_MTL" },
-};
-
 static PyObject *ErrorType_Enum;
-static const EnumValue ErrorType_values[] = {
-    { UFBX_ERROR_NONE, "NONE" },
-    { UFBX_ERROR_UNKNOWN, "UNKNOWN" },
-    { UFBX_ERROR_FILE_NOT_FOUND, "FILE_NOT_FOUND" },
-    { UFBX_ERROR_EMPTY_FILE, "EMPTY_FILE" },
-    { UFBX_ERROR_EXTERNAL_FILE_NOT_FOUND, "EXTERNAL_FILE_NOT_FOUND" },
-    { UFBX_ERROR_OUT_OF_MEMORY, "OUT_OF_MEMORY" },
-    { UFBX_ERROR_MEMORY_LIMIT, "MEMORY_LIMIT" },
-    { UFBX_ERROR_ALLOCATION_LIMIT, "ALLOCATION_LIMIT" },
-    { UFBX_ERROR_TRUNCATED_FILE, "TRUNCATED_FILE" },
-    { UFBX_ERROR_IO, "IO" },
-    { UFBX_ERROR_CANCELLED, "CANCELLED" },
-    { UFBX_ERROR_UNRECOGNIZED_FILE_FORMAT, "UNRECOGNIZED_FILE_FORMAT" },
-    { UFBX_ERROR_UNINITIALIZED_OPTIONS, "UNINITIALIZED_OPTIONS" },
-    { UFBX_ERROR_ZERO_VERTEX_SIZE, "ZERO_VERTEX_SIZE" },
-    { UFBX_ERROR_TRUNCATED_VERTEX_STREAM, "TRUNCATED_VERTEX_STREAM" },
-    { UFBX_ERROR_INVALID_UTF8, "INVALID_UTF8" },
-    { UFBX_ERROR_FEATURE_DISABLED, "FEATURE_DISABLED" },
-    { UFBX_ERROR_BAD_NURBS, "BAD_NURBS" },
-    { UFBX_ERROR_BAD_INDEX, "BAD_INDEX" },
-    { UFBX_ERROR_NODE_DEPTH_LIMIT, "NODE_DEPTH_LIMIT" },
-    { UFBX_ERROR_THREADED_ASCII_PARSE, "THREADED_ASCII_PARSE" },
-    { UFBX_ERROR_UNSAFE_OPTIONS, "UNSAFE_OPTIONS" },
-    { UFBX_ERROR_DUPLICATE_OVERRIDE, "DUPLICATE_OVERRIDE" },
-    { UFBX_ERROR_UNSUPPORTED_VERSION, "UNSUPPORTED_VERSION" },
-};
-
 static PyObject *ProgressResult_Enum;
-static const EnumValue ProgressResult_values[] = {
-    { UFBX_PROGRESS_CONTINUE, "CONTINUE" },
-    { UFBX_PROGRESS_CANCEL, "CANCEL" },
-};
-
 static PyObject *IndexErrorHandling_Enum;
-static const EnumValue IndexErrorHandling_values[] = {
-    { UFBX_INDEX_ERROR_HANDLING_CLAMP, "CLAMP" },
-    { UFBX_INDEX_ERROR_HANDLING_NO_INDEX, "NO_INDEX" },
-    { UFBX_INDEX_ERROR_HANDLING_ABORT_LOADING, "ABORT_LOADING" },
-    { UFBX_INDEX_ERROR_HANDLING_UNSAFE_IGNORE, "UNSAFE_IGNORE" },
-};
-
 static PyObject *UnicodeErrorHandling_Enum;
-static const EnumValue UnicodeErrorHandling_values[] = {
-    { UFBX_UNICODE_ERROR_HANDLING_REPLACEMENT_CHARACTER, "REPLACEMENT_CHARACTER" },
-    { UFBX_UNICODE_ERROR_HANDLING_UNDERSCORE, "UNDERSCORE" },
-    { UFBX_UNICODE_ERROR_HANDLING_QUESTION_MARK, "QUESTION_MARK" },
-    { UFBX_UNICODE_ERROR_HANDLING_REMOVE, "REMOVE" },
-    { UFBX_UNICODE_ERROR_HANDLING_ABORT_LOADING, "ABORT_LOADING" },
-    { UFBX_UNICODE_ERROR_HANDLING_UNSAFE_IGNORE, "UNSAFE_IGNORE" },
-};
-
 static PyObject *BakedKeyFlags_Enum;
-static const EnumValue BakedKeyFlags_values[] = {
-    { UFBX_BAKED_KEY_STEP_LEFT, "STEP_LEFT" },
-    { UFBX_BAKED_KEY_STEP_RIGHT, "STEP_RIGHT" },
-    { UFBX_BAKED_KEY_STEP_KEY, "STEP_KEY" },
-    { UFBX_BAKED_KEY_KEYFRAME, "KEYFRAME" },
-    { UFBX_BAKED_KEY_REDUCED, "REDUCED" },
-};
-
 static PyObject *EvaluateFlags_Enum;
-static const EnumValue EvaluateFlags_values[] = {
-    { UFBX_EVALUATE_FLAG_NO_EXTRAPOLATION, "NO_EXTRAPOLATION" },
-};
-
 static PyObject *BakeStepHandling_Enum;
-static const EnumValue BakeStepHandling_values[] = {
-    { UFBX_BAKE_STEP_HANDLING_DEFAULT, "DEFAULT" },
-    { UFBX_BAKE_STEP_HANDLING_CUSTOM_DURATION, "CUSTOM_DURATION" },
-    { UFBX_BAKE_STEP_HANDLING_IDENTICAL_TIME, "IDENTICAL_TIME" },
-    { UFBX_BAKE_STEP_HANDLING_ADJACENT_DOUBLE, "ADJACENT_DOUBLE" },
-    { UFBX_BAKE_STEP_HANDLING_IGNORE, "IGNORE" },
-};
-
 static PyObject *TransformFlags_Enum;
-static const EnumValue TransformFlags_values[] = {
-    { UFBX_TRANSFORM_FLAG_IGNORE_SCALE_HELPER, "IGNORE_SCALE_HELPER" },
-    { UFBX_TRANSFORM_FLAG_IGNORE_COMPONENTWISE_SCALE, "IGNORE_COMPONENTWISE_SCALE" },
-    { UFBX_TRANSFORM_FLAG_EXPLICIT_INCLUDES, "EXPLICIT_INCLUDES" },
-    { UFBX_TRANSFORM_FLAG_INCLUDE_TRANSLATION, "INCLUDE_TRANSLATION" },
-    { UFBX_TRANSFORM_FLAG_INCLUDE_ROTATION, "INCLUDE_ROTATION" },
-    { UFBX_TRANSFORM_FLAG_INCLUDE_SCALE, "INCLUDE_SCALE" },
-    { UFBX_TRANSFORM_FLAG_NO_EXTRAPOLATION, "NO_EXTRAPOLATION" },
-};
 
+static PyObject *Transform_from(const ufbx_transform *v);
+static ufbx_transform Transform_to(PyObject *v);
 static PyObject *Edge_from(const ufbx_edge *v);
 static ufbx_edge Edge_to(PyObject *v);
 static PyObject *Face_from(const ufbx_face *v);
@@ -6874,233 +6204,278 @@ static PyObject *ConstTransformOverrideList_from(ufbx_const_transform_override_l
     return (PyObject*)obj;
 }
 
-static PyTypeObject *Edge_Type;
+static PyObject *Transform_Type;
+
+static PyObject *Transform_from(const ufbx_transform *v) {
+    PyObject *r = PyTuple_New(3);
+    if (!r) return NULL;
+    PyTuple_SetItem(r, 0, Vec3_from(&v->translation));
+    PyTuple_SetItem(r, 1, Quat_from(&v->rotation));
+    PyTuple_SetItem(r, 2, Vec3_from(&v->scale));
+    PyObject *result = PyObject_CallObject(Transform_Type, r);
+    Py_XDECREF(r);
+    return result;
+}
+
+static ufbx_transform Transform_to(PyObject *v) {
+    ufbx_transform r;
+    r.translation = Vec3_to(PyTuple_GetItem(v, 0));
+    r.rotation = Quat_to(PyTuple_GetItem(v, 1));
+    r.scale = Vec3_to(PyTuple_GetItem(v, 2));
+    return r;
+}
+
+static PyObject *Edge_Type;
 
 static PyObject *Edge_from(const ufbx_edge *v) {
-    PyObject *r = PyStructSequence_New(Edge_Type);
+    PyObject *r = PyTuple_New(2);
     if (!r) return NULL;
-    PyStructSequence_SetItem(r, 0, PyLong_FromUnsignedLong((unsigned long)v->a));
-    PyStructSequence_SetItem(r, 1, PyLong_FromUnsignedLong((unsigned long)v->b));
-    return r;
+    PyTuple_SetItem(r, 0, PyLong_FromUnsignedLong((unsigned long)v->a));
+    PyTuple_SetItem(r, 1, PyLong_FromUnsignedLong((unsigned long)v->b));
+    PyObject *result = PyObject_CallObject(Edge_Type, r);
+    Py_XDECREF(r);
+    return result;
 }
 
 static ufbx_edge Edge_to(PyObject *v) {
     ufbx_edge r;
-    r.a = (uint32_t)PyLong_AsUnsignedLong(PyStructSequence_GetItem(v, 0));
-    r.b = (uint32_t)PyLong_AsUnsignedLong(PyStructSequence_GetItem(v, 1));
+    r.a = (uint32_t)PyLong_AsUnsignedLong(PyTuple_GetItem(v, 0));
+    r.b = (uint32_t)PyLong_AsUnsignedLong(PyTuple_GetItem(v, 1));
     return r;
 }
 
-static PyTypeObject *Face_Type;
+static PyObject *Face_Type;
 
 static PyObject *Face_from(const ufbx_face *v) {
-    PyObject *r = PyStructSequence_New(Face_Type);
+    PyObject *r = PyTuple_New(2);
     if (!r) return NULL;
-    PyStructSequence_SetItem(r, 0, PyLong_FromUnsignedLong((unsigned long)v->index_begin));
-    PyStructSequence_SetItem(r, 1, PyLong_FromUnsignedLong((unsigned long)v->num_indices));
-    return r;
+    PyTuple_SetItem(r, 0, PyLong_FromUnsignedLong((unsigned long)v->index_begin));
+    PyTuple_SetItem(r, 1, PyLong_FromUnsignedLong((unsigned long)v->num_indices));
+    PyObject *result = PyObject_CallObject(Face_Type, r);
+    Py_XDECREF(r);
+    return result;
 }
 
 static ufbx_face Face_to(PyObject *v) {
     ufbx_face r;
-    r.index_begin = (uint32_t)PyLong_AsUnsignedLong(PyStructSequence_GetItem(v, 0));
-    r.num_indices = (uint32_t)PyLong_AsUnsignedLong(PyStructSequence_GetItem(v, 1));
+    r.index_begin = (uint32_t)PyLong_AsUnsignedLong(PyTuple_GetItem(v, 0));
+    r.num_indices = (uint32_t)PyLong_AsUnsignedLong(PyTuple_GetItem(v, 1));
     return r;
 }
 
-static PyTypeObject *CoordinateAxes_Type;
+static PyObject *CoordinateAxes_Type;
 
 static PyObject *CoordinateAxes_from(const ufbx_coordinate_axes *v) {
-    PyObject *r = PyStructSequence_New(CoordinateAxes_Type);
+    PyObject *r = PyTuple_New(3);
     if (!r) return NULL;
-    PyStructSequence_SetItem(r, 0, PyObject_CallFunction(CoordinateAxis_Enum, "i", (int)v->right));
-    PyStructSequence_SetItem(r, 1, PyObject_CallFunction(CoordinateAxis_Enum, "i", (int)v->up));
-    PyStructSequence_SetItem(r, 2, PyObject_CallFunction(CoordinateAxis_Enum, "i", (int)v->front));
-    return r;
+    PyTuple_SetItem(r, 0, PyObject_CallFunction(CoordinateAxis_Enum, "i", (int)v->right));
+    PyTuple_SetItem(r, 1, PyObject_CallFunction(CoordinateAxis_Enum, "i", (int)v->up));
+    PyTuple_SetItem(r, 2, PyObject_CallFunction(CoordinateAxis_Enum, "i", (int)v->front));
+    PyObject *result = PyObject_CallObject(CoordinateAxes_Type, r);
+    Py_XDECREF(r);
+    return result;
 }
 
 static ufbx_coordinate_axes CoordinateAxes_to(PyObject *v) {
     ufbx_coordinate_axes r;
-    r.right = (ufbx_coordinate_axis)PyLong_AsLong(PyStructSequence_GetItem(v, 0));
-    r.up = (ufbx_coordinate_axis)PyLong_AsLong(PyStructSequence_GetItem(v, 1));
-    r.front = (ufbx_coordinate_axis)PyLong_AsLong(PyStructSequence_GetItem(v, 2));
+    r.right = (ufbx_coordinate_axis)PyLong_AsLong(PyTuple_GetItem(v, 0));
+    r.up = (ufbx_coordinate_axis)PyLong_AsLong(PyTuple_GetItem(v, 1));
+    r.front = (ufbx_coordinate_axis)PyLong_AsLong(PyTuple_GetItem(v, 2));
     return r;
 }
 
-static PyTypeObject *LodLevel_Type;
+static PyObject *LodLevel_Type;
 
 static PyObject *LodLevel_from(const ufbx_lod_level *v) {
-    PyObject *r = PyStructSequence_New(LodLevel_Type);
+    PyObject *r = PyTuple_New(2);
     if (!r) return NULL;
-    PyStructSequence_SetItem(r, 0, PyFloat_FromDouble(v->distance));
-    PyStructSequence_SetItem(r, 1, PyObject_CallFunction(LodDisplay_Enum, "i", (int)v->display));
-    return r;
+    PyTuple_SetItem(r, 0, PyFloat_FromDouble(v->distance));
+    PyTuple_SetItem(r, 1, PyObject_CallFunction(LodDisplay_Enum, "i", (int)v->display));
+    PyObject *result = PyObject_CallObject(LodLevel_Type, r);
+    Py_XDECREF(r);
+    return result;
 }
 
 static ufbx_lod_level LodLevel_to(PyObject *v) {
     ufbx_lod_level r;
-    r.distance = (ufbx_real)PyFloat_AsDouble(PyStructSequence_GetItem(v, 0));
-    r.display = (ufbx_lod_display)PyLong_AsLong(PyStructSequence_GetItem(v, 1));
+    r.distance = (ufbx_real)PyFloat_AsDouble(PyTuple_GetItem(v, 0));
+    r.display = (ufbx_lod_display)PyLong_AsLong(PyTuple_GetItem(v, 1));
     return r;
 }
 
-static PyTypeObject *SkinVertex_Type;
+static PyObject *SkinVertex_Type;
 
 static PyObject *SkinVertex_from(const ufbx_skin_vertex *v) {
-    PyObject *r = PyStructSequence_New(SkinVertex_Type);
+    PyObject *r = PyTuple_New(3);
     if (!r) return NULL;
-    PyStructSequence_SetItem(r, 0, PyLong_FromUnsignedLong((unsigned long)v->weight_begin));
-    PyStructSequence_SetItem(r, 1, PyLong_FromUnsignedLong((unsigned long)v->num_weights));
-    PyStructSequence_SetItem(r, 2, PyFloat_FromDouble(v->dq_weight));
-    return r;
+    PyTuple_SetItem(r, 0, PyLong_FromUnsignedLong((unsigned long)v->weight_begin));
+    PyTuple_SetItem(r, 1, PyLong_FromUnsignedLong((unsigned long)v->num_weights));
+    PyTuple_SetItem(r, 2, PyFloat_FromDouble(v->dq_weight));
+    PyObject *result = PyObject_CallObject(SkinVertex_Type, r);
+    Py_XDECREF(r);
+    return result;
 }
 
 static ufbx_skin_vertex SkinVertex_to(PyObject *v) {
     ufbx_skin_vertex r;
-    r.weight_begin = (uint32_t)PyLong_AsUnsignedLong(PyStructSequence_GetItem(v, 0));
-    r.num_weights = (uint32_t)PyLong_AsUnsignedLong(PyStructSequence_GetItem(v, 1));
-    r.dq_weight = (ufbx_real)PyFloat_AsDouble(PyStructSequence_GetItem(v, 2));
+    r.weight_begin = (uint32_t)PyLong_AsUnsignedLong(PyTuple_GetItem(v, 0));
+    r.num_weights = (uint32_t)PyLong_AsUnsignedLong(PyTuple_GetItem(v, 1));
+    r.dq_weight = (ufbx_real)PyFloat_AsDouble(PyTuple_GetItem(v, 2));
     return r;
 }
 
-static PyTypeObject *SkinWeight_Type;
+static PyObject *SkinWeight_Type;
 
 static PyObject *SkinWeight_from(const ufbx_skin_weight *v) {
-    PyObject *r = PyStructSequence_New(SkinWeight_Type);
+    PyObject *r = PyTuple_New(2);
     if (!r) return NULL;
-    PyStructSequence_SetItem(r, 0, PyLong_FromUnsignedLong((unsigned long)v->cluster_index));
-    PyStructSequence_SetItem(r, 1, PyFloat_FromDouble(v->weight));
-    return r;
+    PyTuple_SetItem(r, 0, PyLong_FromUnsignedLong((unsigned long)v->cluster_index));
+    PyTuple_SetItem(r, 1, PyFloat_FromDouble(v->weight));
+    PyObject *result = PyObject_CallObject(SkinWeight_Type, r);
+    Py_XDECREF(r);
+    return result;
 }
 
 static ufbx_skin_weight SkinWeight_to(PyObject *v) {
     ufbx_skin_weight r;
-    r.cluster_index = (uint32_t)PyLong_AsUnsignedLong(PyStructSequence_GetItem(v, 0));
-    r.weight = (ufbx_real)PyFloat_AsDouble(PyStructSequence_GetItem(v, 1));
+    r.cluster_index = (uint32_t)PyLong_AsUnsignedLong(PyTuple_GetItem(v, 0));
+    r.weight = (ufbx_real)PyFloat_AsDouble(PyTuple_GetItem(v, 1));
     return r;
 }
 
-static PyTypeObject *TransformOverride_Type;
+static PyObject *TransformOverride_Type;
 
 static PyObject *TransformOverride_from(const ufbx_transform_override *v) {
-    PyObject *r = PyStructSequence_New(TransformOverride_Type);
+    PyObject *r = PyTuple_New(2);
     if (!r) return NULL;
-    PyStructSequence_SetItem(r, 0, PyLong_FromUnsignedLong((unsigned long)v->node_id));
-    PyStructSequence_SetItem(r, 1, Transform_from(&v->transform));
-    return r;
+    PyTuple_SetItem(r, 0, PyLong_FromUnsignedLong((unsigned long)v->node_id));
+    PyTuple_SetItem(r, 1, Transform_from(&v->transform));
+    PyObject *result = PyObject_CallObject(TransformOverride_Type, r);
+    Py_XDECREF(r);
+    return result;
 }
 
 static ufbx_transform_override TransformOverride_to(PyObject *v) {
     ufbx_transform_override r;
-    r.node_id = (uint32_t)PyLong_AsUnsignedLong(PyStructSequence_GetItem(v, 0));
-    r.transform = Transform_to(PyStructSequence_GetItem(v, 1));
+    r.node_id = (uint32_t)PyLong_AsUnsignedLong(PyTuple_GetItem(v, 0));
+    r.transform = Transform_to(PyTuple_GetItem(v, 1));
     return r;
 }
 
-static PyTypeObject *Tangent_Type;
+static PyObject *Tangent_Type;
 
 static PyObject *Tangent_from(const ufbx_tangent *v) {
-    PyObject *r = PyStructSequence_New(Tangent_Type);
+    PyObject *r = PyTuple_New(2);
     if (!r) return NULL;
-    PyStructSequence_SetItem(r, 0, PyFloat_FromDouble(v->dx));
-    PyStructSequence_SetItem(r, 1, PyFloat_FromDouble(v->dy));
-    return r;
+    PyTuple_SetItem(r, 0, PyFloat_FromDouble(v->dx));
+    PyTuple_SetItem(r, 1, PyFloat_FromDouble(v->dy));
+    PyObject *result = PyObject_CallObject(Tangent_Type, r);
+    Py_XDECREF(r);
+    return result;
 }
 
 static ufbx_tangent Tangent_to(PyObject *v) {
     ufbx_tangent r;
-    r.dx = (float)PyFloat_AsDouble(PyStructSequence_GetItem(v, 0));
-    r.dy = (float)PyFloat_AsDouble(PyStructSequence_GetItem(v, 1));
+    r.dx = (float)PyFloat_AsDouble(PyTuple_GetItem(v, 0));
+    r.dy = (float)PyFloat_AsDouble(PyTuple_GetItem(v, 1));
     return r;
 }
 
-static PyTypeObject *Keyframe_Type;
+static PyObject *Keyframe_Type;
 
 static PyObject *Keyframe_from(const ufbx_keyframe *v) {
-    PyObject *r = PyStructSequence_New(Keyframe_Type);
+    PyObject *r = PyTuple_New(5);
     if (!r) return NULL;
-    PyStructSequence_SetItem(r, 0, PyFloat_FromDouble(v->time));
-    PyStructSequence_SetItem(r, 1, PyFloat_FromDouble(v->value));
-    PyStructSequence_SetItem(r, 2, PyObject_CallFunction(Interpolation_Enum, "i", (int)v->interpolation));
-    PyStructSequence_SetItem(r, 3, Tangent_from(&v->left));
-    PyStructSequence_SetItem(r, 4, Tangent_from(&v->right));
-    return r;
+    PyTuple_SetItem(r, 0, PyFloat_FromDouble(v->time));
+    PyTuple_SetItem(r, 1, PyFloat_FromDouble(v->value));
+    PyTuple_SetItem(r, 2, PyObject_CallFunction(Interpolation_Enum, "i", (int)v->interpolation));
+    PyTuple_SetItem(r, 3, Tangent_from(&v->left));
+    PyTuple_SetItem(r, 4, Tangent_from(&v->right));
+    PyObject *result = PyObject_CallObject(Keyframe_Type, r);
+    Py_XDECREF(r);
+    return result;
 }
 
 static ufbx_keyframe Keyframe_to(PyObject *v) {
     ufbx_keyframe r;
-    r.time = PyFloat_AsDouble(PyStructSequence_GetItem(v, 0));
-    r.value = (ufbx_real)PyFloat_AsDouble(PyStructSequence_GetItem(v, 1));
-    r.interpolation = (ufbx_interpolation)PyLong_AsLong(PyStructSequence_GetItem(v, 2));
-    r.left = Tangent_to(PyStructSequence_GetItem(v, 3));
-    r.right = Tangent_to(PyStructSequence_GetItem(v, 4));
+    r.time = PyFloat_AsDouble(PyTuple_GetItem(v, 0));
+    r.value = (ufbx_real)PyFloat_AsDouble(PyTuple_GetItem(v, 1));
+    r.interpolation = (ufbx_interpolation)PyLong_AsLong(PyTuple_GetItem(v, 2));
+    r.left = Tangent_to(PyTuple_GetItem(v, 3));
+    r.right = Tangent_to(PyTuple_GetItem(v, 4));
     return r;
 }
 
-static PyTypeObject *CurvePoint_Type;
+static PyObject *CurvePoint_Type;
 
 static PyObject *CurvePoint_from(const ufbx_curve_point *v) {
-    PyObject *r = PyStructSequence_New(CurvePoint_Type);
+    PyObject *r = PyTuple_New(3);
     if (!r) return NULL;
-    PyStructSequence_SetItem(r, 0, Py_NewRef(v->valid ? Py_True : Py_False));
-    PyStructSequence_SetItem(r, 1, Vec3_from(&v->position));
-    PyStructSequence_SetItem(r, 2, Vec3_from(&v->derivative));
-    return r;
+    PyTuple_SetItem(r, 0, Py_NewRef(v->valid ? Py_True : Py_False));
+    PyTuple_SetItem(r, 1, Vec3_from(&v->position));
+    PyTuple_SetItem(r, 2, Vec3_from(&v->derivative));
+    PyObject *result = PyObject_CallObject(CurvePoint_Type, r);
+    Py_XDECREF(r);
+    return result;
 }
 
 static ufbx_curve_point CurvePoint_to(PyObject *v) {
     ufbx_curve_point r;
-    r.valid = PyObject_IsTrue(PyStructSequence_GetItem(v, 0));
-    r.position = Vec3_to(PyStructSequence_GetItem(v, 1));
-    r.derivative = Vec3_to(PyStructSequence_GetItem(v, 2));
+    r.valid = PyObject_IsTrue(PyTuple_GetItem(v, 0));
+    r.position = Vec3_to(PyTuple_GetItem(v, 1));
+    r.derivative = Vec3_to(PyTuple_GetItem(v, 2));
     return r;
 }
 
-static PyTypeObject *SurfacePoint_Type;
+static PyObject *SurfacePoint_Type;
 
 static PyObject *SurfacePoint_from(const ufbx_surface_point *v) {
-    PyObject *r = PyStructSequence_New(SurfacePoint_Type);
+    PyObject *r = PyTuple_New(4);
     if (!r) return NULL;
-    PyStructSequence_SetItem(r, 0, Py_NewRef(v->valid ? Py_True : Py_False));
-    PyStructSequence_SetItem(r, 1, Vec3_from(&v->position));
-    PyStructSequence_SetItem(r, 2, Vec3_from(&v->derivative_u));
-    PyStructSequence_SetItem(r, 3, Vec3_from(&v->derivative_v));
-    return r;
+    PyTuple_SetItem(r, 0, Py_NewRef(v->valid ? Py_True : Py_False));
+    PyTuple_SetItem(r, 1, Vec3_from(&v->position));
+    PyTuple_SetItem(r, 2, Vec3_from(&v->derivative_u));
+    PyTuple_SetItem(r, 3, Vec3_from(&v->derivative_v));
+    PyObject *result = PyObject_CallObject(SurfacePoint_Type, r);
+    Py_XDECREF(r);
+    return result;
 }
 
 static ufbx_surface_point SurfacePoint_to(PyObject *v) {
     ufbx_surface_point r;
-    r.valid = PyObject_IsTrue(PyStructSequence_GetItem(v, 0));
-    r.position = Vec3_to(PyStructSequence_GetItem(v, 1));
-    r.derivative_u = Vec3_to(PyStructSequence_GetItem(v, 2));
-    r.derivative_v = Vec3_to(PyStructSequence_GetItem(v, 3));
+    r.valid = PyObject_IsTrue(PyTuple_GetItem(v, 0));
+    r.position = Vec3_to(PyTuple_GetItem(v, 1));
+    r.derivative_u = Vec3_to(PyTuple_GetItem(v, 2));
+    r.derivative_v = Vec3_to(PyTuple_GetItem(v, 3));
     return r;
 }
 
-static PyTypeObject *TopoEdge_Type;
+static PyObject *TopoEdge_Type;
 
 static PyObject *TopoEdge_from(const ufbx_topo_edge *v) {
-    PyObject *r = PyStructSequence_New(TopoEdge_Type);
+    PyObject *r = PyTuple_New(7);
     if (!r) return NULL;
-    PyStructSequence_SetItem(r, 0, PyLong_FromUnsignedLong((unsigned long)v->index));
-    PyStructSequence_SetItem(r, 1, PyLong_FromUnsignedLong((unsigned long)v->next));
-    PyStructSequence_SetItem(r, 2, PyLong_FromUnsignedLong((unsigned long)v->prev));
-    PyStructSequence_SetItem(r, 3, PyLong_FromUnsignedLong((unsigned long)v->twin));
-    PyStructSequence_SetItem(r, 4, PyLong_FromUnsignedLong((unsigned long)v->face));
-    PyStructSequence_SetItem(r, 5, PyLong_FromUnsignedLong((unsigned long)v->edge));
-    PyStructSequence_SetItem(r, 6, PyObject_CallFunction(TopoFlags_Enum, "i", (int)v->flags));
-    return r;
+    PyTuple_SetItem(r, 0, PyLong_FromUnsignedLong((unsigned long)v->index));
+    PyTuple_SetItem(r, 1, PyLong_FromUnsignedLong((unsigned long)v->next));
+    PyTuple_SetItem(r, 2, PyLong_FromUnsignedLong((unsigned long)v->prev));
+    PyTuple_SetItem(r, 3, PyLong_FromUnsignedLong((unsigned long)v->twin));
+    PyTuple_SetItem(r, 4, PyLong_FromUnsignedLong((unsigned long)v->face));
+    PyTuple_SetItem(r, 5, PyLong_FromUnsignedLong((unsigned long)v->edge));
+    PyTuple_SetItem(r, 6, PyObject_CallFunction(TopoFlags_Enum, "i", (int)v->flags));
+    PyObject *result = PyObject_CallObject(TopoEdge_Type, r);
+    Py_XDECREF(r);
+    return result;
 }
 
 static ufbx_topo_edge TopoEdge_to(PyObject *v) {
     ufbx_topo_edge r;
-    r.index = (uint32_t)PyLong_AsUnsignedLong(PyStructSequence_GetItem(v, 0));
-    r.next = (uint32_t)PyLong_AsUnsignedLong(PyStructSequence_GetItem(v, 1));
-    r.prev = (uint32_t)PyLong_AsUnsignedLong(PyStructSequence_GetItem(v, 2));
-    r.twin = (uint32_t)PyLong_AsUnsignedLong(PyStructSequence_GetItem(v, 3));
-    r.face = (uint32_t)PyLong_AsUnsignedLong(PyStructSequence_GetItem(v, 4));
-    r.edge = (uint32_t)PyLong_AsUnsignedLong(PyStructSequence_GetItem(v, 5));
-    r.flags = (ufbx_topo_flags)PyLong_AsLong(PyStructSequence_GetItem(v, 6));
+    r.index = (uint32_t)PyLong_AsUnsignedLong(PyTuple_GetItem(v, 0));
+    r.next = (uint32_t)PyLong_AsUnsignedLong(PyTuple_GetItem(v, 1));
+    r.prev = (uint32_t)PyLong_AsUnsignedLong(PyTuple_GetItem(v, 2));
+    r.twin = (uint32_t)PyLong_AsUnsignedLong(PyTuple_GetItem(v, 3));
+    r.face = (uint32_t)PyLong_AsUnsignedLong(PyTuple_GetItem(v, 4));
+    r.edge = (uint32_t)PyLong_AsUnsignedLong(PyTuple_GetItem(v, 5));
+    r.flags = (ufbx_topo_flags)PyLong_AsLong(PyTuple_GetItem(v, 6));
     return r;
 }
 
@@ -26278,67 +25653,83 @@ static PyObject *Element_create(ufbx_element *elem, Context *ctx) {
     return (PyObject*)obj;
 }
 
-static EnumType enum_types[] = {
-    { &RotationOrder_Enum, "RotationOrder", RotationOrder_values, array_count(RotationOrder_values), false },
-    { &DomValueType_Enum, "DomValueType", DomValueType_values, array_count(DomValueType_values), false },
-    { &PropType_Enum, "PropType", PropType_values, array_count(PropType_values), false },
-    { &PropFlags_Enum, "PropFlags", PropFlags_values, array_count(PropFlags_values), true },
-    { &ElementType_Enum, "ElementType", ElementType_values, array_count(ElementType_values), false },
-    { &InheritMode_Enum, "InheritMode", InheritMode_values, array_count(InheritMode_values), false },
-    { &MirrorAxis_Enum, "MirrorAxis", MirrorAxis_values, array_count(MirrorAxis_values), false },
-    { &SubdivisionDisplayMode_Enum, "SubdivisionDisplayMode", SubdivisionDisplayMode_values, array_count(SubdivisionDisplayMode_values), false },
-    { &SubdivisionBoundary_Enum, "SubdivisionBoundary", SubdivisionBoundary_values, array_count(SubdivisionBoundary_values), false },
-    { &LightType_Enum, "LightType", LightType_values, array_count(LightType_values), false },
-    { &LightDecay_Enum, "LightDecay", LightDecay_values, array_count(LightDecay_values), false },
-    { &LightAreaShape_Enum, "LightAreaShape", LightAreaShape_values, array_count(LightAreaShape_values), false },
-    { &ProjectionMode_Enum, "ProjectionMode", ProjectionMode_values, array_count(ProjectionMode_values), false },
-    { &AspectMode_Enum, "AspectMode", AspectMode_values, array_count(AspectMode_values), false },
-    { &ApertureMode_Enum, "ApertureMode", ApertureMode_values, array_count(ApertureMode_values), false },
-    { &GateFit_Enum, "GateFit", GateFit_values, array_count(GateFit_values), false },
-    { &ApertureFormat_Enum, "ApertureFormat", ApertureFormat_values, array_count(ApertureFormat_values), false },
-    { &CoordinateAxis_Enum, "CoordinateAxis", CoordinateAxis_values, array_count(CoordinateAxis_values), false },
-    { &NurbsTopology_Enum, "NurbsTopology", NurbsTopology_values, array_count(NurbsTopology_values), false },
-    { &MarkerType_Enum, "MarkerType", MarkerType_values, array_count(MarkerType_values), false },
-    { &LodDisplay_Enum, "LodDisplay", LodDisplay_values, array_count(LodDisplay_values), false },
-    { &SkinningMethod_Enum, "SkinningMethod", SkinningMethod_values, array_count(SkinningMethod_values), false },
-    { &CacheFileFormat_Enum, "CacheFileFormat", CacheFileFormat_values, array_count(CacheFileFormat_values), false },
-    { &CacheDataFormat_Enum, "CacheDataFormat", CacheDataFormat_values, array_count(CacheDataFormat_values), false },
-    { &CacheDataEncoding_Enum, "CacheDataEncoding", CacheDataEncoding_values, array_count(CacheDataEncoding_values), false },
-    { &CacheInterpretation_Enum, "CacheInterpretation", CacheInterpretation_values, array_count(CacheInterpretation_values), false },
-    { &ShaderType_Enum, "ShaderType", ShaderType_values, array_count(ShaderType_values), false },
-    { &MaterialFbxMap_Enum, "MaterialFbxMap", MaterialFbxMap_values, array_count(MaterialFbxMap_values), false },
-    { &MaterialPbrMap_Enum, "MaterialPbrMap", MaterialPbrMap_values, array_count(MaterialPbrMap_values), false },
-    { &MaterialFeature_Enum, "MaterialFeature", MaterialFeature_values, array_count(MaterialFeature_values), false },
-    { &TextureType_Enum, "TextureType", TextureType_values, array_count(TextureType_values), false },
-    { &BlendMode_Enum, "BlendMode", BlendMode_values, array_count(BlendMode_values), false },
-    { &WrapMode_Enum, "WrapMode", WrapMode_values, array_count(WrapMode_values), false },
-    { &ShaderTextureType_Enum, "ShaderTextureType", ShaderTextureType_values, array_count(ShaderTextureType_values), false },
-    { &Interpolation_Enum, "Interpolation", Interpolation_values, array_count(Interpolation_values), false },
-    { &ExtrapolationMode_Enum, "ExtrapolationMode", ExtrapolationMode_values, array_count(ExtrapolationMode_values), false },
-    { &ConstraintType_Enum, "ConstraintType", ConstraintType_values, array_count(ConstraintType_values), false },
-    { &ConstraintAimUpType_Enum, "ConstraintAimUpType", ConstraintAimUpType_values, array_count(ConstraintAimUpType_values), false },
-    { &ConstraintIkPoleType_Enum, "ConstraintIkPoleType", ConstraintIkPoleType_values, array_count(ConstraintIkPoleType_values), false },
-    { &Exporter_Enum, "Exporter", Exporter_values, array_count(Exporter_values), false },
-    { &FileFormat_Enum, "FileFormat", FileFormat_values, array_count(FileFormat_values), false },
-    { &WarningType_Enum, "WarningType", WarningType_values, array_count(WarningType_values), false },
-    { &ThumbnailFormat_Enum, "ThumbnailFormat", ThumbnailFormat_values, array_count(ThumbnailFormat_values), false },
-    { &SpaceConversion_Enum, "SpaceConversion", SpaceConversion_values, array_count(SpaceConversion_values), false },
-    { &GeometryTransformHandling_Enum, "GeometryTransformHandling", GeometryTransformHandling_values, array_count(GeometryTransformHandling_values), false },
-    { &InheritModeHandling_Enum, "InheritModeHandling", InheritModeHandling_values, array_count(InheritModeHandling_values), false },
-    { &PivotHandling_Enum, "PivotHandling", PivotHandling_values, array_count(PivotHandling_values), false },
-    { &TimeMode_Enum, "TimeMode", TimeMode_values, array_count(TimeMode_values), false },
-    { &TimeProtocol_Enum, "TimeProtocol", TimeProtocol_values, array_count(TimeProtocol_values), false },
-    { &SnapMode_Enum, "SnapMode", SnapMode_values, array_count(SnapMode_values), false },
-    { &TopoFlags_Enum, "TopoFlags", TopoFlags_values, array_count(TopoFlags_values), true },
-    { &OpenFileType_Enum, "OpenFileType", OpenFileType_values, array_count(OpenFileType_values), false },
-    { &ErrorType_Enum, "ErrorType", ErrorType_values, array_count(ErrorType_values), false },
-    { &ProgressResult_Enum, "ProgressResult", ProgressResult_values, array_count(ProgressResult_values), false },
-    { &IndexErrorHandling_Enum, "IndexErrorHandling", IndexErrorHandling_values, array_count(IndexErrorHandling_values), false },
-    { &UnicodeErrorHandling_Enum, "UnicodeErrorHandling", UnicodeErrorHandling_values, array_count(UnicodeErrorHandling_values), false },
-    { &BakedKeyFlags_Enum, "BakedKeyFlags", BakedKeyFlags_values, array_count(BakedKeyFlags_values), true },
-    { &EvaluateFlags_Enum, "EvaluateFlags", EvaluateFlags_values, array_count(EvaluateFlags_values), true },
-    { &BakeStepHandling_Enum, "BakeStepHandling", BakeStepHandling_values, array_count(BakeStepHandling_values), false },
-    { &TransformFlags_Enum, "TransformFlags", TransformFlags_values, array_count(TransformFlags_values), true },
+static ExternalType enum_types[] = {
+    { &RotationOrder_Enum, "RotationOrder" },
+    { &DomValueType_Enum, "DomValueType" },
+    { &PropType_Enum, "PropType" },
+    { &PropFlags_Enum, "PropFlags" },
+    { &ElementType_Enum, "ElementType" },
+    { &InheritMode_Enum, "InheritMode" },
+    { &MirrorAxis_Enum, "MirrorAxis" },
+    { &SubdivisionDisplayMode_Enum, "SubdivisionDisplayMode" },
+    { &SubdivisionBoundary_Enum, "SubdivisionBoundary" },
+    { &LightType_Enum, "LightType" },
+    { &LightDecay_Enum, "LightDecay" },
+    { &LightAreaShape_Enum, "LightAreaShape" },
+    { &ProjectionMode_Enum, "ProjectionMode" },
+    { &AspectMode_Enum, "AspectMode" },
+    { &ApertureMode_Enum, "ApertureMode" },
+    { &GateFit_Enum, "GateFit" },
+    { &ApertureFormat_Enum, "ApertureFormat" },
+    { &CoordinateAxis_Enum, "CoordinateAxis" },
+    { &NurbsTopology_Enum, "NurbsTopology" },
+    { &MarkerType_Enum, "MarkerType" },
+    { &LodDisplay_Enum, "LodDisplay" },
+    { &SkinningMethod_Enum, "SkinningMethod" },
+    { &CacheFileFormat_Enum, "CacheFileFormat" },
+    { &CacheDataFormat_Enum, "CacheDataFormat" },
+    { &CacheDataEncoding_Enum, "CacheDataEncoding" },
+    { &CacheInterpretation_Enum, "CacheInterpretation" },
+    { &ShaderType_Enum, "ShaderType" },
+    { &MaterialFbxMap_Enum, "MaterialFbxMap" },
+    { &MaterialPbrMap_Enum, "MaterialPbrMap" },
+    { &MaterialFeature_Enum, "MaterialFeature" },
+    { &TextureType_Enum, "TextureType" },
+    { &BlendMode_Enum, "BlendMode" },
+    { &WrapMode_Enum, "WrapMode" },
+    { &ShaderTextureType_Enum, "ShaderTextureType" },
+    { &Interpolation_Enum, "Interpolation" },
+    { &ExtrapolationMode_Enum, "ExtrapolationMode" },
+    { &ConstraintType_Enum, "ConstraintType" },
+    { &ConstraintAimUpType_Enum, "ConstraintAimUpType" },
+    { &ConstraintIkPoleType_Enum, "ConstraintIkPoleType" },
+    { &Exporter_Enum, "Exporter" },
+    { &FileFormat_Enum, "FileFormat" },
+    { &WarningType_Enum, "WarningType" },
+    { &ThumbnailFormat_Enum, "ThumbnailFormat" },
+    { &SpaceConversion_Enum, "SpaceConversion" },
+    { &GeometryTransformHandling_Enum, "GeometryTransformHandling" },
+    { &InheritModeHandling_Enum, "InheritModeHandling" },
+    { &PivotHandling_Enum, "PivotHandling" },
+    { &TimeMode_Enum, "TimeMode" },
+    { &TimeProtocol_Enum, "TimeProtocol" },
+    { &SnapMode_Enum, "SnapMode" },
+    { &TopoFlags_Enum, "TopoFlags" },
+    { &OpenFileType_Enum, "OpenFileType" },
+    { &ErrorType_Enum, "ErrorType" },
+    { &ProgressResult_Enum, "ProgressResult" },
+    { &IndexErrorHandling_Enum, "IndexErrorHandling" },
+    { &UnicodeErrorHandling_Enum, "UnicodeErrorHandling" },
+    { &BakedKeyFlags_Enum, "BakedKeyFlags" },
+    { &EvaluateFlags_Enum, "EvaluateFlags" },
+    { &BakeStepHandling_Enum, "BakeStepHandling" },
+    { &TransformFlags_Enum, "TransformFlags" },
+};
+
+static ExternalType pod_types[] = {
+    { &Transform_Type, "Transform" },
+    { &Edge_Type, "Edge" },
+    { &Face_Type, "Face" },
+    { &CoordinateAxes_Type, "CoordinateAxes" },
+    { &LodLevel_Type, "LodLevel" },
+    { &SkinVertex_Type, "SkinVertex" },
+    { &SkinWeight_Type, "SkinWeight" },
+    { &TransformOverride_Type, "TransformOverride" },
+    { &Tangent_Type, "Tangent" },
+    { &Keyframe_Type, "Keyframe" },
+    { &CurvePoint_Type, "CurvePoint" },
+    { &SurfacePoint_Type, "SurfacePoint" },
+    { &TopoEdge_Type, "TopoEdge" },
 };
 
 static ErrorType error_types[] = {
