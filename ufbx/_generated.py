@@ -680,3 +680,9 @@ class TopoEdge(NamedTuple):
     face: int
     edge: int
     flags: TopoFlags
+
+identity_transform = Transform(zero_vec3, identity_quat, Vec3(1, 1, 1))
+axes_right_handed_y_up = CoordinateAxes(CoordinateAxis.POSITIVE_X, CoordinateAxis.POSITIVE_Y, CoordinateAxis.POSITIVE_Z)
+axes_right_handed_z_up = CoordinateAxes(CoordinateAxis.POSITIVE_X, CoordinateAxis.POSITIVE_Z, CoordinateAxis.NEGATIVE_Y)
+axes_left_handed_y_up = CoordinateAxes(CoordinateAxis.POSITIVE_X, CoordinateAxis.POSITIVE_Y, CoordinateAxis.NEGATIVE_Z)
+axes_left_handed_z_up = CoordinateAxes(CoordinateAxis.POSITIVE_X, CoordinateAxis.POSITIVE_Z, CoordinateAxis.POSITIVE_Y)

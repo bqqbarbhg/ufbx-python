@@ -6744,6 +6744,29 @@ static PyGetSetDef DomNode_getset[] = {
     { NULL },
 };
 
+static PyObject *DomNode_find(PyObject *self, PyObject *args);
+static PyObject *DomNode_is_array(PyObject *self, PyObject *args);
+static PyObject *DomNode_array_size(PyObject *self, PyObject *args);
+static PyObject *DomNode_as_int32_list(PyObject *self, PyObject *args);
+static PyObject *DomNode_as_int64_list(PyObject *self, PyObject *args);
+static PyObject *DomNode_as_float_list(PyObject *self, PyObject *args);
+static PyObject *DomNode_as_double_list(PyObject *self, PyObject *args);
+static PyObject *DomNode_as_real_list(PyObject *self, PyObject *args);
+static PyObject *DomNode_as_blob_list(PyObject *self, PyObject *args);
+
+static PyMethodDef DomNode_methods[] = {
+    { "find", &DomNode_find, METH_VARARGS, NULL },
+    { "is_array", &DomNode_is_array, METH_VARARGS, NULL },
+    { "array_size", &DomNode_array_size, METH_VARARGS, NULL },
+    { "as_int32_list", &DomNode_as_int32_list, METH_VARARGS, NULL },
+    { "as_int64_list", &DomNode_as_int64_list, METH_VARARGS, NULL },
+    { "as_float_list", &DomNode_as_float_list, METH_VARARGS, NULL },
+    { "as_double_list", &DomNode_as_double_list, METH_VARARGS, NULL },
+    { "as_real_list", &DomNode_as_real_list, METH_VARARGS, NULL },
+    { "as_blob_list", &DomNode_as_blob_list, METH_VARARGS, NULL },
+    { NULL },
+};
+
 static PyTypeObject DomNode_Type = {
     .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "ufbx.DomNode",
@@ -6756,6 +6779,7 @@ static PyTypeObject DomNode_Type = {
     .tp_traverse = (traverseproc)&DomNode_traverse,
     .tp_clear = (inquiry)&DomNode_clear,
     .tp_getset = DomNode_getset,
+    .tp_methods = DomNode_methods,
 };
 
 static PyObject *DomNode_from(ufbx_dom_node *data, Context *ctx) {
@@ -6972,6 +6996,21 @@ static PyGetSetDef Props_getset[] = {
     { NULL },
 };
 
+static PyObject *Props_find_prop(PyObject *self, PyObject *args);
+static PyObject *Props_find_real(PyObject *self, PyObject *args);
+static PyObject *Props_find_vec3(PyObject *self, PyObject *args);
+static PyObject *Props_find_int(PyObject *self, PyObject *args);
+static PyObject *Props_find_bool(PyObject *self, PyObject *args);
+
+static PyMethodDef Props_methods[] = {
+    { "find_prop", &Props_find_prop, METH_VARARGS, NULL },
+    { "find_real", &Props_find_real, METH_VARARGS, NULL },
+    { "find_vec3", &Props_find_vec3, METH_VARARGS, NULL },
+    { "find_int", &Props_find_int, METH_VARARGS, NULL },
+    { "find_bool", &Props_find_bool, METH_VARARGS, NULL },
+    { NULL },
+};
+
 static PyTypeObject Props_Type = {
     .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "ufbx.Props",
@@ -6984,6 +7023,7 @@ static PyTypeObject Props_Type = {
     .tp_traverse = (traverseproc)&Props_traverse,
     .tp_clear = (inquiry)&Props_clear,
     .tp_getset = Props_getset,
+    .tp_methods = Props_methods,
 };
 
 static PyObject *Props_from(ufbx_props *data, Context *ctx) {
@@ -7940,6 +7980,15 @@ static PyGetSetDef Node_getset[] = {
     { NULL },
 };
 
+static PyObject *Node_get_compatible_matrix_for_normals(PyObject *self, PyObject *args);
+static PyObject *Node_evaluate_transform(PyObject *self, PyObject *args);
+
+static PyMethodDef Node_methods[] = {
+    { "get_compatible_matrix_for_normals", &Node_get_compatible_matrix_for_normals, METH_VARARGS, NULL },
+    { "evaluate_transform", &Node_evaluate_transform, METH_VARARGS, NULL },
+    { NULL },
+};
+
 static PyTypeObject Node_Type = {
     .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "ufbx.Node",
@@ -7953,6 +8002,7 @@ static PyTypeObject Node_Type = {
     .tp_clear = (inquiry)&Node_clear,
     .tp_getset = Node_getset,
     .tp_base = &Element_Type,
+    .tp_methods = Node_methods,
 };
 
 #define SLOT_COUNT_VERTEX_ATTRIB 6
@@ -11332,6 +11382,13 @@ static PyGetSetDef NurbsCurve_getset[] = {
     { NULL },
 };
 
+static PyObject *NurbsCurve_evaluate(PyObject *self, PyObject *args);
+
+static PyMethodDef NurbsCurve_methods[] = {
+    { "evaluate", &NurbsCurve_evaluate, METH_VARARGS, NULL },
+    { NULL },
+};
+
 static PyTypeObject NurbsCurve_Type = {
     .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "ufbx.NurbsCurve",
@@ -11345,6 +11402,7 @@ static PyTypeObject NurbsCurve_Type = {
     .tp_clear = (inquiry)&NurbsCurve_clear,
     .tp_getset = NurbsCurve_getset,
     .tp_base = &Element_Type,
+    .tp_methods = NurbsCurve_methods,
 };
 
 #define SLOT_COUNT_NURBS_SURFACE 14
@@ -11543,6 +11601,13 @@ static PyGetSetDef NurbsSurface_getset[] = {
     { NULL },
 };
 
+static PyObject *NurbsSurface_evaluate(PyObject *self, PyObject *args);
+
+static PyMethodDef NurbsSurface_methods[] = {
+    { "evaluate", &NurbsSurface_evaluate, METH_VARARGS, NULL },
+    { NULL },
+};
+
 static PyTypeObject NurbsSurface_Type = {
     .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "ufbx.NurbsSurface",
@@ -11556,6 +11621,7 @@ static PyTypeObject NurbsSurface_Type = {
     .tp_clear = (inquiry)&NurbsSurface_clear,
     .tp_getset = NurbsSurface_getset,
     .tp_base = &Element_Type,
+    .tp_methods = NurbsSurface_methods,
 };
 
 #define SLOT_COUNT_NURBS_TRIM_SURFACE 5
@@ -12927,6 +12993,13 @@ static PyGetSetDef BlendDeformer_getset[] = {
     { NULL },
 };
 
+static PyObject *BlendDeformer_get_vertex_offset(PyObject *self, PyObject *args);
+
+static PyMethodDef BlendDeformer_methods[] = {
+    { "get_vertex_offset", &BlendDeformer_get_vertex_offset, METH_VARARGS, NULL },
+    { NULL },
+};
+
 static PyTypeObject BlendDeformer_Type = {
     .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "ufbx.BlendDeformer",
@@ -12940,6 +13013,7 @@ static PyTypeObject BlendDeformer_Type = {
     .tp_clear = (inquiry)&BlendDeformer_clear,
     .tp_getset = BlendDeformer_getset,
     .tp_base = &Element_Type,
+    .tp_methods = BlendDeformer_methods,
 };
 
 #define SLOT_COUNT_BLEND_KEYFRAME 3
@@ -13153,6 +13227,13 @@ static PyGetSetDef BlendChannel_getset[] = {
     { NULL },
 };
 
+static PyObject *BlendChannel_evaluate_blend_weight(PyObject *self, PyObject *args);
+
+static PyMethodDef BlendChannel_methods[] = {
+    { "evaluate_blend_weight", &BlendChannel_evaluate_blend_weight, METH_VARARGS, NULL },
+    { NULL },
+};
+
 static PyTypeObject BlendChannel_Type = {
     .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "ufbx.BlendChannel",
@@ -13166,6 +13247,7 @@ static PyTypeObject BlendChannel_Type = {
     .tp_clear = (inquiry)&BlendChannel_clear,
     .tp_getset = BlendChannel_getset,
     .tp_base = &Element_Type,
+    .tp_methods = BlendChannel_methods,
 };
 
 #define SLOT_COUNT_BLEND_SHAPE 9
@@ -13309,6 +13391,13 @@ static PyGetSetDef BlendShape_getset[] = {
     { NULL },
 };
 
+static PyObject *BlendShape_get_vertex_offset(PyObject *self, PyObject *args);
+
+static PyMethodDef BlendShape_methods[] = {
+    { "get_vertex_offset", &BlendShape_get_vertex_offset, METH_VARARGS, NULL },
+    { NULL },
+};
+
 static PyTypeObject BlendShape_Type = {
     .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "ufbx.BlendShape",
@@ -13322,6 +13411,7 @@ static PyTypeObject BlendShape_Type = {
     .tp_clear = (inquiry)&BlendShape_clear,
     .tp_getset = BlendShape_getset,
     .tp_base = &Element_Type,
+    .tp_methods = BlendShape_methods,
 };
 
 #define SLOT_COUNT_CACHE_FRAME 12
@@ -15826,6 +15916,13 @@ static PyGetSetDef Material_getset[] = {
     { NULL },
 };
 
+static PyObject *Material_find_prop_texture(PyObject *self, PyObject *args);
+
+static PyMethodDef Material_methods[] = {
+    { "find_prop_texture", &Material_find_prop_texture, METH_VARARGS, NULL },
+    { NULL },
+};
+
 static PyTypeObject Material_Type = {
     .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "ufbx.Material",
@@ -15839,6 +15936,7 @@ static PyTypeObject Material_Type = {
     .tp_clear = (inquiry)&Material_clear,
     .tp_getset = Material_getset,
     .tp_base = &Element_Type,
+    .tp_methods = Material_methods,
 };
 
 #define SLOT_COUNT_TEXTURE_LAYER 3
@@ -17036,6 +17134,13 @@ static PyGetSetDef Shader_getset[] = {
     { NULL },
 };
 
+static PyObject *Shader_find_shader_prop(PyObject *self, PyObject *args);
+
+static PyMethodDef Shader_methods[] = {
+    { "find_shader_prop", &Shader_find_shader_prop, METH_VARARGS, NULL },
+    { NULL },
+};
+
 static PyTypeObject Shader_Type = {
     .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "ufbx.Shader",
@@ -17049,6 +17154,7 @@ static PyTypeObject Shader_Type = {
     .tp_clear = (inquiry)&Shader_clear,
     .tp_getset = Shader_getset,
     .tp_base = &Element_Type,
+    .tp_methods = Shader_methods,
 };
 
 #define SLOT_COUNT_SHADER_PROP_BINDING 2
@@ -17927,6 +18033,15 @@ static PyGetSetDef AnimLayer_getset[] = {
     { NULL },
 };
 
+static PyObject *AnimLayer_find_anim_prop(PyObject *self, PyObject *args);
+static PyObject *AnimLayer_find_anim_props(PyObject *self, PyObject *args);
+
+static PyMethodDef AnimLayer_methods[] = {
+    { "find_anim_prop", &AnimLayer_find_anim_prop, METH_VARARGS, NULL },
+    { "find_anim_props", &AnimLayer_find_anim_props, METH_VARARGS, NULL },
+    { NULL },
+};
+
 static PyTypeObject AnimLayer_Type = {
     .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "ufbx.AnimLayer",
@@ -17940,6 +18055,7 @@ static PyTypeObject AnimLayer_Type = {
     .tp_clear = (inquiry)&AnimLayer_clear,
     .tp_getset = AnimLayer_getset,
     .tp_base = &Element_Type,
+    .tp_methods = AnimLayer_methods,
 };
 
 #define SLOT_COUNT_ANIM_VALUE 6
@@ -18050,6 +18166,15 @@ static PyGetSetDef AnimValue_getset[] = {
     { NULL },
 };
 
+static PyObject *AnimValue_evaluate_real(PyObject *self, PyObject *args);
+static PyObject *AnimValue_evaluate_vec3(PyObject *self, PyObject *args);
+
+static PyMethodDef AnimValue_methods[] = {
+    { "evaluate_real", &AnimValue_evaluate_real, METH_VARARGS, NULL },
+    { "evaluate_vec3", &AnimValue_evaluate_vec3, METH_VARARGS, NULL },
+    { NULL },
+};
+
 static PyTypeObject AnimValue_Type = {
     .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "ufbx.AnimValue",
@@ -18063,6 +18188,7 @@ static PyTypeObject AnimValue_Type = {
     .tp_clear = (inquiry)&AnimValue_clear,
     .tp_getset = AnimValue_getset,
     .tp_base = &Element_Type,
+    .tp_methods = AnimValue_methods,
 };
 
 #define SLOT_COUNT_EXTRAPOLATION 2
@@ -18309,6 +18435,13 @@ static PyGetSetDef AnimCurve_getset[] = {
     { NULL },
 };
 
+static PyObject *AnimCurve_evaluate(PyObject *self, PyObject *args);
+
+static PyMethodDef AnimCurve_methods[] = {
+    { "evaluate", &AnimCurve_evaluate, METH_VARARGS, NULL },
+    { NULL },
+};
+
 static PyTypeObject AnimCurve_Type = {
     .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "ufbx.AnimCurve",
@@ -18322,6 +18455,7 @@ static PyTypeObject AnimCurve_Type = {
     .tp_clear = (inquiry)&AnimCurve_clear,
     .tp_getset = AnimCurve_getset,
     .tp_base = &Element_Type,
+    .tp_methods = AnimCurve_methods,
 };
 
 #define SLOT_COUNT_DISPLAY_LAYER 8
@@ -21590,6 +21724,17 @@ static PyGetSetDef Scene_getset[] = {
     { NULL },
 };
 
+static PyObject *Scene_find_node(PyObject *self, PyObject *args);
+static PyObject *Scene_find_anim_stack(PyObject *self, PyObject *args);
+static PyObject *Scene_evaluate(PyObject *self, PyObject *args, PyObject *kwargs);
+
+static PyMethodDef Scene_methods[] = {
+    { "find_node", &Scene_find_node, METH_VARARGS, NULL },
+    { "find_anim_stack", &Scene_find_anim_stack, METH_VARARGS, NULL },
+    { "evaluate", (PyCFunction)&Scene_evaluate, METH_VARARGS|METH_KEYWORDS, NULL },
+    { NULL },
+};
+
 static PyTypeObject Scene_Type = {
     .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "ufbx.Scene",
@@ -21602,6 +21747,7 @@ static PyTypeObject Scene_Type = {
     .tp_traverse = (traverseproc)&Scene_traverse,
     .tp_clear = (inquiry)&Scene_clear,
     .tp_getset = Scene_getset,
+    .tp_methods = Scene_methods,
 };
 
 static PyObject *Scene_from(ufbx_scene *data, Context *ctx) {
@@ -25597,6 +25743,449 @@ static PyObject *mod_dom_as_blob_list(PyObject *self, PyObject *args) {
     return BlobList_from(ret, node->ctx);
 }
 
+static PyObject *DomNode_find(PyObject *self, PyObject *args) {
+    DomNode *parent = (DomNode*)self;
+    const char *name;
+    Py_ssize_t name_len;
+    if (!PyArg_ParseTuple(args, "s#", &name, &name_len)) {
+        return NULL;
+    }
+    if (!parent->ctx->ok) {
+        return Context_error(parent->ctx);
+    }
+    ufbx_dom_node* ret = ufbx_dom_find_len(parent->data, name, (size_t)name_len);
+    if (!ret) {
+        return Py_NewRef(Py_None);
+    }
+    return to_pyobject_todo("ufbx_dom_node*");
+}
+
+static PyObject *DomNode_is_array(PyObject *self, PyObject *args) {
+    DomNode *node = (DomNode*)self;
+    if (!PyArg_ParseTuple(args, "")) {
+        return NULL;
+    }
+    if (!node->ctx->ok) {
+        return Context_error(node->ctx);
+    }
+    bool ret = ufbx_dom_is_array(node->data);
+    return Py_NewRef(ret ? Py_True : Py_False);
+}
+
+static PyObject *DomNode_array_size(PyObject *self, PyObject *args) {
+    DomNode *node = (DomNode*)self;
+    if (!PyArg_ParseTuple(args, "")) {
+        return NULL;
+    }
+    if (!node->ctx->ok) {
+        return Context_error(node->ctx);
+    }
+    size_t ret = ufbx_dom_array_size(node->data);
+    return PyLong_FromSize_t(ret);
+}
+
+static PyObject *DomNode_as_int32_list(PyObject *self, PyObject *args) {
+    DomNode *node = (DomNode*)self;
+    if (!PyArg_ParseTuple(args, "")) {
+        return NULL;
+    }
+    if (!node->ctx->ok) {
+        return Context_error(node->ctx);
+    }
+    ufbx_int32_list ret = ufbx_dom_as_int32_list(node->data);
+    return Int32List_from(ret, node->ctx);
+}
+
+static PyObject *DomNode_as_int64_list(PyObject *self, PyObject *args) {
+    DomNode *node = (DomNode*)self;
+    if (!PyArg_ParseTuple(args, "")) {
+        return NULL;
+    }
+    if (!node->ctx->ok) {
+        return Context_error(node->ctx);
+    }
+    ufbx_int64_list ret = ufbx_dom_as_int64_list(node->data);
+    return Int64List_from(ret, node->ctx);
+}
+
+static PyObject *DomNode_as_float_list(PyObject *self, PyObject *args) {
+    DomNode *node = (DomNode*)self;
+    if (!PyArg_ParseTuple(args, "")) {
+        return NULL;
+    }
+    if (!node->ctx->ok) {
+        return Context_error(node->ctx);
+    }
+    ufbx_float_list ret = ufbx_dom_as_float_list(node->data);
+    return FloatList_from(ret, node->ctx);
+}
+
+static PyObject *DomNode_as_double_list(PyObject *self, PyObject *args) {
+    DomNode *node = (DomNode*)self;
+    if (!PyArg_ParseTuple(args, "")) {
+        return NULL;
+    }
+    if (!node->ctx->ok) {
+        return Context_error(node->ctx);
+    }
+    ufbx_double_list ret = ufbx_dom_as_double_list(node->data);
+    return DoubleList_from(ret, node->ctx);
+}
+
+static PyObject *DomNode_as_real_list(PyObject *self, PyObject *args) {
+    DomNode *node = (DomNode*)self;
+    if (!PyArg_ParseTuple(args, "")) {
+        return NULL;
+    }
+    if (!node->ctx->ok) {
+        return Context_error(node->ctx);
+    }
+    ufbx_real_list ret = ufbx_dom_as_real_list(node->data);
+    return RealList_from(ret, node->ctx);
+}
+
+static PyObject *DomNode_as_blob_list(PyObject *self, PyObject *args) {
+    DomNode *node = (DomNode*)self;
+    if (!PyArg_ParseTuple(args, "")) {
+        return NULL;
+    }
+    if (!node->ctx->ok) {
+        return Context_error(node->ctx);
+    }
+    ufbx_blob_list ret = ufbx_dom_as_blob_list(node->data);
+    return BlobList_from(ret, node->ctx);
+}
+
+static PyObject *Props_find_prop(PyObject *self, PyObject *args) {
+    Props *props = (Props*)self;
+    const char *name;
+    Py_ssize_t name_len;
+    if (!PyArg_ParseTuple(args, "s#", &name, &name_len)) {
+        return NULL;
+    }
+    if (!props->ctx->ok) {
+        return Context_error(props->ctx);
+    }
+    ufbx_prop* ret = ufbx_find_prop_len(props->data, name, (size_t)name_len);
+    if (!ret) {
+        return Py_NewRef(Py_None);
+    }
+    return to_pyobject_todo("ufbx_prop*");
+}
+
+static PyObject *Props_find_real(PyObject *self, PyObject *args) {
+    Props *props = (Props*)self;
+    const char *name;
+    Py_ssize_t name_len;
+    double def;
+    if (!PyArg_ParseTuple(args, "s#d", &name, &name_len, &def)) {
+        return NULL;
+    }
+    if (!props->ctx->ok) {
+        return Context_error(props->ctx);
+    }
+    ufbx_real ret = ufbx_find_real_len(props->data, name, (size_t)name_len, (ufbx_real)def);
+    return PyFloat_FromDouble(ret);
+}
+
+static PyObject *Props_find_vec3(PyObject *self, PyObject *args) {
+    Props *props = (Props*)self;
+    const char *name;
+    Py_ssize_t name_len;
+    PyObject *def_obj;
+    ufbx_vec3 def;
+    if (!PyArg_ParseTuple(args, "s#O!", &name, &name_len, &Vec3_Type, &def_obj)) {
+        return NULL;
+    }
+    if (!props->ctx->ok) {
+        return Context_error(props->ctx);
+    }
+    def = Vec3_to(def_obj);
+    ufbx_vec3 ret = ufbx_find_vec3_len(props->data, name, (size_t)name_len, def);
+    return Vec3_from(&ret);
+}
+
+static PyObject *Props_find_int(PyObject *self, PyObject *args) {
+    Props *props = (Props*)self;
+    const char *name;
+    Py_ssize_t name_len;
+    long long def;
+    if (!PyArg_ParseTuple(args, "s#L", &name, &name_len, &def)) {
+        return NULL;
+    }
+    if (!props->ctx->ok) {
+        return Context_error(props->ctx);
+    }
+    int64_t ret = ufbx_find_int_len(props->data, name, (size_t)name_len, (int64_t)def);
+    return PyLong_FromLongLong((long long)ret);
+}
+
+static PyObject *Props_find_bool(PyObject *self, PyObject *args) {
+    Props *props = (Props*)self;
+    const char *name;
+    Py_ssize_t name_len;
+    int def;
+    if (!PyArg_ParseTuple(args, "s#p", &name, &name_len, &def)) {
+        return NULL;
+    }
+    if (!props->ctx->ok) {
+        return Context_error(props->ctx);
+    }
+    bool ret = ufbx_find_bool_len(props->data, name, (size_t)name_len, def != 0);
+    return Py_NewRef(ret ? Py_True : Py_False);
+}
+
+static PyObject *Node_get_compatible_matrix_for_normals(PyObject *self, PyObject *args) {
+    Node *node = (Node*)self;
+    if (!PyArg_ParseTuple(args, "")) {
+        return NULL;
+    }
+    if (!node->ctx->ok) {
+        return Context_error(node->ctx);
+    }
+    ufbx_matrix ret = ufbx_get_compatible_matrix_for_normals(node->data);
+    return Matrix_from(&ret);
+}
+
+static PyObject *Node_evaluate_transform(PyObject *self, PyObject *args) {
+    Anim *anim;
+    Node *node = (Node*)self;
+    double time;
+    if (!PyArg_ParseTuple(args, "O!d", &Anim_Type, &anim, &time)) {
+        return NULL;
+    }
+    if (!anim->ctx->ok) {
+        return Context_error(anim->ctx);
+    }
+    ufbx_transform ret = ufbx_evaluate_transform(anim->data, node->data, time);
+    return Transform_from(&ret);
+}
+
+static PyObject *NurbsCurve_evaluate(PyObject *self, PyObject *args) {
+    NurbsCurve *curve = (NurbsCurve*)self;
+    double u;
+    if (!PyArg_ParseTuple(args, "d", &u)) {
+        return NULL;
+    }
+    if (!curve->ctx->ok) {
+        return Context_error(curve->ctx);
+    }
+    ufbx_curve_point ret = ufbx_evaluate_nurbs_curve(curve->data, (ufbx_real)u);
+    return CurvePoint_from(&ret);
+}
+
+static PyObject *NurbsSurface_evaluate(PyObject *self, PyObject *args) {
+    NurbsSurface *surface = (NurbsSurface*)self;
+    double u;
+    double v;
+    if (!PyArg_ParseTuple(args, "dd", &u, &v)) {
+        return NULL;
+    }
+    if (!surface->ctx->ok) {
+        return Context_error(surface->ctx);
+    }
+    ufbx_surface_point ret = ufbx_evaluate_nurbs_surface(surface->data, (ufbx_real)u, (ufbx_real)v);
+    return SurfacePoint_from(&ret);
+}
+
+static PyObject *BlendDeformer_get_vertex_offset(PyObject *self, PyObject *args) {
+    BlendDeformer *blend = (BlendDeformer*)self;
+    Py_ssize_t vertex;
+    if (!PyArg_ParseTuple(args, "n", &vertex)) {
+        return NULL;
+    }
+    if (!blend->ctx->ok) {
+        return Context_error(blend->ctx);
+    }
+    ufbx_vec3 ret = ufbx_get_blend_vertex_offset(blend->data, (size_t)vertex);
+    return Vec3_from(&ret);
+}
+
+static PyObject *BlendChannel_evaluate_blend_weight(PyObject *self, PyObject *args) {
+    Anim *anim;
+    BlendChannel *channel = (BlendChannel*)self;
+    double time;
+    if (!PyArg_ParseTuple(args, "O!d", &Anim_Type, &anim, &time)) {
+        return NULL;
+    }
+    if (!anim->ctx->ok) {
+        return Context_error(anim->ctx);
+    }
+    ufbx_real ret = ufbx_evaluate_blend_weight(anim->data, channel->data, time);
+    return PyFloat_FromDouble(ret);
+}
+
+static PyObject *BlendShape_get_vertex_offset(PyObject *self, PyObject *args) {
+    BlendShape *shape = (BlendShape*)self;
+    Py_ssize_t vertex;
+    if (!PyArg_ParseTuple(args, "n", &vertex)) {
+        return NULL;
+    }
+    if (!shape->ctx->ok) {
+        return Context_error(shape->ctx);
+    }
+    ufbx_vec3 ret = ufbx_get_blend_shape_vertex_offset(shape->data, (size_t)vertex);
+    return Vec3_from(&ret);
+}
+
+static PyObject *Material_find_prop_texture(PyObject *self, PyObject *args) {
+    Material *material = (Material*)self;
+    const char *name;
+    Py_ssize_t name_len;
+    if (!PyArg_ParseTuple(args, "s#", &name, &name_len)) {
+        return NULL;
+    }
+    if (!material->ctx->ok) {
+        return Context_error(material->ctx);
+    }
+    ufbx_texture* ret = ufbx_find_prop_texture_len(material->data, name, (size_t)name_len);
+    if (!ret) {
+        return Py_NewRef(Py_None);
+    }
+    return Element_from(ret, material->ctx);
+}
+
+static PyObject *Shader_find_shader_prop(PyObject *self, PyObject *args) {
+    Shader *shader = (Shader*)self;
+    const char *name;
+    Py_ssize_t name_len;
+    if (!PyArg_ParseTuple(args, "s#", &name, &name_len)) {
+        return NULL;
+    }
+    if (!shader->ctx->ok) {
+        return Context_error(shader->ctx);
+    }
+    ufbx_string ret = ufbx_find_shader_prop_len(shader->data, name, (size_t)name_len);
+    return String_from(ret);
+}
+
+static PyObject *AnimLayer_find_anim_prop(PyObject *self, PyObject *args) {
+    AnimLayer *layer = (AnimLayer*)self;
+    Element *element;
+    const char *prop;
+    Py_ssize_t prop_len;
+    if (!PyArg_ParseTuple(args, "O!s#", &Element_Type, &element, &prop, &prop_len)) {
+        return NULL;
+    }
+    if (!layer->ctx->ok) {
+        return Context_error(layer->ctx);
+    }
+    ufbx_anim_prop* ret = ufbx_find_anim_prop_len(layer->data, element->data, prop, (size_t)prop_len);
+    if (!ret) {
+        return Py_NewRef(Py_None);
+    }
+    return to_pyobject_todo("ufbx_anim_prop*");
+}
+
+static PyObject *AnimLayer_find_anim_props(PyObject *self, PyObject *args) {
+    AnimLayer *layer = (AnimLayer*)self;
+    Element *element;
+    if (!PyArg_ParseTuple(args, "O!", &Element_Type, &element)) {
+        return NULL;
+    }
+    if (!layer->ctx->ok) {
+        return Context_error(layer->ctx);
+    }
+    ufbx_anim_prop_list ret = ufbx_find_anim_props(layer->data, element->data);
+    return AnimPropList_from(ret, layer->ctx);
+}
+
+static PyObject *AnimValue_evaluate_real(PyObject *self, PyObject *args) {
+    AnimValue *anim_value = (AnimValue*)self;
+    double time;
+    if (!PyArg_ParseTuple(args, "d", &time)) {
+        return NULL;
+    }
+    if (!anim_value->ctx->ok) {
+        return Context_error(anim_value->ctx);
+    }
+    ufbx_real ret = ufbx_evaluate_anim_value_real(anim_value->data, time);
+    return PyFloat_FromDouble(ret);
+}
+
+static PyObject *AnimValue_evaluate_vec3(PyObject *self, PyObject *args) {
+    AnimValue *anim_value = (AnimValue*)self;
+    double time;
+    if (!PyArg_ParseTuple(args, "d", &time)) {
+        return NULL;
+    }
+    if (!anim_value->ctx->ok) {
+        return Context_error(anim_value->ctx);
+    }
+    ufbx_vec3 ret = ufbx_evaluate_anim_value_vec3(anim_value->data, time);
+    return Vec3_from(&ret);
+}
+
+static PyObject *AnimCurve_evaluate(PyObject *self, PyObject *args) {
+    AnimCurve *curve = (AnimCurve*)self;
+    double time;
+    double default_value;
+    if (!PyArg_ParseTuple(args, "dd", &time, &default_value)) {
+        return NULL;
+    }
+    if (!curve->ctx->ok) {
+        return Context_error(curve->ctx);
+    }
+    ufbx_real ret = ufbx_evaluate_curve(curve->data, time, (ufbx_real)default_value);
+    return PyFloat_FromDouble(ret);
+}
+
+static PyObject *Scene_find_node(PyObject *self, PyObject *args) {
+    Scene *scene = (Scene*)self;
+    const char *name;
+    Py_ssize_t name_len;
+    if (!PyArg_ParseTuple(args, "s#", &name, &name_len)) {
+        return NULL;
+    }
+    if (!scene->ctx->ok) {
+        return Context_error(scene->ctx);
+    }
+    ufbx_node* ret = ufbx_find_node_len(scene->data, name, (size_t)name_len);
+    if (!ret) {
+        return Py_NewRef(Py_None);
+    }
+    return Element_from(ret, scene->ctx);
+}
+
+static PyObject *Scene_find_anim_stack(PyObject *self, PyObject *args) {
+    Scene *scene = (Scene*)self;
+    const char *name;
+    Py_ssize_t name_len;
+    if (!PyArg_ParseTuple(args, "s#", &name, &name_len)) {
+        return NULL;
+    }
+    if (!scene->ctx->ok) {
+        return Context_error(scene->ctx);
+    }
+    ufbx_anim_stack* ret = ufbx_find_anim_stack_len(scene->data, name, (size_t)name_len);
+    if (!ret) {
+        return Py_NewRef(Py_None);
+    }
+    return Element_from(ret, scene->ctx);
+}
+
+static PyObject *Scene_evaluate(PyObject *self, PyObject *args, PyObject *kwargs) {
+    Scene *scene = (Scene*)self;
+    Anim *anim;
+    double time;
+    ufbx_evaluate_opts opts = { 0 };
+    ufbx_error error;
+    if (!PyArg_ParseTuple(args, "O!d", &Anim_Type, &anim, &time)) {
+        return NULL;
+    }
+    if (!scene->ctx->ok) {
+        return Context_error(scene->ctx);
+    }
+    if (to_evaluate_opts(&opts, kwargs) < 0) {
+        return NULL;
+    }
+    ufbx_scene* ret = ufbx_evaluate_scene(scene->data, anim->data, time, &opts, &error);
+    if (error.type != UFBX_ERROR_NONE) {
+        return UfbxError_raise(&error);
+    }
+    return Scene_create(ret);
+}
+
 static PyTypeObject *Element_typeof(ufbx_element_type type) {
     switch (type) {
         case UFBX_ELEMENT_UNKNOWN: return &Unknown_Type;
@@ -26073,6 +26662,37 @@ static PyMethodDef mod_methods[] = {
     { "dom_as_double_list", &mod_dom_as_double_list, METH_VARARGS, NULL },
     { "dom_as_real_list", &mod_dom_as_real_list, METH_VARARGS, NULL },
     { "dom_as_blob_list", &mod_dom_as_blob_list, METH_VARARGS, NULL },
+    { "dom_find", &mod_dom_find, METH_VARARGS, NULL },
+    { "dom_is_array", &mod_dom_is_array, METH_VARARGS, NULL },
+    { "dom_array_size", &mod_dom_array_size, METH_VARARGS, NULL },
+    { "dom_as_int32_list", &mod_dom_as_int32_list, METH_VARARGS, NULL },
+    { "dom_as_int64_list", &mod_dom_as_int64_list, METH_VARARGS, NULL },
+    { "dom_as_float_list", &mod_dom_as_float_list, METH_VARARGS, NULL },
+    { "dom_as_double_list", &mod_dom_as_double_list, METH_VARARGS, NULL },
+    { "dom_as_real_list", &mod_dom_as_real_list, METH_VARARGS, NULL },
+    { "dom_as_blob_list", &mod_dom_as_blob_list, METH_VARARGS, NULL },
+    { "find_prop", &mod_find_prop, METH_VARARGS, NULL },
+    { "find_real", &mod_find_real, METH_VARARGS, NULL },
+    { "find_vec3", &mod_find_vec3, METH_VARARGS, NULL },
+    { "find_int", &mod_find_int, METH_VARARGS, NULL },
+    { "find_bool", &mod_find_bool, METH_VARARGS, NULL },
+    { "get_compatible_matrix_for_normals", &mod_get_compatible_matrix_for_normals, METH_VARARGS, NULL },
+    { "evaluate_transform", &mod_evaluate_transform, METH_VARARGS, NULL },
+    { "evaluate_nurbs_curve", &mod_evaluate_nurbs_curve, METH_VARARGS, NULL },
+    { "evaluate_nurbs_surface", &mod_evaluate_nurbs_surface, METH_VARARGS, NULL },
+    { "get_blend_vertex_offset", &mod_get_blend_vertex_offset, METH_VARARGS, NULL },
+    { "evaluate_blend_weight", &mod_evaluate_blend_weight, METH_VARARGS, NULL },
+    { "get_blend_shape_vertex_offset", &mod_get_blend_shape_vertex_offset, METH_VARARGS, NULL },
+    { "find_prop_texture", &mod_find_prop_texture, METH_VARARGS, NULL },
+    { "find_shader_prop", &mod_find_shader_prop, METH_VARARGS, NULL },
+    { "find_anim_prop", &mod_find_anim_prop, METH_VARARGS, NULL },
+    { "find_anim_props", &mod_find_anim_props, METH_VARARGS, NULL },
+    { "evaluate_anim_value_real", &mod_evaluate_anim_value_real, METH_VARARGS, NULL },
+    { "evaluate_anim_value_vec3", &mod_evaluate_anim_value_vec3, METH_VARARGS, NULL },
+    { "evaluate_curve", &mod_evaluate_curve, METH_VARARGS, NULL },
+    { "find_node", &mod_find_node, METH_VARARGS, NULL },
+    { "find_anim_stack", &mod_find_anim_stack, METH_VARARGS, NULL },
+    { "evaluate_scene", (PyCFunction)&mod_evaluate_scene, METH_VARARGS|METH_KEYWORDS, NULL },
     { NULL },
 };
 
