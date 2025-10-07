@@ -51,7 +51,7 @@ jobs:
           name: artifact-sdist
           path: dist/*.tar.gz
 
-  merge:
+  merge_artifacts:
     runs-on: ubuntu-latest
     needs: [build_wheels, build_sdist]
     steps:
@@ -59,7 +59,7 @@ jobs:
         uses: actions/upload-artifact/merge@v4
 
   release:
-    needs: [build_wheels, build_sdist]
+    needs: [merge_artifacts]
     runs-on: ubuntu-latest
     if: ${{ github.event.inputs.publish }}
     steps:
