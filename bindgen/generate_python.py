@@ -151,6 +151,21 @@ pod_types = {
     "ufbx_matrix": "Matrix",
 }
 
+@dataclass
+class BufferSpec:
+    prim_type: str
+    format: str
+    shape: tuple[int, ...]
+
+buffer_specs = {
+    "ufbx_bool_list": BufferSpec("bool", "?", (1,)),
+    "ufbx_int32_list": BufferSpec("int32_t", "i", (1,)),
+    "ufbx_real_list": BufferSpec("ufbx_real", "d", (1,)),
+    "ufbx_vec2_list": BufferSpec("ufbx_real", "d", (2,1)),
+    "ufbx_vec3_list": BufferSpec("ufbx_real", "d", (3,1)),
+    "ufbx_vec4_list": BufferSpec("ufbx_real", "d", (4,1)),
+}
+
 class PythonType:
     def __init__(self, ir_type: ir.Type):
         self.ir = ir_type
@@ -515,6 +530,7 @@ def emit_list(ps: PythonStruct):
         typedef struct {{
             PyObject_HEAD
             Context *ctx;
+            Py_ssize_t shape[2];
             {ps.ir.name} data;
         }} {name};
     """)
@@ -571,6 +587,63 @@ def emit_list(ps: PythonStruct):
         }}
     """)
 
+    # Buffer protocol
+    buffer_spec = buffer_specs.get(ps.ir.name)
+    if buffer_spec:
+        emit()
+
+        strides = ", ".join(f"{s} * sizeof({buffer_spec.prim_type})" for s in buffer_spec.shape)
+
+        emit_lines(f"""
+            static Py_ssize_t {ps.name}_strides[] = {{ {strides} }};
+            static int {ps.name}_getbuffer(PyObject *exporter, Py_buffer *view, int flags) {{
+                if (view == NULL) {{
+                    PyErr_SetString(PyExc_BufferError, "NULL view in getbuffer");
+                    return -1;
+                }}
+
+                {ps.name} *self = ({ps.name}*)exporter;
+                if (!self->ctx->ok) {{
+                    Context_error(self->ctx);
+                    return -1;
+                }}
+
+                Py_INCREF(self);
+
+                self->ctx->buffer_refs++;
+
+                view->obj = (PyObject*)self;
+                view->buf = (void*)self->data.data;
+                view->len = (Py_ssize_t)self->data.count * sizeof({data_type.ir.key});
+                view->readonly = 1;
+                view->itemsize = sizeof({buffer_spec.prim_type});
+                view->format = \"{buffer_spec.format}\";
+                view->ndim = {len(buffer_spec.shape)};
+                view->shape = self->shape;
+                view->strides = {ps.name}_strides;
+                view->suboffsets = NULL;
+                view->internal = NULL;
+                return 0;
+            }}
+        """)
+
+        emit()
+        emit_lines(f"""
+            static void {ps.name}_releasebuffer(PyObject *exporter, Py_buffer *view) {{
+                {ps.name} *self = ({ps.name}*)exporter;
+                self->ctx->buffer_refs--;
+                Py_DECREF(self);
+            }}
+        """)
+
+        emit()
+        emit_lines(f"""
+            static PyBufferProcs {ps.name}_Buffer = {{
+                .bf_getbuffer = {ps.name}_getbuffer,
+                .bf_releasebuffer = {ps.name}_releasebuffer
+            }};
+        """)
+
     # Type declaration
     emit()
     emit_lines(f"""
@@ -591,8 +664,16 @@ def emit_list(ps: PythonStruct):
         .tp_dealloc = (destructor)&{ps.name}_dealloc,
         .tp_traverse = (traverseproc)&{ps.name}_traverse,
         .tp_clear = (inquiry)&{ps.name}_clear,
-    }};
     """)
+    indent()
+
+    if buffer_spec:
+        emit_lines(f"""
+            .tp_as_buffer = &{ps.name}_Buffer,
+        """)
+
+    unindent()
+    emit("};")
 
     # Create helper
     emit()
@@ -602,9 +683,27 @@ def emit_list(ps: PythonStruct):
         if (!obj) return NULL;
         obj->ctx = (Context*)Py_NewRef(ctx);
         obj->data = list;
-        return (PyObject*)obj;
-    }}
     """)
+
+    indent()
+    if buffer_spec:
+        if len(buffer_spec.shape) == 2:
+            emit_lines(f"""
+                obj->shape[0] = (Py_ssize_t)list.count;
+                obj->shape[1] = {buffer_spec.shape[0]};
+            """)
+        elif len(buffer_spec.shape) == 1:
+            emit_lines(f"""
+                obj->shape[0] = (Py_ssize_t)list.count;
+            """)
+        else:
+            raise RuntimeError("bad shape")
+
+    emit_lines(f"""
+        return (PyObject*)obj;
+    """)
+    unindent()
+    emit("}")
 
 def emit_pod_struct_forward(ps: PythonStruct):
     if not ps.is_emitted_pod:

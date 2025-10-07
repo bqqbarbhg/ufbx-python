@@ -27,6 +27,8 @@ typedef struct {
 
     size_t num_elements;
 	PyObject **elements;
+
+	ptrdiff_t buffer_refs;
 } Context;
 
 static int Context_traverse(Context *self, visitproc visit, void *arg)

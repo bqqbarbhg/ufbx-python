@@ -159,6 +159,7 @@ static PyObject *error_type_objs[24];
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_bool_list data;
 } BoolList;
 
@@ -192,6 +193,48 @@ void BoolList_dealloc(BoolList *self) {
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
+static Py_ssize_t BoolList_strides[] = { 1 * sizeof(bool) };
+static int BoolList_getbuffer(PyObject *exporter, Py_buffer *view, int flags) {
+    if (view == NULL) {
+        PyErr_SetString(PyExc_BufferError, "NULL view in getbuffer");
+        return -1;
+    }
+
+    BoolList *self = (BoolList*)exporter;
+    if (!self->ctx->ok) {
+        Context_error(self->ctx);
+        return -1;
+    }
+
+    Py_INCREF(self);
+
+    self->ctx->buffer_refs++;
+
+    view->obj = (PyObject*)self;
+    view->buf = (void*)self->data.data;
+    view->len = (Py_ssize_t)self->data.count * sizeof(bool);
+    view->readonly = 1;
+    view->itemsize = sizeof(bool);
+    view->format = "?";
+    view->ndim = 1;
+    view->shape = self->shape;
+    view->strides = BoolList_strides;
+    view->suboffsets = NULL;
+    view->internal = NULL;
+    return 0;
+}
+
+static void BoolList_releasebuffer(PyObject *exporter, Py_buffer *view) {
+    BoolList *self = (BoolList*)exporter;
+    self->ctx->buffer_refs--;
+    Py_DECREF(self);
+}
+
+static PyBufferProcs BoolList_Buffer = {
+    .bf_getbuffer = BoolList_getbuffer,
+    .bf_releasebuffer = BoolList_releasebuffer
+};
+
 static PySequenceMethods BoolList_Sequence = {
     .sq_length = (lenfunc)&BoolList_len,
     .sq_item = (ssizeargfunc)&BoolList_item,
@@ -209,6 +252,7 @@ static PyTypeObject BoolList_Type = {
     .tp_dealloc = (destructor)&BoolList_dealloc,
     .tp_traverse = (traverseproc)&BoolList_traverse,
     .tp_clear = (inquiry)&BoolList_clear,
+    .tp_as_buffer = &BoolList_Buffer,
 };
 
 static PyObject *BoolList_from(ufbx_bool_list list, Context *ctx) {
@@ -216,12 +260,14 @@ static PyObject *BoolList_from(ufbx_bool_list list, Context *ctx) {
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
     obj->data = list;
+    obj->shape[0] = (Py_ssize_t)list.count;
     return (PyObject*)obj;
 }
 
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_uint32_list data;
 } Uint32List;
 
@@ -285,6 +331,7 @@ static PyObject *Uint32List_from(ufbx_uint32_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_real_list data;
 } RealList;
 
@@ -318,6 +365,48 @@ void RealList_dealloc(RealList *self) {
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
+static Py_ssize_t RealList_strides[] = { 1 * sizeof(ufbx_real) };
+static int RealList_getbuffer(PyObject *exporter, Py_buffer *view, int flags) {
+    if (view == NULL) {
+        PyErr_SetString(PyExc_BufferError, "NULL view in getbuffer");
+        return -1;
+    }
+
+    RealList *self = (RealList*)exporter;
+    if (!self->ctx->ok) {
+        Context_error(self->ctx);
+        return -1;
+    }
+
+    Py_INCREF(self);
+
+    self->ctx->buffer_refs++;
+
+    view->obj = (PyObject*)self;
+    view->buf = (void*)self->data.data;
+    view->len = (Py_ssize_t)self->data.count * sizeof(ufbx_real);
+    view->readonly = 1;
+    view->itemsize = sizeof(ufbx_real);
+    view->format = "d";
+    view->ndim = 1;
+    view->shape = self->shape;
+    view->strides = RealList_strides;
+    view->suboffsets = NULL;
+    view->internal = NULL;
+    return 0;
+}
+
+static void RealList_releasebuffer(PyObject *exporter, Py_buffer *view) {
+    RealList *self = (RealList*)exporter;
+    self->ctx->buffer_refs--;
+    Py_DECREF(self);
+}
+
+static PyBufferProcs RealList_Buffer = {
+    .bf_getbuffer = RealList_getbuffer,
+    .bf_releasebuffer = RealList_releasebuffer
+};
+
 static PySequenceMethods RealList_Sequence = {
     .sq_length = (lenfunc)&RealList_len,
     .sq_item = (ssizeargfunc)&RealList_item,
@@ -335,6 +424,7 @@ static PyTypeObject RealList_Type = {
     .tp_dealloc = (destructor)&RealList_dealloc,
     .tp_traverse = (traverseproc)&RealList_traverse,
     .tp_clear = (inquiry)&RealList_clear,
+    .tp_as_buffer = &RealList_Buffer,
 };
 
 static PyObject *RealList_from(ufbx_real_list list, Context *ctx) {
@@ -342,12 +432,14 @@ static PyObject *RealList_from(ufbx_real_list list, Context *ctx) {
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
     obj->data = list;
+    obj->shape[0] = (Py_ssize_t)list.count;
     return (PyObject*)obj;
 }
 
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_vec2_list data;
 } Vec2List;
 
@@ -381,6 +473,48 @@ void Vec2List_dealloc(Vec2List *self) {
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
+static Py_ssize_t Vec2List_strides[] = { 2 * sizeof(ufbx_real), 1 * sizeof(ufbx_real) };
+static int Vec2List_getbuffer(PyObject *exporter, Py_buffer *view, int flags) {
+    if (view == NULL) {
+        PyErr_SetString(PyExc_BufferError, "NULL view in getbuffer");
+        return -1;
+    }
+
+    Vec2List *self = (Vec2List*)exporter;
+    if (!self->ctx->ok) {
+        Context_error(self->ctx);
+        return -1;
+    }
+
+    Py_INCREF(self);
+
+    self->ctx->buffer_refs++;
+
+    view->obj = (PyObject*)self;
+    view->buf = (void*)self->data.data;
+    view->len = (Py_ssize_t)self->data.count * sizeof(ufbx_vec2);
+    view->readonly = 1;
+    view->itemsize = sizeof(ufbx_real);
+    view->format = "d";
+    view->ndim = 2;
+    view->shape = self->shape;
+    view->strides = Vec2List_strides;
+    view->suboffsets = NULL;
+    view->internal = NULL;
+    return 0;
+}
+
+static void Vec2List_releasebuffer(PyObject *exporter, Py_buffer *view) {
+    Vec2List *self = (Vec2List*)exporter;
+    self->ctx->buffer_refs--;
+    Py_DECREF(self);
+}
+
+static PyBufferProcs Vec2List_Buffer = {
+    .bf_getbuffer = Vec2List_getbuffer,
+    .bf_releasebuffer = Vec2List_releasebuffer
+};
+
 static PySequenceMethods Vec2List_Sequence = {
     .sq_length = (lenfunc)&Vec2List_len,
     .sq_item = (ssizeargfunc)&Vec2List_item,
@@ -398,6 +532,7 @@ static PyTypeObject Vec2List_Type = {
     .tp_dealloc = (destructor)&Vec2List_dealloc,
     .tp_traverse = (traverseproc)&Vec2List_traverse,
     .tp_clear = (inquiry)&Vec2List_clear,
+    .tp_as_buffer = &Vec2List_Buffer,
 };
 
 static PyObject *Vec2List_from(ufbx_vec2_list list, Context *ctx) {
@@ -405,12 +540,15 @@ static PyObject *Vec2List_from(ufbx_vec2_list list, Context *ctx) {
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
     obj->data = list;
+    obj->shape[0] = (Py_ssize_t)list.count;
+    obj->shape[1] = 2;
     return (PyObject*)obj;
 }
 
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_vec3_list data;
 } Vec3List;
 
@@ -444,6 +582,48 @@ void Vec3List_dealloc(Vec3List *self) {
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
+static Py_ssize_t Vec3List_strides[] = { 3 * sizeof(ufbx_real), 1 * sizeof(ufbx_real) };
+static int Vec3List_getbuffer(PyObject *exporter, Py_buffer *view, int flags) {
+    if (view == NULL) {
+        PyErr_SetString(PyExc_BufferError, "NULL view in getbuffer");
+        return -1;
+    }
+
+    Vec3List *self = (Vec3List*)exporter;
+    if (!self->ctx->ok) {
+        Context_error(self->ctx);
+        return -1;
+    }
+
+    Py_INCREF(self);
+
+    self->ctx->buffer_refs++;
+
+    view->obj = (PyObject*)self;
+    view->buf = (void*)self->data.data;
+    view->len = (Py_ssize_t)self->data.count * sizeof(ufbx_vec3);
+    view->readonly = 1;
+    view->itemsize = sizeof(ufbx_real);
+    view->format = "d";
+    view->ndim = 2;
+    view->shape = self->shape;
+    view->strides = Vec3List_strides;
+    view->suboffsets = NULL;
+    view->internal = NULL;
+    return 0;
+}
+
+static void Vec3List_releasebuffer(PyObject *exporter, Py_buffer *view) {
+    Vec3List *self = (Vec3List*)exporter;
+    self->ctx->buffer_refs--;
+    Py_DECREF(self);
+}
+
+static PyBufferProcs Vec3List_Buffer = {
+    .bf_getbuffer = Vec3List_getbuffer,
+    .bf_releasebuffer = Vec3List_releasebuffer
+};
+
 static PySequenceMethods Vec3List_Sequence = {
     .sq_length = (lenfunc)&Vec3List_len,
     .sq_item = (ssizeargfunc)&Vec3List_item,
@@ -461,6 +641,7 @@ static PyTypeObject Vec3List_Type = {
     .tp_dealloc = (destructor)&Vec3List_dealloc,
     .tp_traverse = (traverseproc)&Vec3List_traverse,
     .tp_clear = (inquiry)&Vec3List_clear,
+    .tp_as_buffer = &Vec3List_Buffer,
 };
 
 static PyObject *Vec3List_from(ufbx_vec3_list list, Context *ctx) {
@@ -468,12 +649,15 @@ static PyObject *Vec3List_from(ufbx_vec3_list list, Context *ctx) {
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
     obj->data = list;
+    obj->shape[0] = (Py_ssize_t)list.count;
+    obj->shape[1] = 3;
     return (PyObject*)obj;
 }
 
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_vec4_list data;
 } Vec4List;
 
@@ -507,6 +691,48 @@ void Vec4List_dealloc(Vec4List *self) {
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
+static Py_ssize_t Vec4List_strides[] = { 4 * sizeof(ufbx_real), 1 * sizeof(ufbx_real) };
+static int Vec4List_getbuffer(PyObject *exporter, Py_buffer *view, int flags) {
+    if (view == NULL) {
+        PyErr_SetString(PyExc_BufferError, "NULL view in getbuffer");
+        return -1;
+    }
+
+    Vec4List *self = (Vec4List*)exporter;
+    if (!self->ctx->ok) {
+        Context_error(self->ctx);
+        return -1;
+    }
+
+    Py_INCREF(self);
+
+    self->ctx->buffer_refs++;
+
+    view->obj = (PyObject*)self;
+    view->buf = (void*)self->data.data;
+    view->len = (Py_ssize_t)self->data.count * sizeof(ufbx_vec4);
+    view->readonly = 1;
+    view->itemsize = sizeof(ufbx_real);
+    view->format = "d";
+    view->ndim = 2;
+    view->shape = self->shape;
+    view->strides = Vec4List_strides;
+    view->suboffsets = NULL;
+    view->internal = NULL;
+    return 0;
+}
+
+static void Vec4List_releasebuffer(PyObject *exporter, Py_buffer *view) {
+    Vec4List *self = (Vec4List*)exporter;
+    self->ctx->buffer_refs--;
+    Py_DECREF(self);
+}
+
+static PyBufferProcs Vec4List_Buffer = {
+    .bf_getbuffer = Vec4List_getbuffer,
+    .bf_releasebuffer = Vec4List_releasebuffer
+};
+
 static PySequenceMethods Vec4List_Sequence = {
     .sq_length = (lenfunc)&Vec4List_len,
     .sq_item = (ssizeargfunc)&Vec4List_item,
@@ -524,6 +750,7 @@ static PyTypeObject Vec4List_Type = {
     .tp_dealloc = (destructor)&Vec4List_dealloc,
     .tp_traverse = (traverseproc)&Vec4List_traverse,
     .tp_clear = (inquiry)&Vec4List_clear,
+    .tp_as_buffer = &Vec4List_Buffer,
 };
 
 static PyObject *Vec4List_from(ufbx_vec4_list list, Context *ctx) {
@@ -531,12 +758,15 @@ static PyObject *Vec4List_from(ufbx_vec4_list list, Context *ctx) {
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
     obj->data = list;
+    obj->shape[0] = (Py_ssize_t)list.count;
+    obj->shape[1] = 4;
     return (PyObject*)obj;
 }
 
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_string_list data;
 } StringList;
 
@@ -600,6 +830,7 @@ static PyObject *StringList_from(ufbx_string_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_int32_list data;
 } Int32List;
 
@@ -633,6 +864,48 @@ void Int32List_dealloc(Int32List *self) {
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
+static Py_ssize_t Int32List_strides[] = { 1 * sizeof(int32_t) };
+static int Int32List_getbuffer(PyObject *exporter, Py_buffer *view, int flags) {
+    if (view == NULL) {
+        PyErr_SetString(PyExc_BufferError, "NULL view in getbuffer");
+        return -1;
+    }
+
+    Int32List *self = (Int32List*)exporter;
+    if (!self->ctx->ok) {
+        Context_error(self->ctx);
+        return -1;
+    }
+
+    Py_INCREF(self);
+
+    self->ctx->buffer_refs++;
+
+    view->obj = (PyObject*)self;
+    view->buf = (void*)self->data.data;
+    view->len = (Py_ssize_t)self->data.count * sizeof(int32_t);
+    view->readonly = 1;
+    view->itemsize = sizeof(int32_t);
+    view->format = "i";
+    view->ndim = 1;
+    view->shape = self->shape;
+    view->strides = Int32List_strides;
+    view->suboffsets = NULL;
+    view->internal = NULL;
+    return 0;
+}
+
+static void Int32List_releasebuffer(PyObject *exporter, Py_buffer *view) {
+    Int32List *self = (Int32List*)exporter;
+    self->ctx->buffer_refs--;
+    Py_DECREF(self);
+}
+
+static PyBufferProcs Int32List_Buffer = {
+    .bf_getbuffer = Int32List_getbuffer,
+    .bf_releasebuffer = Int32List_releasebuffer
+};
+
 static PySequenceMethods Int32List_Sequence = {
     .sq_length = (lenfunc)&Int32List_len,
     .sq_item = (ssizeargfunc)&Int32List_item,
@@ -650,6 +923,7 @@ static PyTypeObject Int32List_Type = {
     .tp_dealloc = (destructor)&Int32List_dealloc,
     .tp_traverse = (traverseproc)&Int32List_traverse,
     .tp_clear = (inquiry)&Int32List_clear,
+    .tp_as_buffer = &Int32List_Buffer,
 };
 
 static PyObject *Int32List_from(ufbx_int32_list list, Context *ctx) {
@@ -657,12 +931,14 @@ static PyObject *Int32List_from(ufbx_int32_list list, Context *ctx) {
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
     obj->data = list;
+    obj->shape[0] = (Py_ssize_t)list.count;
     return (PyObject*)obj;
 }
 
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_int64_list data;
 } Int64List;
 
@@ -726,6 +1002,7 @@ static PyObject *Int64List_from(ufbx_int64_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_float_list data;
 } FloatList;
 
@@ -789,6 +1066,7 @@ static PyObject *FloatList_from(ufbx_float_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_double_list data;
 } DoubleList;
 
@@ -852,6 +1130,7 @@ static PyObject *DoubleList_from(ufbx_double_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_blob_list data;
 } BlobList;
 
@@ -915,6 +1194,7 @@ static PyObject *BlobList_from(ufbx_blob_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_dom_node_list data;
 } DomNodeList;
 
@@ -978,6 +1258,7 @@ static PyObject *DomNodeList_from(ufbx_dom_node_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_dom_value_list data;
 } DomValueList;
 
@@ -1041,6 +1322,7 @@ static PyObject *DomValueList_from(ufbx_dom_value_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_prop_list data;
 } PropList;
 
@@ -1104,6 +1386,7 @@ static PyObject *PropList_from(ufbx_prop_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_element_list data;
 } ElementList;
 
@@ -1167,6 +1450,7 @@ static PyObject *ElementList_from(ufbx_element_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_unknown_list data;
 } UnknownList;
 
@@ -1230,6 +1514,7 @@ static PyObject *UnknownList_from(ufbx_unknown_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_node_list data;
 } NodeList;
 
@@ -1293,6 +1578,7 @@ static PyObject *NodeList_from(ufbx_node_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_mesh_list data;
 } MeshList;
 
@@ -1356,6 +1642,7 @@ static PyObject *MeshList_from(ufbx_mesh_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_light_list data;
 } LightList;
 
@@ -1419,6 +1706,7 @@ static PyObject *LightList_from(ufbx_light_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_camera_list data;
 } CameraList;
 
@@ -1482,6 +1770,7 @@ static PyObject *CameraList_from(ufbx_camera_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_bone_list data;
 } BoneList;
 
@@ -1545,6 +1834,7 @@ static PyObject *BoneList_from(ufbx_bone_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_empty_list data;
 } EmptyList;
 
@@ -1608,6 +1898,7 @@ static PyObject *EmptyList_from(ufbx_empty_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_line_curve_list data;
 } LineCurveList;
 
@@ -1671,6 +1962,7 @@ static PyObject *LineCurveList_from(ufbx_line_curve_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_nurbs_curve_list data;
 } NurbsCurveList;
 
@@ -1734,6 +2026,7 @@ static PyObject *NurbsCurveList_from(ufbx_nurbs_curve_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_nurbs_surface_list data;
 } NurbsSurfaceList;
 
@@ -1797,6 +2090,7 @@ static PyObject *NurbsSurfaceList_from(ufbx_nurbs_surface_list list, Context *ct
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_nurbs_trim_surface_list data;
 } NurbsTrimSurfaceList;
 
@@ -1860,6 +2154,7 @@ static PyObject *NurbsTrimSurfaceList_from(ufbx_nurbs_trim_surface_list list, Co
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_nurbs_trim_boundary_list data;
 } NurbsTrimBoundaryList;
 
@@ -1923,6 +2218,7 @@ static PyObject *NurbsTrimBoundaryList_from(ufbx_nurbs_trim_boundary_list list, 
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_procedural_geometry_list data;
 } ProceduralGeometryList;
 
@@ -1986,6 +2282,7 @@ static PyObject *ProceduralGeometryList_from(ufbx_procedural_geometry_list list,
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_stereo_camera_list data;
 } StereoCameraList;
 
@@ -2049,6 +2346,7 @@ static PyObject *StereoCameraList_from(ufbx_stereo_camera_list list, Context *ct
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_camera_switcher_list data;
 } CameraSwitcherList;
 
@@ -2112,6 +2410,7 @@ static PyObject *CameraSwitcherList_from(ufbx_camera_switcher_list list, Context
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_marker_list data;
 } MarkerList;
 
@@ -2175,6 +2474,7 @@ static PyObject *MarkerList_from(ufbx_marker_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_lod_group_list data;
 } LodGroupList;
 
@@ -2238,6 +2538,7 @@ static PyObject *LodGroupList_from(ufbx_lod_group_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_skin_deformer_list data;
 } SkinDeformerList;
 
@@ -2301,6 +2602,7 @@ static PyObject *SkinDeformerList_from(ufbx_skin_deformer_list list, Context *ct
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_skin_cluster_list data;
 } SkinClusterList;
 
@@ -2364,6 +2666,7 @@ static PyObject *SkinClusterList_from(ufbx_skin_cluster_list list, Context *ctx)
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_blend_deformer_list data;
 } BlendDeformerList;
 
@@ -2427,6 +2730,7 @@ static PyObject *BlendDeformerList_from(ufbx_blend_deformer_list list, Context *
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_blend_channel_list data;
 } BlendChannelList;
 
@@ -2490,6 +2794,7 @@ static PyObject *BlendChannelList_from(ufbx_blend_channel_list list, Context *ct
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_blend_shape_list data;
 } BlendShapeList;
 
@@ -2553,6 +2858,7 @@ static PyObject *BlendShapeList_from(ufbx_blend_shape_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_cache_deformer_list data;
 } CacheDeformerList;
 
@@ -2616,6 +2922,7 @@ static PyObject *CacheDeformerList_from(ufbx_cache_deformer_list list, Context *
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_cache_file_list data;
 } CacheFileList;
 
@@ -2679,6 +2986,7 @@ static PyObject *CacheFileList_from(ufbx_cache_file_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_material_list data;
 } MaterialList;
 
@@ -2742,6 +3050,7 @@ static PyObject *MaterialList_from(ufbx_material_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_texture_list data;
 } TextureList;
 
@@ -2805,6 +3114,7 @@ static PyObject *TextureList_from(ufbx_texture_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_video_list data;
 } VideoList;
 
@@ -2868,6 +3178,7 @@ static PyObject *VideoList_from(ufbx_video_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_shader_list data;
 } ShaderList;
 
@@ -2931,6 +3242,7 @@ static PyObject *ShaderList_from(ufbx_shader_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_shader_binding_list data;
 } ShaderBindingList;
 
@@ -2994,6 +3306,7 @@ static PyObject *ShaderBindingList_from(ufbx_shader_binding_list list, Context *
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_anim_stack_list data;
 } AnimStackList;
 
@@ -3057,6 +3370,7 @@ static PyObject *AnimStackList_from(ufbx_anim_stack_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_anim_layer_list data;
 } AnimLayerList;
 
@@ -3120,6 +3434,7 @@ static PyObject *AnimLayerList_from(ufbx_anim_layer_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_anim_value_list data;
 } AnimValueList;
 
@@ -3183,6 +3498,7 @@ static PyObject *AnimValueList_from(ufbx_anim_value_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_anim_curve_list data;
 } AnimCurveList;
 
@@ -3246,6 +3562,7 @@ static PyObject *AnimCurveList_from(ufbx_anim_curve_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_display_layer_list data;
 } DisplayLayerList;
 
@@ -3309,6 +3626,7 @@ static PyObject *DisplayLayerList_from(ufbx_display_layer_list list, Context *ct
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_selection_set_list data;
 } SelectionSetList;
 
@@ -3372,6 +3690,7 @@ static PyObject *SelectionSetList_from(ufbx_selection_set_list list, Context *ct
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_selection_node_list data;
 } SelectionNodeList;
 
@@ -3435,6 +3754,7 @@ static PyObject *SelectionNodeList_from(ufbx_selection_node_list list, Context *
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_character_list data;
 } CharacterList;
 
@@ -3498,6 +3818,7 @@ static PyObject *CharacterList_from(ufbx_character_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_constraint_list data;
 } ConstraintList;
 
@@ -3561,6 +3882,7 @@ static PyObject *ConstraintList_from(ufbx_constraint_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_audio_layer_list data;
 } AudioLayerList;
 
@@ -3624,6 +3946,7 @@ static PyObject *AudioLayerList_from(ufbx_audio_layer_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_audio_clip_list data;
 } AudioClipList;
 
@@ -3687,6 +4010,7 @@ static PyObject *AudioClipList_from(ufbx_audio_clip_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_pose_list data;
 } PoseList;
 
@@ -3750,6 +4074,7 @@ static PyObject *PoseList_from(ufbx_pose_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_metadata_object_list data;
 } MetadataObjectList;
 
@@ -3813,6 +4138,7 @@ static PyObject *MetadataObjectList_from(ufbx_metadata_object_list list, Context
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_connection_list data;
 } ConnectionList;
 
@@ -3876,6 +4202,7 @@ static PyObject *ConnectionList_from(ufbx_connection_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_uv_set_list data;
 } UvSetList;
 
@@ -3939,6 +4266,7 @@ static PyObject *UvSetList_from(ufbx_uv_set_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_color_set_list data;
 } ColorSetList;
 
@@ -4002,6 +4330,7 @@ static PyObject *ColorSetList_from(ufbx_color_set_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_edge_list data;
 } EdgeList;
 
@@ -4065,6 +4394,7 @@ static PyObject *EdgeList_from(ufbx_edge_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_face_list data;
 } FaceList;
 
@@ -4128,6 +4458,7 @@ static PyObject *FaceList_from(ufbx_face_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_mesh_part_list data;
 } MeshPartList;
 
@@ -4191,6 +4522,7 @@ static PyObject *MeshPartList_from(ufbx_mesh_part_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_face_group_list data;
 } FaceGroupList;
 
@@ -4254,6 +4586,7 @@ static PyObject *FaceGroupList_from(ufbx_face_group_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_subdivision_weight_range_list data;
 } SubdivisionWeightRangeList;
 
@@ -4317,6 +4650,7 @@ static PyObject *SubdivisionWeightRangeList_from(ufbx_subdivision_weight_range_l
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_subdivision_weight_list data;
 } SubdivisionWeightList;
 
@@ -4380,6 +4714,7 @@ static PyObject *SubdivisionWeightList_from(ufbx_subdivision_weight_list list, C
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_line_segment_list data;
 } LineSegmentList;
 
@@ -4443,6 +4778,7 @@ static PyObject *LineSegmentList_from(ufbx_line_segment_list list, Context *ctx)
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_lod_level_list data;
 } LodLevelList;
 
@@ -4506,6 +4842,7 @@ static PyObject *LodLevelList_from(ufbx_lod_level_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_skin_vertex_list data;
 } SkinVertexList;
 
@@ -4569,6 +4906,7 @@ static PyObject *SkinVertexList_from(ufbx_skin_vertex_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_skin_weight_list data;
 } SkinWeightList;
 
@@ -4632,6 +4970,7 @@ static PyObject *SkinWeightList_from(ufbx_skin_weight_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_blend_keyframe_list data;
 } BlendKeyframeList;
 
@@ -4695,6 +5034,7 @@ static PyObject *BlendKeyframeList_from(ufbx_blend_keyframe_list list, Context *
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_cache_frame_list data;
 } CacheFrameList;
 
@@ -4758,6 +5098,7 @@ static PyObject *CacheFrameList_from(ufbx_cache_frame_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_cache_channel_list data;
 } CacheChannelList;
 
@@ -4821,6 +5162,7 @@ static PyObject *CacheChannelList_from(ufbx_cache_channel_list list, Context *ct
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_material_texture_list data;
 } MaterialTextureList;
 
@@ -4884,6 +5226,7 @@ static PyObject *MaterialTextureList_from(ufbx_material_texture_list list, Conte
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_texture_layer_list data;
 } TextureLayerList;
 
@@ -4947,6 +5290,7 @@ static PyObject *TextureLayerList_from(ufbx_texture_layer_list list, Context *ct
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_shader_texture_input_list data;
 } ShaderTextureInputList;
 
@@ -5010,6 +5354,7 @@ static PyObject *ShaderTextureInputList_from(ufbx_shader_texture_input_list list
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_texture_file_list data;
 } TextureFileList;
 
@@ -5073,6 +5418,7 @@ static PyObject *TextureFileList_from(ufbx_texture_file_list list, Context *ctx)
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_shader_prop_binding_list data;
 } ShaderPropBindingList;
 
@@ -5136,6 +5482,7 @@ static PyObject *ShaderPropBindingList_from(ufbx_shader_prop_binding_list list, 
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_prop_override_list data;
 } PropOverrideList;
 
@@ -5199,6 +5546,7 @@ static PyObject *PropOverrideList_from(ufbx_prop_override_list list, Context *ct
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_transform_override_list data;
 } TransformOverrideList;
 
@@ -5262,6 +5610,7 @@ static PyObject *TransformOverrideList_from(ufbx_transform_override_list list, C
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_anim_prop_list data;
 } AnimPropList;
 
@@ -5325,6 +5674,7 @@ static PyObject *AnimPropList_from(ufbx_anim_prop_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_keyframe_list data;
 } KeyframeList;
 
@@ -5388,6 +5738,7 @@ static PyObject *KeyframeList_from(ufbx_keyframe_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_constraint_target_list data;
 } ConstraintTargetList;
 
@@ -5451,6 +5802,7 @@ static PyObject *ConstraintTargetList_from(ufbx_constraint_target_list list, Con
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_bone_pose_list data;
 } BonePoseList;
 
@@ -5514,6 +5866,7 @@ static PyObject *BonePoseList_from(ufbx_bone_pose_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_name_element_list data;
 } NameElementList;
 
@@ -5577,6 +5930,7 @@ static PyObject *NameElementList_from(ufbx_name_element_list list, Context *ctx)
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_warning_list data;
 } WarningList;
 
@@ -5640,6 +5994,7 @@ static PyObject *WarningList_from(ufbx_warning_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_baked_vec3_list data;
 } BakedVec3List;
 
@@ -5703,6 +6058,7 @@ static PyObject *BakedVec3List_from(ufbx_baked_vec3_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_baked_quat_list data;
 } BakedQuatList;
 
@@ -5766,6 +6122,7 @@ static PyObject *BakedQuatList_from(ufbx_baked_quat_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_baked_node_list data;
 } BakedNodeList;
 
@@ -5829,6 +6186,7 @@ static PyObject *BakedNodeList_from(ufbx_baked_node_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_baked_prop_list data;
 } BakedPropList;
 
@@ -5892,6 +6250,7 @@ static PyObject *BakedPropList_from(ufbx_baked_prop_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_baked_element_list data;
 } BakedElementList;
 
@@ -5955,6 +6314,7 @@ static PyObject *BakedElementList_from(ufbx_baked_element_list list, Context *ct
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_const_uint32_list data;
 } ConstUint32List;
 
@@ -6018,6 +6378,7 @@ static PyObject *ConstUint32List_from(ufbx_const_uint32_list list, Context *ctx)
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_const_real_list data;
 } ConstRealList;
 
@@ -6081,6 +6442,7 @@ static PyObject *ConstRealList_from(ufbx_const_real_list list, Context *ctx) {
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_const_prop_override_desc_list data;
 } ConstPropOverrideDescList;
 
@@ -6144,6 +6506,7 @@ static PyObject *ConstPropOverrideDescList_from(ufbx_const_prop_override_desc_li
 typedef struct {
     PyObject_HEAD
     Context *ctx;
+    Py_ssize_t shape[2];
     ufbx_const_transform_override_list data;
 } ConstTransformOverrideList;
 
