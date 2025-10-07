@@ -26,3 +26,11 @@ def test_np_geometry():
     vertices = np.array(mesh.vertices)
     assert vertices.shape == (8, 3)
     assert_equal(vertices, np.array(ref_vertices))
+
+    faces = np.array(mesh.faces)
+    assert faces.shape == (6, 2)
+    assert faces.dtype == np.uint32
+
+    edges = np.array(mesh.edges)
+    assert edges.shape == (12, 2)
+    assert edges.dtype == np.uint32

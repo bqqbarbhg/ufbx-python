@@ -4364,6 +4364,48 @@ void EdgeList_dealloc(EdgeList *self) {
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
+static Py_ssize_t EdgeList_strides[] = { 2 * sizeof(uint32_t), 1 * sizeof(uint32_t) };
+static int EdgeList_getbuffer(PyObject *exporter, Py_buffer *view, int flags) {
+    if (view == NULL) {
+        PyErr_SetString(PyExc_BufferError, "NULL view in getbuffer");
+        return -1;
+    }
+
+    EdgeList *self = (EdgeList*)exporter;
+    if (!self->ctx->ok) {
+        Context_error(self->ctx);
+        return -1;
+    }
+
+    Py_INCREF(self);
+
+    self->ctx->buffer_refs++;
+
+    view->obj = (PyObject*)self;
+    view->buf = (void*)self->data.data;
+    view->len = (Py_ssize_t)self->data.count * sizeof(ufbx_edge);
+    view->readonly = 1;
+    view->itemsize = sizeof(uint32_t);
+    view->format = "I";
+    view->ndim = 2;
+    view->shape = self->shape;
+    view->strides = EdgeList_strides;
+    view->suboffsets = NULL;
+    view->internal = NULL;
+    return 0;
+}
+
+static void EdgeList_releasebuffer(PyObject *exporter, Py_buffer *view) {
+    EdgeList *self = (EdgeList*)exporter;
+    self->ctx->buffer_refs--;
+    Py_DECREF(self);
+}
+
+static PyBufferProcs EdgeList_Buffer = {
+    .bf_getbuffer = EdgeList_getbuffer,
+    .bf_releasebuffer = EdgeList_releasebuffer
+};
+
 static PySequenceMethods EdgeList_Sequence = {
     .sq_length = (lenfunc)&EdgeList_len,
     .sq_item = (ssizeargfunc)&EdgeList_item,
@@ -4381,6 +4423,7 @@ static PyTypeObject EdgeList_Type = {
     .tp_dealloc = (destructor)&EdgeList_dealloc,
     .tp_traverse = (traverseproc)&EdgeList_traverse,
     .tp_clear = (inquiry)&EdgeList_clear,
+    .tp_as_buffer = &EdgeList_Buffer,
 };
 
 static PyObject *EdgeList_from(ufbx_edge_list list, Context *ctx) {
@@ -4388,6 +4431,8 @@ static PyObject *EdgeList_from(ufbx_edge_list list, Context *ctx) {
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
     obj->data = list;
+    obj->shape[0] = (Py_ssize_t)list.count;
+    obj->shape[1] = 2;
     return (PyObject*)obj;
 }
 
@@ -4428,6 +4473,48 @@ void FaceList_dealloc(FaceList *self) {
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
+static Py_ssize_t FaceList_strides[] = { 2 * sizeof(uint32_t), 1 * sizeof(uint32_t) };
+static int FaceList_getbuffer(PyObject *exporter, Py_buffer *view, int flags) {
+    if (view == NULL) {
+        PyErr_SetString(PyExc_BufferError, "NULL view in getbuffer");
+        return -1;
+    }
+
+    FaceList *self = (FaceList*)exporter;
+    if (!self->ctx->ok) {
+        Context_error(self->ctx);
+        return -1;
+    }
+
+    Py_INCREF(self);
+
+    self->ctx->buffer_refs++;
+
+    view->obj = (PyObject*)self;
+    view->buf = (void*)self->data.data;
+    view->len = (Py_ssize_t)self->data.count * sizeof(ufbx_face);
+    view->readonly = 1;
+    view->itemsize = sizeof(uint32_t);
+    view->format = "I";
+    view->ndim = 2;
+    view->shape = self->shape;
+    view->strides = FaceList_strides;
+    view->suboffsets = NULL;
+    view->internal = NULL;
+    return 0;
+}
+
+static void FaceList_releasebuffer(PyObject *exporter, Py_buffer *view) {
+    FaceList *self = (FaceList*)exporter;
+    self->ctx->buffer_refs--;
+    Py_DECREF(self);
+}
+
+static PyBufferProcs FaceList_Buffer = {
+    .bf_getbuffer = FaceList_getbuffer,
+    .bf_releasebuffer = FaceList_releasebuffer
+};
+
 static PySequenceMethods FaceList_Sequence = {
     .sq_length = (lenfunc)&FaceList_len,
     .sq_item = (ssizeargfunc)&FaceList_item,
@@ -4445,6 +4532,7 @@ static PyTypeObject FaceList_Type = {
     .tp_dealloc = (destructor)&FaceList_dealloc,
     .tp_traverse = (traverseproc)&FaceList_traverse,
     .tp_clear = (inquiry)&FaceList_clear,
+    .tp_as_buffer = &FaceList_Buffer,
 };
 
 static PyObject *FaceList_from(ufbx_face_list list, Context *ctx) {
@@ -4452,6 +4540,8 @@ static PyObject *FaceList_from(ufbx_face_list list, Context *ctx) {
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
     obj->data = list;
+    obj->shape[0] = (Py_ssize_t)list.count;
+    obj->shape[1] = 2;
     return (PyObject*)obj;
 }
 

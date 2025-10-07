@@ -164,6 +164,8 @@ buffer_specs = {
     "ufbx_vec2_list": BufferSpec("ufbx_real", "d", (2,1)),
     "ufbx_vec3_list": BufferSpec("ufbx_real", "d", (3,1)),
     "ufbx_vec4_list": BufferSpec("ufbx_real", "d", (4,1)),
+    "ufbx_face_list": BufferSpec("uint32_t", "I", (2,1)),
+    "ufbx_edge_list": BufferSpec("uint32_t", "I", (2,1)),
 }
 
 class PythonType:
