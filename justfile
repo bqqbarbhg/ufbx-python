@@ -6,9 +6,6 @@ parse:
 generate:
     python3 bindgen/generate_python.py
 
-build:
-    python setup.py build
-
 install:
-    python setup.py install
+    pip install -e .
 
