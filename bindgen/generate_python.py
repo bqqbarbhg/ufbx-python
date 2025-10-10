@@ -354,7 +354,14 @@ class PythonFunc:
         else:
             return self.args
 
-manual_types = { "ufbx_string", "ufbx_blob" }
+manual_types = {
+    "ufbx_string",
+    "ufbx_blob",
+    "ufbx_void_list",
+    "ufbx_const_prop_override_desc_list",
+    "ufbx_const_transform_override_list",
+    "ufbx_vertex_attrib",
+}
 
 pyobject_primtive = {
     "void": lambda _: "Py_NewRef(Py_None)",

@@ -88,13 +88,11 @@ static ufbx_surface_point SurfacePoint_to(PyObject *v);
 static PyObject *TopoEdge_from(const ufbx_topo_edge *v);
 static ufbx_topo_edge TopoEdge_to(PyObject *v);
 
-static PyObject *VoidList_from(ufbx_void_list *data, Context *ctx);
 static PyObject *DomValue_from(ufbx_dom_value *data, Context *ctx);
 static PyObject *DomNode_from(ufbx_dom_node *data, Context *ctx);
 static PyObject *Prop_from(ufbx_prop *data, Context *ctx);
 static PyObject *Props_from(ufbx_props *data, Context *ctx);
 static PyObject *Connection_from(ufbx_connection *data, Context *ctx);
-static PyObject *VertexAttrib_from(ufbx_vertex_attrib *data, Context *ctx);
 static PyObject *VertexReal_from(ufbx_vertex_real *data, Context *ctx);
 static PyObject *VertexVec2_from(ufbx_vertex_vec2 *data, Context *ctx);
 static PyObject *VertexVec3_from(ufbx_vertex_vec3 *data, Context *ctx);
@@ -6528,134 +6526,6 @@ static PyObject *ConstRealList_from(ufbx_const_real_list list, Context *ctx) {
     return (PyObject*)obj;
 }
 
-typedef struct {
-    PyObject_HEAD
-    Context *ctx;
-    Py_ssize_t shape[2];
-    ufbx_const_prop_override_desc_list data;
-} ConstPropOverrideDescList;
-
-static Py_ssize_t ConstPropOverrideDescList_len(ConstPropOverrideDescList *self, PyObject *key) {
-    return (Py_ssize_t)self->data.count;
-}
-
-static PyObject *ConstPropOverrideDescList_item(ConstPropOverrideDescList *self, Py_ssize_t index) {
-    if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->data.count;
-    if (index < 0 || (size_t)index >= count) {
-        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-        return NULL;
-    }
-    return to_pyobject_todo("ufbx_prop_override_desc");
-}
-
-static int ConstPropOverrideDescList_traverse(ConstPropOverrideDescList *self, visitproc visit, void *arg) {
-    Py_VISIT(self->ctx);
-    return 0;
-}
-
-static int ConstPropOverrideDescList_clear(ConstPropOverrideDescList *self) {
-    Py_CLEAR(self->ctx);
-    return 0;
-}
-
-void ConstPropOverrideDescList_dealloc(ConstPropOverrideDescList *self) {
-    PyObject_GC_UnTrack(self);
-    ConstPropOverrideDescList_clear(self);
-    Py_TYPE(self)->tp_free((PyObject *) self);
-}
-
-static PySequenceMethods ConstPropOverrideDescList_Sequence = {
-    .sq_length = (lenfunc)&ConstPropOverrideDescList_len,
-    .sq_item = (ssizeargfunc)&ConstPropOverrideDescList_item,
-};
-
-static PyTypeObject ConstPropOverrideDescList_Type = {
-    .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "ufbx.ConstPropOverrideDescList",
-    .tp_doc = PyDoc_STR("ConstPropOverrideDescList"),
-    .tp_basicsize = sizeof(ConstPropOverrideDescList),
-    .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
-    .tp_new = PyType_GenericNew,
-    .tp_as_sequence = &ConstPropOverrideDescList_Sequence,
-    .tp_dealloc = (destructor)&ConstPropOverrideDescList_dealloc,
-    .tp_traverse = (traverseproc)&ConstPropOverrideDescList_traverse,
-    .tp_clear = (inquiry)&ConstPropOverrideDescList_clear,
-};
-
-static PyObject *ConstPropOverrideDescList_from(ufbx_const_prop_override_desc_list list, Context *ctx) {
-    ConstPropOverrideDescList *obj = (ConstPropOverrideDescList*)PyObject_CallObject((PyObject*)&ConstPropOverrideDescList_Type, NULL);
-    if (!obj) return NULL;
-    obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->data = list;
-    return (PyObject*)obj;
-}
-
-typedef struct {
-    PyObject_HEAD
-    Context *ctx;
-    Py_ssize_t shape[2];
-    ufbx_const_transform_override_list data;
-} ConstTransformOverrideList;
-
-static Py_ssize_t ConstTransformOverrideList_len(ConstTransformOverrideList *self, PyObject *key) {
-    return (Py_ssize_t)self->data.count;
-}
-
-static PyObject *ConstTransformOverrideList_item(ConstTransformOverrideList *self, Py_ssize_t index) {
-    if (!self->ctx->ok) return Context_error(self->ctx);
-    size_t count = self->data.count;
-    if (index < 0 || (size_t)index >= count) {
-        PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
-        return NULL;
-    }
-    return TransformOverride_from(&self->data.data[index]);
-}
-
-static int ConstTransformOverrideList_traverse(ConstTransformOverrideList *self, visitproc visit, void *arg) {
-    Py_VISIT(self->ctx);
-    return 0;
-}
-
-static int ConstTransformOverrideList_clear(ConstTransformOverrideList *self) {
-    Py_CLEAR(self->ctx);
-    return 0;
-}
-
-void ConstTransformOverrideList_dealloc(ConstTransformOverrideList *self) {
-    PyObject_GC_UnTrack(self);
-    ConstTransformOverrideList_clear(self);
-    Py_TYPE(self)->tp_free((PyObject *) self);
-}
-
-static PySequenceMethods ConstTransformOverrideList_Sequence = {
-    .sq_length = (lenfunc)&ConstTransformOverrideList_len,
-    .sq_item = (ssizeargfunc)&ConstTransformOverrideList_item,
-};
-
-static PyTypeObject ConstTransformOverrideList_Type = {
-    .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "ufbx.ConstTransformOverrideList",
-    .tp_doc = PyDoc_STR("ConstTransformOverrideList"),
-    .tp_basicsize = sizeof(ConstTransformOverrideList),
-    .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
-    .tp_new = PyType_GenericNew,
-    .tp_as_sequence = &ConstTransformOverrideList_Sequence,
-    .tp_dealloc = (destructor)&ConstTransformOverrideList_dealloc,
-    .tp_traverse = (traverseproc)&ConstTransformOverrideList_traverse,
-    .tp_clear = (inquiry)&ConstTransformOverrideList_clear,
-};
-
-static PyObject *ConstTransformOverrideList_from(ufbx_const_transform_override_list list, Context *ctx) {
-    ConstTransformOverrideList *obj = (ConstTransformOverrideList*)PyObject_CallObject((PyObject*)&ConstTransformOverrideList_Type, NULL);
-    if (!obj) return NULL;
-    obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->data = list;
-    return (PyObject*)obj;
-}
-
 static PyObject *Transform_Type;
 
 static PyObject *Transform_from(const ufbx_transform *v) {
@@ -6929,87 +6799,6 @@ static ufbx_topo_edge TopoEdge_to(PyObject *v) {
     r.edge = (uint32_t)PyLong_AsUnsignedLong(PyTuple_GetItem(v, 5));
     r.flags = (ufbx_topo_flags)PyLong_AsLong(PyTuple_GetItem(v, 6));
     return r;
-}
-
-#define SLOT_COUNT_VOID_LIST 2
-enum {
-    SLOT_VOID_LIST__DATA,
-    SLOT_VOID_LIST__COUNT,
-};
-
-typedef struct {
-    PyObject_HEAD
-    ufbx_void_list *data;
-    Context *ctx;
-    PyObject *slots[SLOT_COUNT_VOID_LIST];
-} VoidList;
-
-static PyObject *VoidList_get_data(VoidList *self, void *closure) {
-    PyObject *slot = self->slots[SLOT_VOID_LIST__DATA];
-    if (slot) return Py_NewRef(slot);
-    if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("void*");
-    self->slots[SLOT_VOID_LIST__DATA] = slot;
-    return Py_NewRef(slot);
-}
-
-static PyObject *VoidList_get_count(VoidList *self, void *closure) {
-    PyObject *slot = self->slots[SLOT_VOID_LIST__COUNT];
-    if (slot) return Py_NewRef(slot);
-    if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = PyLong_FromSize_t(self->data->count);
-    self->slots[SLOT_VOID_LIST__COUNT] = slot;
-    return Py_NewRef(slot);
-}
-
-static int VoidList_traverse(VoidList *self, visitproc visit, void *arg) {
-    Py_VISIT(self->ctx);
-    for (size_t i = 0; i < SLOT_COUNT_VOID_LIST; i++) {
-        Py_VISIT(self->slots[i]);
-    }
-    return 0;
-}
-
-static int VoidList_clear(VoidList *self) {
-    Py_CLEAR(self->ctx);
-    for (size_t i = 0; i < SLOT_COUNT_VOID_LIST; i++) {
-        Py_CLEAR(self->slots[i]);
-    }
-    return 0;
-}
-
-void VoidList_dealloc(VoidList *self) {
-    PyObject_GC_UnTrack(self);
-    VoidList_clear(self);
-    Py_TYPE(self)->tp_free((PyObject *) self);
-}
-
-static PyGetSetDef VoidList_getset[] = {
-    { "data", (getter)VoidList_get_data, NULL, "data" },
-    { "count", (getter)VoidList_get_count, NULL, "count" },
-    { NULL },
-};
-
-static PyTypeObject VoidList_Type = {
-    .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "ufbx.VoidList",
-    .tp_doc = PyDoc_STR("VoidList"),
-    .tp_basicsize = sizeof(VoidList),
-    .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
-    .tp_new = PyType_GenericNew,
-    .tp_dealloc = (destructor)&VoidList_dealloc,
-    .tp_traverse = (traverseproc)&VoidList_traverse,
-    .tp_clear = (inquiry)&VoidList_clear,
-    .tp_getset = VoidList_getset,
-};
-
-static PyObject *VoidList_from(ufbx_void_list *data, Context *ctx) {
-    VoidList *obj = (VoidList*)PyObject_CallObject((PyObject*)&VoidList_Type, NULL);
-    if (!obj) return NULL;
-    obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->data = data;
-    return (PyObject*)obj;
 }
 
 #define SLOT_COUNT_DOM_VALUE 5
@@ -8456,131 +8245,6 @@ static PyTypeObject Node_Type = {
     .tp_base = &Element_Type,
     .tp_methods = Node_methods,
 };
-
-#define SLOT_COUNT_VERTEX_ATTRIB 6
-enum {
-    SLOT_VERTEX_ATTRIB__EXISTS,
-    SLOT_VERTEX_ATTRIB__VALUES,
-    SLOT_VERTEX_ATTRIB__INDICES,
-    SLOT_VERTEX_ATTRIB__VALUE_REALS,
-    SLOT_VERTEX_ATTRIB__UNIQUE_PER_VERTEX,
-    SLOT_VERTEX_ATTRIB__VALUES_W,
-};
-
-typedef struct {
-    PyObject_HEAD
-    ufbx_vertex_attrib *data;
-    Context *ctx;
-    PyObject *slots[SLOT_COUNT_VERTEX_ATTRIB];
-} VertexAttrib;
-
-static PyObject *VertexAttrib_get_exists(VertexAttrib *self, void *closure) {
-    PyObject *slot = self->slots[SLOT_VERTEX_ATTRIB__EXISTS];
-    if (slot) return Py_NewRef(slot);
-    if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = Py_NewRef(self->data->exists ? Py_True : Py_False);
-    self->slots[SLOT_VERTEX_ATTRIB__EXISTS] = slot;
-    return Py_NewRef(slot);
-}
-
-static PyObject *VertexAttrib_get_values(VertexAttrib *self, void *closure) {
-    PyObject *slot = self->slots[SLOT_VERTEX_ATTRIB__VALUES];
-    if (slot) return Py_NewRef(slot);
-    if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = VoidList_from(&self->data->values, self->ctx);
-    self->slots[SLOT_VERTEX_ATTRIB__VALUES] = slot;
-    return Py_NewRef(slot);
-}
-
-static PyObject *VertexAttrib_get_indices(VertexAttrib *self, void *closure) {
-    PyObject *slot = self->slots[SLOT_VERTEX_ATTRIB__INDICES];
-    if (slot) return Py_NewRef(slot);
-    if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = Uint32List_from(self->data->indices, self->ctx);
-    self->slots[SLOT_VERTEX_ATTRIB__INDICES] = slot;
-    return Py_NewRef(slot);
-}
-
-static PyObject *VertexAttrib_get_value_reals(VertexAttrib *self, void *closure) {
-    PyObject *slot = self->slots[SLOT_VERTEX_ATTRIB__VALUE_REALS];
-    if (slot) return Py_NewRef(slot);
-    if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = PyLong_FromSize_t(self->data->value_reals);
-    self->slots[SLOT_VERTEX_ATTRIB__VALUE_REALS] = slot;
-    return Py_NewRef(slot);
-}
-
-static PyObject *VertexAttrib_get_unique_per_vertex(VertexAttrib *self, void *closure) {
-    PyObject *slot = self->slots[SLOT_VERTEX_ATTRIB__UNIQUE_PER_VERTEX];
-    if (slot) return Py_NewRef(slot);
-    if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = Py_NewRef(self->data->unique_per_vertex ? Py_True : Py_False);
-    self->slots[SLOT_VERTEX_ATTRIB__UNIQUE_PER_VERTEX] = slot;
-    return Py_NewRef(slot);
-}
-
-static PyObject *VertexAttrib_get_values_w(VertexAttrib *self, void *closure) {
-    PyObject *slot = self->slots[SLOT_VERTEX_ATTRIB__VALUES_W];
-    if (slot) return Py_NewRef(slot);
-    if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = RealList_from(self->data->values_w, self->ctx);
-    self->slots[SLOT_VERTEX_ATTRIB__VALUES_W] = slot;
-    return Py_NewRef(slot);
-}
-
-static int VertexAttrib_traverse(VertexAttrib *self, visitproc visit, void *arg) {
-    Py_VISIT(self->ctx);
-    for (size_t i = 0; i < SLOT_COUNT_VERTEX_ATTRIB; i++) {
-        Py_VISIT(self->slots[i]);
-    }
-    return 0;
-}
-
-static int VertexAttrib_clear(VertexAttrib *self) {
-    Py_CLEAR(self->ctx);
-    for (size_t i = 0; i < SLOT_COUNT_VERTEX_ATTRIB; i++) {
-        Py_CLEAR(self->slots[i]);
-    }
-    return 0;
-}
-
-void VertexAttrib_dealloc(VertexAttrib *self) {
-    PyObject_GC_UnTrack(self);
-    VertexAttrib_clear(self);
-    Py_TYPE(self)->tp_free((PyObject *) self);
-}
-
-static PyGetSetDef VertexAttrib_getset[] = {
-    { "exists", (getter)VertexAttrib_get_exists, NULL, "exists" },
-    { "values", (getter)VertexAttrib_get_values, NULL, "values" },
-    { "indices", (getter)VertexAttrib_get_indices, NULL, "indices" },
-    { "value_reals", (getter)VertexAttrib_get_value_reals, NULL, "value_reals" },
-    { "unique_per_vertex", (getter)VertexAttrib_get_unique_per_vertex, NULL, "unique_per_vertex" },
-    { "values_w", (getter)VertexAttrib_get_values_w, NULL, "values_w" },
-    { NULL },
-};
-
-static PyTypeObject VertexAttrib_Type = {
-    .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "ufbx.VertexAttrib",
-    .tp_doc = PyDoc_STR("VertexAttrib"),
-    .tp_basicsize = sizeof(VertexAttrib),
-    .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
-    .tp_new = PyType_GenericNew,
-    .tp_dealloc = (destructor)&VertexAttrib_dealloc,
-    .tp_traverse = (traverseproc)&VertexAttrib_traverse,
-    .tp_clear = (inquiry)&VertexAttrib_clear,
-    .tp_getset = VertexAttrib_getset,
-};
-
-static PyObject *VertexAttrib_from(ufbx_vertex_attrib *data, Context *ctx) {
-    VertexAttrib *obj = (VertexAttrib*)PyObject_CallObject((PyObject*)&VertexAttrib_Type, NULL);
-    if (!obj) return NULL;
-    obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->data = data;
-    return (PyObject*)obj;
-}
 
 #define SLOT_COUNT_VERTEX_REAL 6
 enum {
@@ -26610,10 +26274,6 @@ static PyTypeObject *Element_typeof(ufbx_element_type type) {
     }
 }
 static PyObject *Element_create(ufbx_element *elem, Context *ctx) {
-    if (elem == NULL) {
-        return Py_NewRef(Py_None);
-    }
-
     PyTypeObject *type = Element_typeof(elem->type);
     Element *obj = (Element*)PyObject_CallObject((PyObject*)type, NULL);
     if (!obj) return NULL;
@@ -26823,9 +26483,6 @@ static ModuleType generated_types[] = {
     { &BakedElementList_Type, "BakedElementList" },
     { &ConstUint32List_Type, "ConstUint32List" },
     { &ConstRealList_Type, "ConstRealList" },
-    { &ConstPropOverrideDescList_Type, "ConstPropOverrideDescList" },
-    { &ConstTransformOverrideList_Type, "ConstTransformOverrideList" },
-    { &VoidList_Type, "VoidList" },
     { &DomValue_Type, "DomValue" },
     { &DomNode_Type, "DomNode" },
     { &Prop_Type, "Prop" },
@@ -26834,7 +26491,6 @@ static ModuleType generated_types[] = {
     { &Element_Type, "Element" },
     { &Unknown_Type, "Unknown" },
     { &Node_Type, "Node" },
-    { &VertexAttrib_Type, "VertexAttrib" },
     { &VertexReal_Type, "VertexReal" },
     { &VertexVec2_Type, "VertexVec2" },
     { &VertexVec3_Type, "VertexVec3" },
