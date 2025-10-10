@@ -361,6 +361,8 @@ manual_types = {
     "ufbx_const_prop_override_desc_list",
     "ufbx_const_transform_override_list",
     "ufbx_vertex_attrib",
+    "ufbx_inflate_input",
+    "ufbx_inflate_retain",
 }
 
 pyobject_primtive = {
