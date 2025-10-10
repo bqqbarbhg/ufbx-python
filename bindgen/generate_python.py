@@ -151,6 +151,12 @@ pod_types = {
     "ufbx_matrix": "Matrix",
 }
 
+create_funcs = {
+    "scene": "Scene_create",
+    "anim": "Anim_create",
+    "bakedAnim": "BakedAnim_create",
+}
+
 @dataclass
 class BufferSpec:
     prim_type: str
@@ -187,14 +193,10 @@ class PythonType:
 
         nullable = self.ir.is_nullable
 
-        inner = self.ir
-        while inner.inner:
-            inner = g_file.types[inner.inner]
-
-        if inner.kind == "struct":
-            ps = py_structs[inner.key]
+        if self.ir.kind == "struct":
+            ps = py_structs[self.ir.key]
             if ps.is_emitted or ps.is_emitted_pod or ps.ir.is_list:
-                if inner.key in pyi_structs:
+                if self.ir.key in pyi_structs:
                     name = ps.name
                 else:
                     name = f"\"{ps.name}\""
@@ -202,8 +204,37 @@ class PythonType:
                     return f"Optional[{name}]"
                 else:
                     return name
+        elif self.ir.kind == "pointer":
+            inner = py_types[self.ir.inner].pyi_name()
+            if nullable:
+                return f"Optional[{inner}]"
+            else:
+                return inner
+        elif self.ir.kind == "array":
+            inner = py_types[self.ir.inner].pyi_name()
+            if self.ir.array_length and self.ir.array_length <= 4:
+                inner_str = ", ".join([inner] * self.ir.array_length)
+                return f"Tuple[{inner_str}]"
+            else:
+                return f"Tuple[{inner}, ...]"
 
         return "Any"
+
+    def c_ufbx_name(self) -> str:
+        c_name = c_types.get(self.ir.key)
+        if c_name:
+            return c_name
+
+        if self.ir.kind == "struct":
+            return py_structs[self.ir.key].ir.name
+        elif self.ir.kind == "pointer":
+            inner = py_types[self.ir.inner]
+            if inner.ir.is_const:
+                return inner.c_ufbx_name() + " const*"
+            else:
+                return inner.c_ufbx_name() + " *"
+        else:
+            return "???"
 
     def c_name(self) -> str:
         c_name = c_types.get(self.ir.key)
@@ -212,6 +243,12 @@ class PythonType:
 
         if self.ir.kind == "struct":
             return py_structs[self.ir.key].name
+        elif self.ir.kind == "pointer":
+            inner = py_types[self.ir.inner]
+            if inner.ir.is_const:
+                return inner.c_name() + " const*"
+            else:
+                return inner.c_name() + " *"
         else:
             return "???"
 
@@ -331,8 +368,9 @@ class PythonFunc:
         args = []
         try:
             args = [func_arg(arg) for arg in self.ir.arguments]
-        except FunctionArgNotImplemented:
-            # TODO
+        except FunctionArgNotImplemented as e:
+            if self.is_emitted:
+                print(f"cannot emit '{self.ir.name}': {e}")
             self.is_emitted = False
         args = [arg for arg in args if arg]
         self.args = args
@@ -364,6 +402,8 @@ manual_types = {
     "ufbx_inflate_input",
     "ufbx_inflate_retain",
     "ufbx_panic",
+    "ufbx_error",
+    "ufbx_vertex_stream",
 }
 
 pyobject_primtive = {
@@ -418,12 +458,6 @@ manual_to = {
     "ufbx_vec4": ("Vec4", "ufbx_vec4", lambda v: f"Vec4_to({v})", lambda v: v),
     "ufbx_quat": ("Quat", "ufbx_quat", lambda v: f"Quat_to({v})", lambda v: v),
     "ufbx_matrix": ("Matrix", "ufbx_matrix", lambda v: f"Matrix_to({v})", lambda v: v),
-    "ufbx_matrix*": ("Matrix", "ufbx_matrix", lambda v: f"Matrix_to({v})", lambda v: f"&{v}"),
-}
-
-return_manual = {
-    "ufbx_scene*": lambda v: f"Scene_create({v})",
-    "ufbx_anim*": lambda v: f"Anim_create({v})",
 }
 
 unsupported_funcs = {
@@ -437,6 +471,38 @@ unsupported_funcs = {
     "ufbx_evaluate_props",
     "ufbx_load_geometry_cache",
     "ufbx_load_geometry_cache_len",
+    "ufbx_load_stdio",
+    "ufbx_load_stdio_prefix",
+    "ufbx_load_stream_prefix",
+    "ufbx_format_error",
+    # Unnecessary
+    "ufbx_find_prop_concat",
+    # TODO: We might want these
+    "ufbx_find_string_len",
+    "ufbx_find_blob_len",
+    # IO
+    "ufbx_open_file",
+    "ufbx_open_file_ctx",
+    "ufbx_open_memory",
+    "ufbx_open_memory_ctx",
+    "ufbx_default_open_file",
+    # Maybe sometime
+    "ufbx_generate_indices",
+    # Threads
+    "ufbx_thread_pool_run_task",
+    "ufbx_thread_pool_set_user_ptr",
+    "ufbx_thread_pool_get_user_ptr",
+    # TODO: Shallow copies
+    "ufbx_evaluate_props_flags_len",
+    # Topology
+    "ufbx_catch_compute_topology",
+    "ufbx_catch_generate_normal_mapping",
+    "ufbx_catch_topo_next_vertex_edge",
+    "ufbx_catch_topo_prev_vertex_edge",
+    "ufbx_catch_compute_normals",
+    # Maybe
+    "ufbx_add_blend_shape_vertex_offsets",
+    "ufbx_add_blend_vertex_offsets",
 }
 
 def cbool(b):
@@ -445,11 +511,11 @@ def cbool(b):
 def to_pyobject(irt: ir.Type, expr: str, ctx: str):
     prim = pyobject_primtive.get(irt.key)
     if prim:
-        return prim(expr)
+        return "", prim(expr)
 
     pod = pyobject_manual.get(irt.key)
     if pod:
-        return pod(expr)
+        return "", pod(expr)
 
     if irt.kind == "pointer":
         inner = g_file.types[irt.inner]
@@ -457,25 +523,53 @@ def to_pyobject(irt: ir.Type, expr: str, ctx: str):
             ist = g_file.structs[inner.key]
             ps = py_structs[inner.key]
             if ist.is_element or ist.name == "ufbx_element":
-                return f"Element_from({expr}, {ctx})"
+                return "", f"Element_from({expr}, {ctx})"
             elif ps.is_emitted or ist.is_list:
-                return f"{ps.name}_from({expr}, {ctx})"
+                return "", f"{ps.name}_from({expr}, {ctx})"
     elif irt.kind == "struct":
         irs = g_file.structs[irt.key]
         if irs.is_list:
             ps = py_structs[irs.name]
-            return f"{ps.name}_from({expr}, {ctx})"
+            return "", f"{ps.name}_from({expr}, {ctx})"
 
         ps = py_structs.get(irs.name)
         if ps and ps.has_from:
-            return f"{ps.name}_from(&{expr}, {ctx})"
+            return "", f"{ps.name}_from(&{expr}, {ctx})"
         if ps and ps.is_emitted_pod:
-            return f"{ps.name}_from(&{expr})"
+            return "", f"{ps.name}_from(&{expr})"
+    elif irt.kind == "array":
+        if irt.array_length:
+            expr_name = expr.removeprefix("self->")
+            expr_name = expr_name.removeprefix("data->")
+            expr_name = re.sub("[^a-z0-9]+", "_", expr_name.lower())
+            arr_name = f"arr_{expr_name}"
+            tup_name = f"tup_{expr_name}"
+
+            inner = g_file.types[irt.inner]
+            inner_pt = py_types[inner.key]
+            inner_c = inner_pt.c_ufbx_name()
+            if not inner_c.endswith("*"):
+                inner_c += " "
+
+            elem_extra, elem_var = to_pyobject(inner, f"{arr_name}[i]", ctx)
+            assert not elem_extra
+
+            extra = f"""
+                {inner_c}*{arr_name} = {expr};
+                PyObject *{tup_name} = PyTuple_New({irt.array_length});
+                if (!{tup_name}) return NULL;
+                for (size_t i = 0; i < {irt.array_length}; i++) {{
+                    PyTuple_SetItem({tup_name}, i, {elem_var});
+                }}
+            """
+
+            return extra, tup_name
+
     elif irt.kind == "enum":
         pe = py_enums[irt.key]
-        return f"PyObject_CallFunction({pe.name}_Enum, \"i\", (int){expr})"
+        return "", f"PyObject_CallFunction({pe.name}_Enum, \"i\", (int){expr})"
 
-    return f"to_pyobject_todo(\"{irt.key}\")"
+    return "", f"to_pyobject_todo(\"{irt.key}\")"
 
 def from_pyobject(irt: ir.Type, expr: str):
     prim = pyobject_primtive_from.get(irt.key)
@@ -509,12 +603,18 @@ def emit_getter(ps: PythonStruct, pf: PythonField):
     indent()
 
     field_type = g_file.types[pf.ir.type]
-    value = to_pyobject(field_type, f"self->data->{pf.ir.name}", "self->ctx")
+    extra, value = to_pyobject(field_type, f"self->data->{pf.ir.name}", "self->ctx")
 
     emit_lines(f"""
         PyObject *slot = self->slots[{pf.slot}];
         if (slot) return Py_NewRef(slot);
         if (!self->ctx->ok) return Context_error(self->ctx);
+    """)
+
+    if extra:
+        emit_lines(extra)
+    
+    emit_lines(f"""
         slot = {value};
         self->slots[{pf.slot}] = slot;
         return Py_NewRef(slot);
@@ -560,7 +660,7 @@ def emit_list(ps: PythonStruct):
 
     # Getter
     get_arg = "self->data.data[index]"
-    get_expr = to_pyobject(data_type.ir, get_arg, "self->ctx")
+    extra, get_expr = to_pyobject(data_type.ir, get_arg, "self->ctx")
     emit()
     emit_lines(f"""
         static PyObject *{name}_item({name} *self, Py_ssize_t index) {{
@@ -570,9 +670,13 @@ def emit_list(ps: PythonStruct):
                 PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
                 return NULL;
             }}
-            return {get_expr};
-        }}
     """)
+    indent()
+    if extra:
+        emit_lines(extra)
+    emit(f"return {get_expr};")
+    unindent()
+    emit("}")
 
     # Traverse
     emit()
@@ -761,7 +865,9 @@ def emit_pod_struct(ps: PythonStruct):
     for ix, field in enumerate(ps.fields):
         field_irt = g_file.types[field.ir.type]
         expr = f"v->{field.name}"
-        top = to_pyobject(field_irt, expr, "")
+        extra, top = to_pyobject(field_irt, expr, "")
+        if extra:
+            emit_lines(extra)
         emit(f"PyTuple_SetItem(r, {ix}, {top});")
     emit_lines(f"""
         PyObject *result = PyObject_CallObject({ps.name}_Type, r);
@@ -1063,7 +1169,7 @@ def func_arg(arg: ir.Argument) -> Optional[PythonArg]:
         pass
     elif arg.kind == "arrayPointer":
         # TODO
-        raise FunctionArgNotImplemented()
+        raise FunctionArgNotImplemented(f"{arg.kind}: {arg.type}")
     elif arg.kind == "arrayLength":
         pass
     elif arg.kind == "blobPointer":
@@ -1104,6 +1210,27 @@ def func_arg(arg: ir.Argument) -> Optional[PythonArg]:
                     return PythonArg("", "", "", "", f"&{name}", f"""
                             {ps.ir.name} {name} = {{ 0 }};
                         """, input_type=ps.ir.name, input_name=name)
+                elif ps.ir.is_pod:
+                    pt = py_types[inner_type.key]
+                    c_typ = pt.c_ufbx_name()
+                    py_typ = pt.c_name()
+                    obj_arg = f"{name}_obj"
+                    return PythonArg(arg.name, py_typ, "O!", f"&{py_typ}_Type, &{name}_obj", f"&{name}", f"""
+                            PyObject *{name}_obj;
+                            {c_typ} {name};
+                        """, pre=f"""
+                            {name} = {py_typ}_to({obj_arg});
+                        """)
+
+            if inner_type.key in manual_to:
+                py_typ, c_typ, to, cast = manual_to[inner_type.key]
+                obj_arg = f"{name}_obj"
+                return PythonArg(arg.name, py_typ, "O!", f"&{py_typ}_Type, &{name}_obj", f"&{name}", f"""
+                        PyObject *{name}_obj;
+                        {c_typ} {name};
+                    """, pre=f"""
+                        {name} = {to(obj_arg)};
+                    """)
 
         if arg.type in primitive_fmt:
             typ = primitive_types[arg.type]
@@ -1122,7 +1249,39 @@ def func_arg(arg: ir.Argument) -> Optional[PythonArg]:
                     {name} = {to(obj_arg)};
                 """)
 
-        raise FunctionArgNotImplemented()
+        if arg_type.kind == "enum":
+            enum = g_file.enums[arg_type.key]
+            pe = py_enums[arg_type.key]
+            return PythonArg(arg.name, pe.name, "O!", f"&{pe.name}_Enum, &{name}", f"{name}", f"""
+                    PyObject *{name}_obj;
+                    {enum.name} {name};
+                """, pre=f"""
+                    {name} = {from_pyobject(arg_type, f"{name}_obj")};
+                """)
+
+        if arg_type.kind == "struct":
+            ps = py_structs[arg_type.key]
+            if ps.ir.is_pod:
+                pt = py_types[arg_type.key]
+                c_typ = pt.c_ufbx_name()
+                py_typ = pt.c_name()
+                obj_arg = f"{name}_obj"
+                return PythonArg(arg.name, py_typ, "O!", f"&{py_typ}_Type, &{name}_obj", f"{name}", f"""
+                        PyObject *{name}_obj;
+                        {c_typ} {name};
+                    """, pre=f"""
+                        {name} = {py_typ}_to({obj_arg});
+                    """)
+            elif ps.ir.is_list:
+                pt = py_types[arg_type.key]
+                c_typ = pt.c_ufbx_name()
+                py_typ = pt.c_name()
+                obj_arg = f"{name}_obj"
+                return PythonArg(arg.name, py_typ, "O!", f"&{py_typ}_Type, &{name}_obj", f"{name}_obj->data", f"""
+                        {ps.name} *{name}_obj;
+                    """)
+
+        raise FunctionArgNotImplemented(f"{arg.kind}: {arg.type}")
 
 def emit_func(pf: PythonFunc, method: Optional[PythonMethod] = None):
     if not pf.is_emitted: return
@@ -1212,14 +1371,15 @@ def emit_func(pf: PythonFunc, method: Optional[PythonMethod] = None):
         """)
 
     if ret_pt:
-        manual = return_manual.get(ret_pt.ir.key)
-        if manual:
-            ret_ex = manual("ret")
+        if pf.ir.alloc_type:
+            create = create_funcs[pf.ir.alloc_type]
             emit_lines(f"""
-                return {ret_ex};
+                return {create}(ret);
             """)
         else:
-            ret_ex = to_pyobject(ret_pt.ir, "ret", ctx)
+            ret_extra, ret_ex = to_pyobject(ret_pt.ir, "ret", ctx)
+            if ret_extra:
+                emit_lines(ret_extra)
             emit_lines(f"""
                 return {ret_ex};
             """)
@@ -1357,7 +1517,7 @@ def emit_gen_suffix():
 
 def emit_pyi_prefix():
     emit_lines(f"""
-        from typing import Any, Iterator, Optional, TypedDict
+        from typing import Any, Iterator, Optional, TypedDict, Tuple
         from typing_extensions import Unpack
         from ._generated import *
     """)

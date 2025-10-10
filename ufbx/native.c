@@ -47,6 +47,28 @@ static PyObject* Anim_create(ufbx_anim *anim)
     return (PyObject*)obj;
 }
 
+static PyObject* BakedAnim_create(ufbx_baked_anim *baked)
+{
+    Context *ctx = (Context*)PyObject_CallObject((PyObject*)&Context_Type, NULL);
+    if (!ctx) {
+        return NULL;
+    }
+
+    Anim *obj = (Anim*)PyObject_CallObject((PyObject*)&Anim_Type, NULL);
+    if (!obj) {
+        Py_DECREF(ctx);
+        return NULL;
+    }
+
+    ctx->name = PyUnicode_FromString("baked_anim");
+    ctx->baked = baked;
+    ctx->ok = true;
+
+    obj->ctx = ctx;
+    obj->data = baked;
+    return (PyObject*)obj;
+}
+
 static PyObject *UfbxError_raise(ufbx_error *error)
 {
     PyObject *err_typ = error_type_objs[error->type];

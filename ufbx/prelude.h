@@ -24,6 +24,7 @@ typedef struct {
 
 	ufbx_scene *scene;
 	ufbx_anim *anim;
+	ufbx_baked_anim *baked;
 
     size_t num_elements;
 	PyObject **elements;
@@ -230,6 +231,7 @@ static PyObject* Element_from(void *p_elem, Context *ctx)
 
 static PyObject* Scene_create(ufbx_scene *scene);
 static PyObject* Anim_create(ufbx_anim *anim);
+static PyObject* BakedAnim_create(ufbx_baked_anim *baked);
 
 static PyObject* to_pyobject_todo(const char *type)
 {

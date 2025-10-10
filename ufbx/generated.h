@@ -134,10 +134,8 @@ static PyObject *Thumbnail_from(ufbx_thumbnail *data, Context *ctx);
 static PyObject *Metadata_from(ufbx_metadata *data, Context *ctx);
 static PyObject *SceneSettings_from(ufbx_scene_settings *data, Context *ctx);
 static PyObject *Scene_from(ufbx_scene *data, Context *ctx);
-static PyObject *VertexStream_from(ufbx_vertex_stream *data, Context *ctx);
 static PyObject *OpenFileInfo_from(ufbx_open_file_info *data, Context *ctx);
 static PyObject *ErrorFrame_from(ufbx_error_frame *data, Context *ctx);
-static PyObject *Error_from(ufbx_error *data, Context *ctx);
 static PyObject *Progress_from(ufbx_progress *data, Context *ctx);
 static PyObject *BakedVec3_from(ufbx_baked_vec3 *data, Context *ctx);
 static PyObject *BakedQuat_from(ufbx_baked_quat *data, Context *ctx);
@@ -12794,6 +12792,13 @@ static PyGetSetDef SkinDeformer_getset[] = {
     { NULL },
 };
 
+static PyObject *SkinDeformer_catch_get_skin_vertex_matrix(PyObject *self, PyObject *args);
+
+static PyMethodDef SkinDeformer_methods[] = {
+    { "catch_get_skin_vertex_matrix", &SkinDeformer_catch_get_skin_vertex_matrix, METH_VARARGS, NULL },
+    { NULL },
+};
+
 static PyTypeObject SkinDeformer_Type = {
     .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "ufbx.SkinDeformer",
@@ -12807,6 +12812,7 @@ static PyTypeObject SkinDeformer_Type = {
     .tp_clear = (inquiry)&SkinDeformer_clear,
     .tp_getset = SkinDeformer_getset,
     .tp_base = &Element_Type,
+    .tp_methods = SkinDeformer_methods,
 };
 
 #define SLOT_COUNT_SKIN_CLUSTER 13
@@ -18242,7 +18248,13 @@ static PyObject *AnimValue_get_curves(AnimValue *self, void *closure) {
     PyObject *slot = self->slots[SLOT_ANIM_VALUE__CURVES];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_anim_curve?*[3]");
+    ufbx_anim_curve **arr_curves = self->data->curves;
+    PyObject *tup_curves = PyTuple_New(3);
+    if (!tup_curves) return NULL;
+    for (size_t i = 0; i < 3; i++) {
+        PyTuple_SetItem(tup_curves, i, Element_from(arr_curves[i], self->ctx));
+    }
+    slot = tup_curves;
     self->slots[SLOT_ANIM_VALUE__CURVES] = slot;
     return Py_NewRef(slot);
 }
@@ -19319,7 +19331,13 @@ static PyObject *Constraint_get_constrain_translation(Constraint *self, void *cl
     PyObject *slot = self->slots[SLOT_CONSTRAINT__CONSTRAIN_TRANSLATION];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("bool[3]");
+    bool *arr_constrain_translation = self->data->constrain_translation;
+    PyObject *tup_constrain_translation = PyTuple_New(3);
+    if (!tup_constrain_translation) return NULL;
+    for (size_t i = 0; i < 3; i++) {
+        PyTuple_SetItem(tup_constrain_translation, i, Py_NewRef(arr_constrain_translation[i] ? Py_True : Py_False));
+    }
+    slot = tup_constrain_translation;
     self->slots[SLOT_CONSTRAINT__CONSTRAIN_TRANSLATION] = slot;
     return Py_NewRef(slot);
 }
@@ -19328,7 +19346,13 @@ static PyObject *Constraint_get_constrain_rotation(Constraint *self, void *closu
     PyObject *slot = self->slots[SLOT_CONSTRAINT__CONSTRAIN_ROTATION];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("bool[3]");
+    bool *arr_constrain_rotation = self->data->constrain_rotation;
+    PyObject *tup_constrain_rotation = PyTuple_New(3);
+    if (!tup_constrain_rotation) return NULL;
+    for (size_t i = 0; i < 3; i++) {
+        PyTuple_SetItem(tup_constrain_rotation, i, Py_NewRef(arr_constrain_rotation[i] ? Py_True : Py_False));
+    }
+    slot = tup_constrain_rotation;
     self->slots[SLOT_CONSTRAINT__CONSTRAIN_ROTATION] = slot;
     return Py_NewRef(slot);
 }
@@ -19337,7 +19361,13 @@ static PyObject *Constraint_get_constrain_scale(Constraint *self, void *closure)
     PyObject *slot = self->slots[SLOT_CONSTRAINT__CONSTRAIN_SCALE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("bool[3]");
+    bool *arr_constrain_scale = self->data->constrain_scale;
+    PyObject *tup_constrain_scale = PyTuple_New(3);
+    if (!tup_constrain_scale) return NULL;
+    for (size_t i = 0; i < 3; i++) {
+        PyTuple_SetItem(tup_constrain_scale, i, Py_NewRef(arr_constrain_scale[i] ? Py_True : Py_False));
+    }
+    slot = tup_constrain_scale;
     self->slots[SLOT_CONSTRAINT__CONSTRAIN_SCALE] = slot;
     return Py_NewRef(slot);
 }
@@ -20616,7 +20646,13 @@ static PyObject *Metadata_get_has_warning(Metadata *self, void *closure) {
     PyObject *slot = self->slots[SLOT_METADATA__HAS_WARNING];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("bool[15]");
+    bool *arr_has_warning = self->data->has_warning;
+    PyObject *tup_has_warning = PyTuple_New(15);
+    if (!tup_has_warning) return NULL;
+    for (size_t i = 0; i < 15; i++) {
+        PyTuple_SetItem(tup_has_warning, i, Py_NewRef(arr_has_warning[i] ? Py_True : Py_False));
+    }
+    slot = tup_has_warning;
     self->slots[SLOT_METADATA__HAS_WARNING] = slot;
     return Py_NewRef(slot);
 }
@@ -21837,11 +21873,13 @@ static PyGetSetDef Scene_getset[] = {
     { NULL },
 };
 
+static PyObject *Scene_find_element(PyObject *self, PyObject *args);
 static PyObject *Scene_find_node(PyObject *self, PyObject *args);
 static PyObject *Scene_find_anim_stack(PyObject *self, PyObject *args);
 static PyObject *Scene_evaluate(PyObject *self, PyObject *args, PyObject *kwargs);
 
 static PyMethodDef Scene_methods[] = {
+    { "find_element", &Scene_find_element, METH_VARARGS, NULL },
     { "find_node", &Scene_find_node, METH_VARARGS, NULL },
     { "find_anim_stack", &Scene_find_anim_stack, METH_VARARGS, NULL },
     { "evaluate", (PyCFunction)&Scene_evaluate, METH_VARARGS|METH_KEYWORDS, NULL },
@@ -21865,98 +21903,6 @@ static PyTypeObject Scene_Type = {
 
 static PyObject *Scene_from(ufbx_scene *data, Context *ctx) {
     Scene *obj = (Scene*)PyObject_CallObject((PyObject*)&Scene_Type, NULL);
-    if (!obj) return NULL;
-    obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->data = data;
-    return (PyObject*)obj;
-}
-
-#define SLOT_COUNT_VERTEX_STREAM 3
-enum {
-    SLOT_VERTEX_STREAM__DATA,
-    SLOT_VERTEX_STREAM__VERTEX_COUNT,
-    SLOT_VERTEX_STREAM__VERTEX_SIZE,
-};
-
-typedef struct {
-    PyObject_HEAD
-    ufbx_vertex_stream *data;
-    Context *ctx;
-    PyObject *slots[SLOT_COUNT_VERTEX_STREAM];
-} VertexStream;
-
-static PyObject *VertexStream_get_data(VertexStream *self, void *closure) {
-    PyObject *slot = self->slots[SLOT_VERTEX_STREAM__DATA];
-    if (slot) return Py_NewRef(slot);
-    if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("void*");
-    self->slots[SLOT_VERTEX_STREAM__DATA] = slot;
-    return Py_NewRef(slot);
-}
-
-static PyObject *VertexStream_get_vertex_count(VertexStream *self, void *closure) {
-    PyObject *slot = self->slots[SLOT_VERTEX_STREAM__VERTEX_COUNT];
-    if (slot) return Py_NewRef(slot);
-    if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = PyLong_FromSize_t(self->data->vertex_count);
-    self->slots[SLOT_VERTEX_STREAM__VERTEX_COUNT] = slot;
-    return Py_NewRef(slot);
-}
-
-static PyObject *VertexStream_get_vertex_size(VertexStream *self, void *closure) {
-    PyObject *slot = self->slots[SLOT_VERTEX_STREAM__VERTEX_SIZE];
-    if (slot) return Py_NewRef(slot);
-    if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = PyLong_FromSize_t(self->data->vertex_size);
-    self->slots[SLOT_VERTEX_STREAM__VERTEX_SIZE] = slot;
-    return Py_NewRef(slot);
-}
-
-static int VertexStream_traverse(VertexStream *self, visitproc visit, void *arg) {
-    Py_VISIT(self->ctx);
-    for (size_t i = 0; i < SLOT_COUNT_VERTEX_STREAM; i++) {
-        Py_VISIT(self->slots[i]);
-    }
-    return 0;
-}
-
-static int VertexStream_clear(VertexStream *self) {
-    Py_CLEAR(self->ctx);
-    for (size_t i = 0; i < SLOT_COUNT_VERTEX_STREAM; i++) {
-        Py_CLEAR(self->slots[i]);
-    }
-    return 0;
-}
-
-void VertexStream_dealloc(VertexStream *self) {
-    PyObject_GC_UnTrack(self);
-    VertexStream_clear(self);
-    Py_TYPE(self)->tp_free((PyObject *) self);
-}
-
-static PyGetSetDef VertexStream_getset[] = {
-    { "data", (getter)VertexStream_get_data, NULL, "data" },
-    { "vertex_count", (getter)VertexStream_get_vertex_count, NULL, "vertex_count" },
-    { "vertex_size", (getter)VertexStream_get_vertex_size, NULL, "vertex_size" },
-    { NULL },
-};
-
-static PyTypeObject VertexStream_Type = {
-    .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "ufbx.VertexStream",
-    .tp_doc = PyDoc_STR("VertexStream"),
-    .tp_basicsize = sizeof(VertexStream),
-    .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
-    .tp_new = PyType_GenericNew,
-    .tp_dealloc = (destructor)&VertexStream_dealloc,
-    .tp_traverse = (traverseproc)&VertexStream_traverse,
-    .tp_clear = (inquiry)&VertexStream_clear,
-    .tp_getset = VertexStream_getset,
-};
-
-static PyObject *VertexStream_from(ufbx_vertex_stream *data, Context *ctx) {
-    VertexStream *obj = (VertexStream*)PyObject_CallObject((PyObject*)&VertexStream_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
     obj->data = data;
@@ -22141,131 +22087,6 @@ static PyTypeObject ErrorFrame_Type = {
 
 static PyObject *ErrorFrame_from(ufbx_error_frame *data, Context *ctx) {
     ErrorFrame *obj = (ErrorFrame*)PyObject_CallObject((PyObject*)&ErrorFrame_Type, NULL);
-    if (!obj) return NULL;
-    obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->data = data;
-    return (PyObject*)obj;
-}
-
-#define SLOT_COUNT_ERROR 6
-enum {
-    SLOT_ERROR__TYPE,
-    SLOT_ERROR__DESCRIPTION,
-    SLOT_ERROR__STACK_SIZE,
-    SLOT_ERROR__STACK,
-    SLOT_ERROR__INFO_LENGTH,
-    SLOT_ERROR__INFO,
-};
-
-typedef struct {
-    PyObject_HEAD
-    ufbx_error *data;
-    Context *ctx;
-    PyObject *slots[SLOT_COUNT_ERROR];
-} Error;
-
-static PyObject *Error_get_type(Error *self, void *closure) {
-    PyObject *slot = self->slots[SLOT_ERROR__TYPE];
-    if (slot) return Py_NewRef(slot);
-    if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = PyObject_CallFunction(ErrorType_Enum, "i", (int)self->data->type);
-    self->slots[SLOT_ERROR__TYPE] = slot;
-    return Py_NewRef(slot);
-}
-
-static PyObject *Error_get_description(Error *self, void *closure) {
-    PyObject *slot = self->slots[SLOT_ERROR__DESCRIPTION];
-    if (slot) return Py_NewRef(slot);
-    if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = String_from(self->data->description);
-    self->slots[SLOT_ERROR__DESCRIPTION] = slot;
-    return Py_NewRef(slot);
-}
-
-static PyObject *Error_get_stack_size(Error *self, void *closure) {
-    PyObject *slot = self->slots[SLOT_ERROR__STACK_SIZE];
-    if (slot) return Py_NewRef(slot);
-    if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = PyLong_FromUnsignedLong((unsigned long)self->data->stack_size);
-    self->slots[SLOT_ERROR__STACK_SIZE] = slot;
-    return Py_NewRef(slot);
-}
-
-static PyObject *Error_get_stack(Error *self, void *closure) {
-    PyObject *slot = self->slots[SLOT_ERROR__STACK];
-    if (slot) return Py_NewRef(slot);
-    if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_error_frame[8]");
-    self->slots[SLOT_ERROR__STACK] = slot;
-    return Py_NewRef(slot);
-}
-
-static PyObject *Error_get_info_length(Error *self, void *closure) {
-    PyObject *slot = self->slots[SLOT_ERROR__INFO_LENGTH];
-    if (slot) return Py_NewRef(slot);
-    if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = PyLong_FromSize_t(self->data->info_length);
-    self->slots[SLOT_ERROR__INFO_LENGTH] = slot;
-    return Py_NewRef(slot);
-}
-
-static PyObject *Error_get_info(Error *self, void *closure) {
-    PyObject *slot = self->slots[SLOT_ERROR__INFO];
-    if (slot) return Py_NewRef(slot);
-    if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("char[256]");
-    self->slots[SLOT_ERROR__INFO] = slot;
-    return Py_NewRef(slot);
-}
-
-static int Error_traverse(Error *self, visitproc visit, void *arg) {
-    Py_VISIT(self->ctx);
-    for (size_t i = 0; i < SLOT_COUNT_ERROR; i++) {
-        Py_VISIT(self->slots[i]);
-    }
-    return 0;
-}
-
-static int Error_clear(Error *self) {
-    Py_CLEAR(self->ctx);
-    for (size_t i = 0; i < SLOT_COUNT_ERROR; i++) {
-        Py_CLEAR(self->slots[i]);
-    }
-    return 0;
-}
-
-void Error_dealloc(Error *self) {
-    PyObject_GC_UnTrack(self);
-    Error_clear(self);
-    Py_TYPE(self)->tp_free((PyObject *) self);
-}
-
-static PyGetSetDef Error_getset[] = {
-    { "type", (getter)Error_get_type, NULL, "type" },
-    { "description", (getter)Error_get_description, NULL, "description" },
-    { "stack_size", (getter)Error_get_stack_size, NULL, "stack_size" },
-    { "stack", (getter)Error_get_stack, NULL, "stack" },
-    { "info_length", (getter)Error_get_info_length, NULL, "info_length" },
-    { "info", (getter)Error_get_info, NULL, "info" },
-    { NULL },
-};
-
-static PyTypeObject Error_Type = {
-    .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "ufbx.Error",
-    .tp_doc = PyDoc_STR("Error"),
-    .tp_basicsize = sizeof(Error),
-    .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
-    .tp_new = PyType_GenericNew,
-    .tp_dealloc = (destructor)&Error_dealloc,
-    .tp_traverse = (traverseproc)&Error_traverse,
-    .tp_clear = (inquiry)&Error_clear,
-    .tp_getset = Error_getset,
-};
-
-static PyObject *Error_from(ufbx_error *data, Context *ctx) {
-    Error *obj = (Error*)PyObject_CallObject((PyObject*)&Error_Type, NULL);
     if (!obj) return NULL;
     obj->ctx = (Context*)Py_NewRef(ctx);
     obj->data = data;
@@ -23932,6 +23753,65 @@ static PyObject *mod_find_bool(PyObject *self, PyObject *args) {
     return Py_NewRef(ret ? Py_True : Py_False);
 }
 
+static PyObject *mod_get_prop_element(PyObject *self, PyObject *args) {
+    Element *element;
+    Prop *prop;
+    PyObject *type_obj;
+    ufbx_element_type type;
+    if (!PyArg_ParseTuple(args, "O!O!O!", &Element_Type, &element, &Prop_Type, &prop, &ElementType_Enum, &type)) {
+        return NULL;
+    }
+    if (!element->ctx->ok) {
+        return Context_error(element->ctx);
+    }
+    type = (ufbx_element_type)PyLong_AsLong(type_obj);
+    ufbx_element* ret = ufbx_get_prop_element(element->data, prop->data, type);
+    if (!ret) {
+        return Py_NewRef(Py_None);
+    }
+    return Element_from(ret, element->ctx);
+}
+
+static PyObject *mod_find_prop_element(PyObject *self, PyObject *args) {
+    Element *element;
+    const char *name;
+    Py_ssize_t name_len;
+    PyObject *type_obj;
+    ufbx_element_type type;
+    if (!PyArg_ParseTuple(args, "O!s#O!", &Element_Type, &element, &name, &name_len, &ElementType_Enum, &type)) {
+        return NULL;
+    }
+    if (!element->ctx->ok) {
+        return Context_error(element->ctx);
+    }
+    type = (ufbx_element_type)PyLong_AsLong(type_obj);
+    ufbx_element* ret = ufbx_find_prop_element_len(element->data, name, (size_t)name_len, type);
+    if (!ret) {
+        return Py_NewRef(Py_None);
+    }
+    return Element_from(ret, element->ctx);
+}
+
+static PyObject *mod_find_element(PyObject *self, PyObject *args) {
+    Scene *scene;
+    PyObject *type_obj;
+    ufbx_element_type type;
+    const char *name;
+    Py_ssize_t name_len;
+    if (!PyArg_ParseTuple(args, "O!O!s#", &Scene_Type, &scene, &ElementType_Enum, &type, &name, &name_len)) {
+        return NULL;
+    }
+    if (!scene->ctx->ok) {
+        return Context_error(scene->ctx);
+    }
+    type = (ufbx_element_type)PyLong_AsLong(type_obj);
+    ufbx_element* ret = ufbx_find_element_len(scene->data, type, name, (size_t)name_len);
+    if (!ret) {
+        return Py_NewRef(Py_None);
+    }
+    return Element_from(ret, scene->ctx);
+}
+
 static PyObject *mod_find_node(PyObject *self, PyObject *args) {
     Scene *scene;
     const char *name;
@@ -24109,6 +23989,23 @@ static PyObject *mod_evaluate_anim_value_vec3_flags(PyObject *self, PyObject *ar
     return Vec3_from(&ret);
 }
 
+static PyObject *mod_evaluate_prop_flags(PyObject *self, PyObject *args) {
+    Anim *anim;
+    Element *element;
+    const char *name;
+    Py_ssize_t name_len;
+    double time;
+    unsigned int flags;
+    if (!PyArg_ParseTuple(args, "O!O!s#dI", &Anim_Type, &anim, &Element_Type, &element, &name, &name_len, &time, &flags)) {
+        return NULL;
+    }
+    if (!anim->ctx->ok) {
+        return Context_error(anim->ctx);
+    }
+    ufbx_prop ret = ufbx_evaluate_prop_flags_len(anim->data, element->data, name, (size_t)name_len, time, (uint32_t)flags);
+    return Prop_from(&ret, anim->ctx);
+}
+
 static PyObject *mod_evaluate_props_flags(PyObject *self, PyObject *args) {
     Anim *anim;
     Element *element;
@@ -24244,7 +24141,7 @@ static PyObject *mod_bake_anim(PyObject *self, PyObject *args, PyObject *kwargs)
     if (error.type != UFBX_ERROR_NONE) {
         return UfbxError_raise(&error);
     }
-    return BakedAnim_from(ret, scene->ctx);
+    return BakedAnim_create(ret);
 }
 
 static PyObject *mod_find_baked_node_by_typed_id(PyObject *self, PyObject *args) {
@@ -24309,6 +24206,26 @@ static PyObject *mod_find_baked_element(PyObject *self, PyObject *args) {
         return Py_NewRef(Py_None);
     }
     return BakedElement_from(ret, bake->ctx);
+}
+
+static PyObject *mod_evaluate_baked_vec3(PyObject *self, PyObject *args) {
+    BakedVec3List *keyframes_obj;
+    double time;
+    if (!PyArg_ParseTuple(args, "O!d", &BakedVec3List_Type, &keyframes_obj, &time)) {
+        return NULL;
+    }
+    ufbx_vec3 ret = ufbx_evaluate_baked_vec3(keyframes_obj->data, time);
+    return Vec3_from(&ret);
+}
+
+static PyObject *mod_evaluate_baked_quat(PyObject *self, PyObject *args) {
+    BakedQuatList *keyframes_obj;
+    double time;
+    if (!PyArg_ParseTuple(args, "O!d", &BakedQuatList_Type, &keyframes_obj, &time)) {
+        return NULL;
+    }
+    ufbx_quat ret = ufbx_evaluate_baked_quat(keyframes_obj->data, time);
+    return Quat_from(&ret);
 }
 
 static PyObject *mod_get_bone_pose(PyObject *self, PyObject *args) {
@@ -24387,6 +24304,17 @@ static PyObject *mod_find_shader_texture_input(PyObject *self, PyObject *args) {
         return Py_NewRef(Py_None);
     }
     return ShaderTextureInput_from(ret, shader->ctx);
+}
+
+static PyObject *mod_coordinate_axes_valid(PyObject *self, PyObject *args) {
+    PyObject *axes_obj;
+    ufbx_coordinate_axes axes;
+    if (!PyArg_ParseTuple(args, "O!", &CoordinateAxes_Type, &axes_obj)) {
+        return NULL;
+    }
+    axes = CoordinateAxes_to(axes_obj);
+    bool ret = ufbx_coordinate_axes_valid(axes);
+    return Py_NewRef(ret ? Py_True : Py_False);
 }
 
 static PyObject *mod_vec3_normalize(PyObject *self, PyObject *args) {
@@ -24482,6 +24410,152 @@ static PyObject *mod_quat_rotate_vec3(PyObject *self, PyObject *args) {
     return Vec3_from(&ret);
 }
 
+static PyObject *mod_quat_to_euler(PyObject *self, PyObject *args) {
+    PyObject *q_obj;
+    ufbx_quat q;
+    PyObject *order_obj;
+    ufbx_rotation_order order;
+    if (!PyArg_ParseTuple(args, "O!O!", &Quat_Type, &q_obj, &RotationOrder_Enum, &order)) {
+        return NULL;
+    }
+    q = Quat_to(q_obj);
+    order = (ufbx_rotation_order)PyLong_AsLong(order_obj);
+    ufbx_vec3 ret = ufbx_quat_to_euler(q, order);
+    return Vec3_from(&ret);
+}
+
+static PyObject *mod_euler_to_quat(PyObject *self, PyObject *args) {
+    PyObject *v_obj;
+    ufbx_vec3 v;
+    PyObject *order_obj;
+    ufbx_rotation_order order;
+    if (!PyArg_ParseTuple(args, "O!O!", &Vec3_Type, &v_obj, &RotationOrder_Enum, &order)) {
+        return NULL;
+    }
+    v = Vec3_to(v_obj);
+    order = (ufbx_rotation_order)PyLong_AsLong(order_obj);
+    ufbx_quat ret = ufbx_euler_to_quat(v, order);
+    return Quat_from(&ret);
+}
+
+static PyObject *mod_matrix_mul(PyObject *self, PyObject *args) {
+    PyObject *a_obj;
+    ufbx_matrix a;
+    PyObject *b_obj;
+    ufbx_matrix b;
+    if (!PyArg_ParseTuple(args, "O!O!", &Matrix_Type, &a_obj, &Matrix_Type, &b_obj)) {
+        return NULL;
+    }
+    a = Matrix_to(a_obj);
+    b = Matrix_to(b_obj);
+    ufbx_matrix ret = ufbx_matrix_mul(&a, &b);
+    return Matrix_from(&ret);
+}
+
+static PyObject *mod_matrix_determinant(PyObject *self, PyObject *args) {
+    PyObject *m_obj;
+    ufbx_matrix m;
+    if (!PyArg_ParseTuple(args, "O!", &Matrix_Type, &m_obj)) {
+        return NULL;
+    }
+    m = Matrix_to(m_obj);
+    ufbx_real ret = ufbx_matrix_determinant(&m);
+    return PyFloat_FromDouble(ret);
+}
+
+static PyObject *mod_matrix_invert(PyObject *self, PyObject *args) {
+    PyObject *m_obj;
+    ufbx_matrix m;
+    if (!PyArg_ParseTuple(args, "O!", &Matrix_Type, &m_obj)) {
+        return NULL;
+    }
+    m = Matrix_to(m_obj);
+    ufbx_matrix ret = ufbx_matrix_invert(&m);
+    return Matrix_from(&ret);
+}
+
+static PyObject *mod_matrix_for_normals(PyObject *self, PyObject *args) {
+    PyObject *m_obj;
+    ufbx_matrix m;
+    if (!PyArg_ParseTuple(args, "O!", &Matrix_Type, &m_obj)) {
+        return NULL;
+    }
+    m = Matrix_to(m_obj);
+    ufbx_matrix ret = ufbx_matrix_for_normals(&m);
+    return Matrix_from(&ret);
+}
+
+static PyObject *mod_transform_position(PyObject *self, PyObject *args) {
+    PyObject *m_obj;
+    ufbx_matrix m;
+    PyObject *v_obj;
+    ufbx_vec3 v;
+    if (!PyArg_ParseTuple(args, "O!O!", &Matrix_Type, &m_obj, &Vec3_Type, &v_obj)) {
+        return NULL;
+    }
+    m = Matrix_to(m_obj);
+    v = Vec3_to(v_obj);
+    ufbx_vec3 ret = ufbx_transform_position(&m, v);
+    return Vec3_from(&ret);
+}
+
+static PyObject *mod_transform_direction(PyObject *self, PyObject *args) {
+    PyObject *m_obj;
+    ufbx_matrix m;
+    PyObject *v_obj;
+    ufbx_vec3 v;
+    if (!PyArg_ParseTuple(args, "O!O!", &Matrix_Type, &m_obj, &Vec3_Type, &v_obj)) {
+        return NULL;
+    }
+    m = Matrix_to(m_obj);
+    v = Vec3_to(v_obj);
+    ufbx_vec3 ret = ufbx_transform_direction(&m, v);
+    return Vec3_from(&ret);
+}
+
+static PyObject *mod_transform_to_matrix(PyObject *self, PyObject *args) {
+    PyObject *t_obj;
+    ufbx_transform t;
+    if (!PyArg_ParseTuple(args, "O!", &Transform_Type, &t_obj)) {
+        return NULL;
+    }
+    t = Transform_to(t_obj);
+    ufbx_matrix ret = ufbx_transform_to_matrix(&t);
+    return Matrix_from(&ret);
+}
+
+static PyObject *mod_matrix_to_transform(PyObject *self, PyObject *args) {
+    PyObject *m_obj;
+    ufbx_matrix m;
+    if (!PyArg_ParseTuple(args, "O!", &Matrix_Type, &m_obj)) {
+        return NULL;
+    }
+    m = Matrix_to(m_obj);
+    ufbx_transform ret = ufbx_matrix_to_transform(&m);
+    return Transform_from(&ret);
+}
+
+static PyObject *mod_get_skin_vertex_matrix(PyObject *self, PyObject *args) {
+    ufbx_panic panic;
+    panic.did_panic = false;
+    SkinDeformer *skin;
+    Py_ssize_t vertex;
+    PyObject *fallback_obj;
+    ufbx_matrix fallback;
+    if (!PyArg_ParseTuple(args, "O!nO!", &SkinDeformer_Type, &skin, &vertex, &Matrix_Type, &fallback_obj)) {
+        return NULL;
+    }
+    if (!skin->ctx->ok) {
+        return Context_error(skin->ctx);
+    }
+    fallback = Matrix_to(fallback_obj);
+    ufbx_matrix ret = ufbx_catch_get_skin_vertex_matrix(&panic, skin->data, (size_t)vertex, &fallback);
+    if (panic.did_panic) {
+        return Panic_raise(&panic);
+    }
+    return Matrix_from(&ret);
+}
+
 static PyObject *mod_get_blend_shape_offset_index(PyObject *self, PyObject *args) {
     BlendShape *shape;
     Py_ssize_t vertex;
@@ -24559,6 +24633,26 @@ static PyObject *mod_find_face_index(PyObject *self, PyObject *args) {
     }
     uint32_t ret = ufbx_find_face_index(mesh->data, (size_t)index);
     return PyLong_FromUnsignedLong((unsigned long)ret);
+}
+
+static PyObject *mod_get_weighted_face_normal(PyObject *self, PyObject *args) {
+    ufbx_panic panic;
+    panic.did_panic = false;
+    VertexVec3 *positions;
+    PyObject *face_obj;
+    ufbx_face face;
+    if (!PyArg_ParseTuple(args, "O!O!", &VertexVec3_Type, &positions, &Face_Type, &face_obj)) {
+        return NULL;
+    }
+    if (!positions->ctx->ok) {
+        return Context_error(positions->ctx);
+    }
+    face = Face_to(face_obj);
+    ufbx_vec3 ret = ufbx_catch_get_weighted_face_normal(&panic, positions->data, face);
+    if (panic.did_panic) {
+        return Panic_raise(&panic);
+    }
+    return Vec3_from(&ret);
 }
 
 static PyObject *mod_dom_find(PyObject *self, PyObject *args) {
@@ -25639,6 +25733,27 @@ static PyObject *NurbsSurface_evaluate(PyObject *self, PyObject *args) {
     return SurfacePoint_from(&ret);
 }
 
+static PyObject *SkinDeformer_catch_get_skin_vertex_matrix(PyObject *self, PyObject *args) {
+    ufbx_panic panic;
+    panic.did_panic = false;
+    SkinDeformer *skin = (SkinDeformer*)self;
+    Py_ssize_t vertex;
+    PyObject *fallback_obj;
+    ufbx_matrix fallback;
+    if (!PyArg_ParseTuple(args, "nO!", &vertex, &Matrix_Type, &fallback_obj)) {
+        return NULL;
+    }
+    if (!skin->ctx->ok) {
+        return Context_error(skin->ctx);
+    }
+    fallback = Matrix_to(fallback_obj);
+    ufbx_matrix ret = ufbx_catch_get_skin_vertex_matrix(&panic, skin->data, (size_t)vertex, &fallback);
+    if (panic.did_panic) {
+        return Panic_raise(&panic);
+    }
+    return Matrix_from(&ret);
+}
+
 static PyObject *BlendDeformer_get_vertex_offset(PyObject *self, PyObject *args) {
     BlendDeformer *blend = (BlendDeformer*)self;
     Py_ssize_t vertex;
@@ -25779,6 +25894,26 @@ static PyObject *AnimCurve_evaluate(PyObject *self, PyObject *args) {
     }
     ufbx_real ret = ufbx_evaluate_curve(curve->data, time, (ufbx_real)default_value);
     return PyFloat_FromDouble(ret);
+}
+
+static PyObject *Scene_find_element(PyObject *self, PyObject *args) {
+    Scene *scene = (Scene*)self;
+    PyObject *type_obj;
+    ufbx_element_type type;
+    const char *name;
+    Py_ssize_t name_len;
+    if (!PyArg_ParseTuple(args, "O!s#", &ElementType_Enum, &type, &name, &name_len)) {
+        return NULL;
+    }
+    if (!scene->ctx->ok) {
+        return Context_error(scene->ctx);
+    }
+    type = (ufbx_element_type)PyLong_AsLong(type_obj);
+    ufbx_element* ret = ufbx_find_element_len(scene->data, type, name, (size_t)name_len);
+    if (!ret) {
+        return Py_NewRef(Py_None);
+    }
+    return Element_from(ret, scene->ctx);
 }
 
 static PyObject *Scene_find_node(PyObject *self, PyObject *args) {
@@ -26183,10 +26318,8 @@ static ModuleType generated_types[] = {
     { &Metadata_Type, "Metadata" },
     { &SceneSettings_Type, "SceneSettings" },
     { &Scene_Type, "Scene" },
-    { &VertexStream_Type, "VertexStream" },
     { &OpenFileInfo_Type, "OpenFileInfo" },
     { &ErrorFrame_Type, "ErrorFrame" },
-    { &Error_Type, "Error" },
     { &Progress_Type, "Progress" },
     { &BakedVec3_Type, "BakedVec3" },
     { &BakedQuat_Type, "BakedQuat" },
@@ -26207,6 +26340,9 @@ static PyMethodDef mod_methods[] = {
     { "find_vec3", &mod_find_vec3, METH_VARARGS, NULL },
     { "find_int", &mod_find_int, METH_VARARGS, NULL },
     { "find_bool", &mod_find_bool, METH_VARARGS, NULL },
+    { "get_prop_element", &mod_get_prop_element, METH_VARARGS, NULL },
+    { "find_prop_element", &mod_find_prop_element, METH_VARARGS, NULL },
+    { "find_element", &mod_find_element, METH_VARARGS, NULL },
     { "find_node", &mod_find_node, METH_VARARGS, NULL },
     { "find_anim_stack", &mod_find_anim_stack, METH_VARARGS, NULL },
     { "find_material", &mod_find_material, METH_VARARGS, NULL },
@@ -26219,6 +26355,7 @@ static PyMethodDef mod_methods[] = {
     { "evaluate_anim_value_vec3", &mod_evaluate_anim_value_vec3, METH_VARARGS, NULL },
     { "evaluate_anim_value_real_flags", &mod_evaluate_anim_value_real_flags, METH_VARARGS, NULL },
     { "evaluate_anim_value_vec3_flags", &mod_evaluate_anim_value_vec3_flags, METH_VARARGS, NULL },
+    { "evaluate_prop_flags", &mod_evaluate_prop_flags, METH_VARARGS, NULL },
     { "evaluate_props_flags", &mod_evaluate_props_flags, METH_VARARGS, NULL },
     { "evaluate_transform", &mod_evaluate_transform, METH_VARARGS, NULL },
     { "evaluate_transform_flags", &mod_evaluate_transform_flags, METH_VARARGS, NULL },
@@ -26231,11 +26368,14 @@ static PyMethodDef mod_methods[] = {
     { "find_baked_node", &mod_find_baked_node, METH_VARARGS, NULL },
     { "find_baked_element_by_element_id", &mod_find_baked_element_by_element_id, METH_VARARGS, NULL },
     { "find_baked_element", &mod_find_baked_element, METH_VARARGS, NULL },
+    { "evaluate_baked_vec3", &mod_evaluate_baked_vec3, METH_VARARGS, NULL },
+    { "evaluate_baked_quat", &mod_evaluate_baked_quat, METH_VARARGS, NULL },
     { "get_bone_pose", &mod_get_bone_pose, METH_VARARGS, NULL },
     { "find_prop_texture", &mod_find_prop_texture, METH_VARARGS, NULL },
     { "find_shader_prop", &mod_find_shader_prop, METH_VARARGS, NULL },
     { "find_shader_prop_bindings", &mod_find_shader_prop_bindings, METH_VARARGS, NULL },
     { "find_shader_texture_input", &mod_find_shader_texture_input, METH_VARARGS, NULL },
+    { "coordinate_axes_valid", &mod_coordinate_axes_valid, METH_VARARGS, NULL },
     { "vec3_normalize", &mod_vec3_normalize, METH_VARARGS, NULL },
     { "quat_dot", &mod_quat_dot, METH_VARARGS, NULL },
     { "quat_mul", &mod_quat_mul, METH_VARARGS, NULL },
@@ -26243,12 +26383,24 @@ static PyMethodDef mod_methods[] = {
     { "quat_fix_antipodal", &mod_quat_fix_antipodal, METH_VARARGS, NULL },
     { "quat_slerp", &mod_quat_slerp, METH_VARARGS, NULL },
     { "quat_rotate_vec3", &mod_quat_rotate_vec3, METH_VARARGS, NULL },
+    { "quat_to_euler", &mod_quat_to_euler, METH_VARARGS, NULL },
+    { "euler_to_quat", &mod_euler_to_quat, METH_VARARGS, NULL },
+    { "matrix_mul", &mod_matrix_mul, METH_VARARGS, NULL },
+    { "matrix_determinant", &mod_matrix_determinant, METH_VARARGS, NULL },
+    { "matrix_invert", &mod_matrix_invert, METH_VARARGS, NULL },
+    { "matrix_for_normals", &mod_matrix_for_normals, METH_VARARGS, NULL },
+    { "transform_position", &mod_transform_position, METH_VARARGS, NULL },
+    { "transform_direction", &mod_transform_direction, METH_VARARGS, NULL },
+    { "transform_to_matrix", &mod_transform_to_matrix, METH_VARARGS, NULL },
+    { "matrix_to_transform", &mod_matrix_to_transform, METH_VARARGS, NULL },
+    { "get_skin_vertex_matrix", &mod_get_skin_vertex_matrix, METH_VARARGS, NULL },
     { "get_blend_shape_offset_index", &mod_get_blend_shape_offset_index, METH_VARARGS, NULL },
     { "get_blend_shape_vertex_offset", &mod_get_blend_shape_vertex_offset, METH_VARARGS, NULL },
     { "get_blend_vertex_offset", &mod_get_blend_vertex_offset, METH_VARARGS, NULL },
     { "evaluate_nurbs_curve", &mod_evaluate_nurbs_curve, METH_VARARGS, NULL },
     { "evaluate_nurbs_surface", &mod_evaluate_nurbs_surface, METH_VARARGS, NULL },
     { "find_face_index", &mod_find_face_index, METH_VARARGS, NULL },
+    { "get_weighted_face_normal", &mod_get_weighted_face_normal, METH_VARARGS, NULL },
     { "dom_find", &mod_dom_find, METH_VARARGS, NULL },
     { "get_vertex_real", &mod_get_vertex_real, METH_VARARGS, NULL },
     { "get_vertex_vec2", &mod_get_vertex_vec2, METH_VARARGS, NULL },
@@ -26323,6 +26475,7 @@ static PyMethodDef mod_methods[] = {
     { "evaluate_transform", &mod_evaluate_transform, METH_VARARGS, NULL },
     { "evaluate_nurbs_curve", &mod_evaluate_nurbs_curve, METH_VARARGS, NULL },
     { "evaluate_nurbs_surface", &mod_evaluate_nurbs_surface, METH_VARARGS, NULL },
+    { "get_skin_vertex_matrix", &mod_get_skin_vertex_matrix, METH_VARARGS, NULL },
     { "get_blend_vertex_offset", &mod_get_blend_vertex_offset, METH_VARARGS, NULL },
     { "evaluate_blend_weight", &mod_evaluate_blend_weight, METH_VARARGS, NULL },
     { "get_blend_shape_vertex_offset", &mod_get_blend_shape_vertex_offset, METH_VARARGS, NULL },
@@ -26333,6 +26486,7 @@ static PyMethodDef mod_methods[] = {
     { "evaluate_anim_value_real", &mod_evaluate_anim_value_real, METH_VARARGS, NULL },
     { "evaluate_anim_value_vec3", &mod_evaluate_anim_value_vec3, METH_VARARGS, NULL },
     { "evaluate_curve", &mod_evaluate_curve, METH_VARARGS, NULL },
+    { "find_element", &mod_find_element, METH_VARARGS, NULL },
     { "find_node", &mod_find_node, METH_VARARGS, NULL },
     { "find_anim_stack", &mod_find_anim_stack, METH_VARARGS, NULL },
     { "evaluate_scene", (PyCFunction)&mod_evaluate_scene, METH_VARARGS|METH_KEYWORDS, NULL },

@@ -80,3 +80,18 @@ def test_axis_conversion():
     assert transform.rotation == approx(ufbx.Quat(-rcp_sqrt_2, 0.0, 0.0, rcp_sqrt_2))
     assert transform.scale == approx(ufbx.Vec3(0.0254, 0.0254, 0.0254))
 
+def test_anim_evaluation():
+    scene = ufbx.load_file(os.path.join(data_root, "maya-anim.fbx"))
+    assert scene
+
+    anim = scene.anim
+
+    node = scene.find_node("pCube1")
+
+    transform = node.evaluate_transform(anim, 0.0)
+    assert transform.translation == approx(ufbx.Vec3(0.0, 0.0, 0.0))
+
+    transform = node.evaluate_transform(anim, 0.5)
+    assert transform.translation == approx(ufbx.Vec3(-3.0, 0.0, 0.0))
+
+    # curve = scene.find_anim_prop(
