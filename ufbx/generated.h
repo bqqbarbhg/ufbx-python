@@ -1400,7 +1400,7 @@ static PyObject *ElementList_item(ElementList *self, Py_ssize_t index) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
-    return to_pyobject_todo("ufbx_element*");
+    return Element_from(self->data.data[index], self->ctx);
 }
 
 static int ElementList_traverse(ElementList *self, visitproc visit, void *arg) {
@@ -7505,7 +7505,7 @@ static PyObject *Connection_get_src(Connection *self, void *closure) {
     PyObject *slot = self->slots[SLOT_CONNECTION__SRC];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_element*");
+    slot = Element_from(self->data->src, self->ctx);
     self->slots[SLOT_CONNECTION__SRC] = slot;
     return Py_NewRef(slot);
 }
@@ -7514,7 +7514,7 @@ static PyObject *Connection_get_dst(Connection *self, void *closure) {
     PyObject *slot = self->slots[SLOT_CONNECTION__DST];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_element*");
+    slot = Element_from(self->data->dst, self->ctx);
     self->slots[SLOT_CONNECTION__DST] = slot;
     return Py_NewRef(slot);
 }
@@ -8040,7 +8040,7 @@ static PyObject *Node_get_attrib(Node *self, void *closure) {
     PyObject *slot = self->slots[SLOT_NODE__ATTRIB];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_element?*");
+    slot = Element_from(self->data->attrib, self->ctx);
     self->slots[SLOT_NODE__ATTRIB] = slot;
     return Py_NewRef(slot);
 }
@@ -18226,7 +18226,7 @@ static PyObject *AnimProp_get_element(AnimProp *self, void *closure) {
     PyObject *slot = self->slots[SLOT_ANIM_PROP__ELEMENT];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_element*");
+    slot = Element_from(self->data->element, self->ctx);
     self->slots[SLOT_ANIM_PROP__ELEMENT] = slot;
     return Py_NewRef(slot);
 }
@@ -20457,7 +20457,7 @@ static PyObject *NameElement_get_element(NameElement *self, void *closure) {
     PyObject *slot = self->slots[SLOT_NAME_ELEMENT__ELEMENT];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_element*");
+    slot = Element_from(self->data->element, self->ctx);
     self->slots[SLOT_NAME_ELEMENT__ELEMENT] = slot;
     return Py_NewRef(slot);
 }
@@ -26610,6 +26610,10 @@ static PyTypeObject *Element_typeof(ufbx_element_type type) {
     }
 }
 static PyObject *Element_create(ufbx_element *elem, Context *ctx) {
+    if (elem == NULL) {
+        return Py_NewRef(Py_None);
+    }
+
     PyTypeObject *type = Element_typeof(elem->type);
     Element *obj = (Element*)PyObject_CallObject((PyObject*)type, NULL);
     if (!obj) return NULL;

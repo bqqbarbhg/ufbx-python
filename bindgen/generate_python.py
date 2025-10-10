@@ -445,7 +445,7 @@ def to_pyobject(irt: ir.Type, expr: str, ctx: str):
         inner = g_file.types[irt.inner]
         if inner.kind == "struct":
             ist = g_file.structs[inner.key]
-            if ist.is_element:
+            if ist.is_element or ist.name == "ufbx_element":
                 return f"Element_from({expr}, {ctx})"
     elif irt.kind == "struct":
         irs = g_file.structs[irt.key]
