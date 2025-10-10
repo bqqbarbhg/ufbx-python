@@ -452,8 +452,11 @@ def to_pyobject(irt: ir.Type, expr: str, ctx: str):
         inner = g_file.types[irt.inner]
         if inner.kind == "struct":
             ist = g_file.structs[inner.key]
+            ps = py_structs[inner.key]
             if ist.is_element or ist.name == "ufbx_element":
                 return f"Element_from({expr}, {ctx})"
+            elif ps.is_emitted or ist.is_list:
+                return f"{ps.name}_from({expr}, {ctx})"
     elif irt.kind == "struct":
         irs = g_file.structs[irt.key]
         if irs.is_list:

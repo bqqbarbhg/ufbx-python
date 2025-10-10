@@ -1206,7 +1206,7 @@ static PyObject *DomNodeList_item(DomNodeList *self, Py_ssize_t index) {
         PyErr_Format(PyExc_IndexError, "index (%zd) out of bounds (%zu)", index, count);
         return NULL;
     }
-    return to_pyobject_todo("ufbx_dom_node*");
+    return DomNode_from(self->data.data[index], self->ctx);
 }
 
 static int DomNodeList_traverse(DomNodeList *self, visitproc visit, void *arg) {
@@ -7203,7 +7203,7 @@ static PyObject *Props_get_defaults(Props *self, void *closure) {
     PyObject *slot = self->slots[SLOT_PROPS__DEFAULTS];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_props?*");
+    slot = Props_from(self->data->defaults, self->ctx);
     self->slots[SLOT_PROPS__DEFAULTS] = slot;
     return Py_NewRef(slot);
 }
@@ -7475,7 +7475,7 @@ static PyObject *Element_get_dom_node(Element *self, void *closure) {
     PyObject *slot = self->slots[SLOT_ELEMENT__DOM_NODE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_dom_node?*");
+    slot = DomNode_from(self->data->dom_node, self->ctx);
     self->slots[SLOT_ELEMENT__DOM_NODE] = slot;
     return Py_NewRef(slot);
 }
@@ -7484,7 +7484,7 @@ static PyObject *Element_get_scene(Element *self, void *closure) {
     PyObject *slot = self->slots[SLOT_ELEMENT__SCENE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_scene*");
+    slot = Scene_from(self->data->scene, self->ctx);
     self->slots[SLOT_ELEMENT__SCENE] = slot;
     return Py_NewRef(slot);
 }
@@ -10050,7 +10050,7 @@ static PyObject *Mesh_get_subdivision_result(Mesh *self, void *closure) {
     PyObject *slot = self->slots[SLOT_MESH__SUBDIVISION_RESULT];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_subdivision_result?*");
+    slot = SubdivisionResult_from(self->data->subdivision_result, self->ctx);
     self->slots[SLOT_MESH__SUBDIVISION_RESULT] = slot;
     return Py_NewRef(slot);
 }
@@ -14031,7 +14031,7 @@ static PyObject *CacheDeformer_get_external_cache(CacheDeformer *self, void *clo
     PyObject *slot = self->slots[SLOT_CACHE_DEFORMER__EXTERNAL_CACHE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_geometry_cache?*");
+    slot = GeometryCache_from(self->data->external_cache, self->ctx);
     self->slots[SLOT_CACHE_DEFORMER__EXTERNAL_CACHE] = slot;
     return Py_NewRef(slot);
 }
@@ -14040,7 +14040,7 @@ static PyObject *CacheDeformer_get_external_channel(CacheDeformer *self, void *c
     PyObject *slot = self->slots[SLOT_CACHE_DEFORMER__EXTERNAL_CHANNEL];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_cache_channel?*");
+    slot = CacheChannel_from(self->data->external_channel, self->ctx);
     self->slots[SLOT_CACHE_DEFORMER__EXTERNAL_CHANNEL] = slot;
     return Py_NewRef(slot);
 }
@@ -14225,7 +14225,7 @@ static PyObject *CacheFile_get_external_cache(CacheFile *self, void *closure) {
     PyObject *slot = self->slots[SLOT_CACHE_FILE__EXTERNAL_CACHE];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_geometry_cache?*");
+    slot = GeometryCache_from(self->data->external_cache, self->ctx);
     self->slots[SLOT_CACHE_FILE__EXTERNAL_CACHE] = slot;
     return Py_NewRef(slot);
 }
@@ -16245,7 +16245,7 @@ static PyObject *ShaderTextureInput_get_prop(ShaderTextureInput *self, void *clo
     PyObject *slot = self->slots[SLOT_SHADER_TEXTURE_INPUT__PROP];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_prop*");
+    slot = Prop_from(self->data->prop, self->ctx);
     self->slots[SLOT_SHADER_TEXTURE_INPUT__PROP] = slot;
     return Py_NewRef(slot);
 }
@@ -16254,7 +16254,7 @@ static PyObject *ShaderTextureInput_get_texture_prop(ShaderTextureInput *self, v
     PyObject *slot = self->slots[SLOT_SHADER_TEXTURE_INPUT__TEXTURE_PROP];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_prop?*");
+    slot = Prop_from(self->data->texture_prop, self->ctx);
     self->slots[SLOT_SHADER_TEXTURE_INPUT__TEXTURE_PROP] = slot;
     return Py_NewRef(slot);
 }
@@ -16263,7 +16263,7 @@ static PyObject *ShaderTextureInput_get_texture_enabled_prop(ShaderTextureInput 
     PyObject *slot = self->slots[SLOT_SHADER_TEXTURE_INPUT__TEXTURE_ENABLED_PROP];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_prop?*");
+    slot = Prop_from(self->data->texture_enabled_prop, self->ctx);
     self->slots[SLOT_SHADER_TEXTURE_INPUT__TEXTURE_ENABLED_PROP] = slot;
     return Py_NewRef(slot);
 }
@@ -16821,7 +16821,7 @@ static PyObject *Texture_get_shader(Texture *self, void *closure) {
     PyObject *slot = self->slots[SLOT_TEXTURE__SHADER];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_shader_texture?*");
+    slot = ShaderTexture_from(self->data->shader, self->ctx);
     self->slots[SLOT_TEXTURE__SHADER] = slot;
     return Py_NewRef(slot);
 }
@@ -17818,7 +17818,7 @@ static PyObject *AnimStack_get_anim(AnimStack *self, void *closure) {
     PyObject *slot = self->slots[SLOT_ANIM_STACK__ANIM];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_anim*");
+    slot = Anim_from(self->data->anim, self->ctx);
     self->slots[SLOT_ANIM_STACK__ANIM] = slot;
     return Py_NewRef(slot);
 }
@@ -18105,7 +18105,7 @@ static PyObject *AnimLayer_get_anim(AnimLayer *self, void *closure) {
     PyObject *slot = self->slots[SLOT_ANIM_LAYER__ANIM];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_anim*");
+    slot = Anim_from(self->data->anim, self->ctx);
     self->slots[SLOT_ANIM_LAYER__ANIM] = slot;
     return Py_NewRef(slot);
 }
@@ -21325,7 +21325,7 @@ static PyObject *Scene_get_anim(Scene *self, void *closure) {
     PyObject *slot = self->slots[SLOT_SCENE__ANIM];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_anim*");
+    slot = Anim_from(self->data->anim, self->ctx);
     self->slots[SLOT_SCENE__ANIM] = slot;
     return Py_NewRef(slot);
 }
@@ -21757,7 +21757,7 @@ static PyObject *Scene_get_dom_root(Scene *self, void *closure) {
     PyObject *slot = self->slots[SLOT_SCENE__DOM_ROOT];
     if (slot) return Py_NewRef(slot);
     if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_dom_node?*");
+    slot = DomNode_from(self->data->dom_root, self->ctx);
     self->slots[SLOT_SCENE__DOM_ROOT] = slot;
     return Py_NewRef(slot);
 }
@@ -24256,7 +24256,7 @@ static PyObject *mod_find_prop(PyObject *self, PyObject *args) {
     if (!ret) {
         return Py_NewRef(Py_None);
     }
-    return to_pyobject_todo("ufbx_prop*");
+    return Prop_from(ret, props->ctx);
 }
 
 static PyObject *mod_find_real(PyObject *self, PyObject *args) {
@@ -24387,7 +24387,7 @@ static PyObject *mod_find_anim_prop(PyObject *self, PyObject *args) {
     if (!ret) {
         return Py_NewRef(Py_None);
     }
-    return to_pyobject_todo("ufbx_anim_prop*");
+    return AnimProp_from(ret, layer->ctx);
 }
 
 static PyObject *mod_find_anim_props(PyObject *self, PyObject *args) {
@@ -24633,7 +24633,7 @@ static PyObject *mod_bake_anim(PyObject *self, PyObject *args, PyObject *kwargs)
     if (error.type != UFBX_ERROR_NONE) {
         return UfbxError_raise(&error);
     }
-    return to_pyobject_todo("ufbx_baked_anim*");
+    return BakedAnim_from(ret, scene->ctx);
 }
 
 static PyObject *mod_find_baked_node_by_typed_id(PyObject *self, PyObject *args) {
@@ -24649,7 +24649,7 @@ static PyObject *mod_find_baked_node_by_typed_id(PyObject *self, PyObject *args)
     if (!ret) {
         return Py_NewRef(Py_None);
     }
-    return to_pyobject_todo("ufbx_baked_node*");
+    return BakedNode_from(ret, bake->ctx);
 }
 
 static PyObject *mod_find_baked_node(PyObject *self, PyObject *args) {
@@ -24665,7 +24665,7 @@ static PyObject *mod_find_baked_node(PyObject *self, PyObject *args) {
     if (!ret) {
         return Py_NewRef(Py_None);
     }
-    return to_pyobject_todo("ufbx_baked_node*");
+    return BakedNode_from(ret, bake->ctx);
 }
 
 static PyObject *mod_find_baked_element_by_element_id(PyObject *self, PyObject *args) {
@@ -24681,7 +24681,7 @@ static PyObject *mod_find_baked_element_by_element_id(PyObject *self, PyObject *
     if (!ret) {
         return Py_NewRef(Py_None);
     }
-    return to_pyobject_todo("ufbx_baked_element*");
+    return BakedElement_from(ret, bake->ctx);
 }
 
 static PyObject *mod_find_baked_element(PyObject *self, PyObject *args) {
@@ -24697,7 +24697,7 @@ static PyObject *mod_find_baked_element(PyObject *self, PyObject *args) {
     if (!ret) {
         return Py_NewRef(Py_None);
     }
-    return to_pyobject_todo("ufbx_baked_element*");
+    return BakedElement_from(ret, bake->ctx);
 }
 
 static PyObject *mod_get_bone_pose(PyObject *self, PyObject *args) {
@@ -24713,7 +24713,7 @@ static PyObject *mod_get_bone_pose(PyObject *self, PyObject *args) {
     if (!ret) {
         return Py_NewRef(Py_None);
     }
-    return to_pyobject_todo("ufbx_bone_pose*");
+    return BonePose_from(ret, pose->ctx);
 }
 
 static PyObject *mod_find_prop_texture(PyObject *self, PyObject *args) {
@@ -24775,7 +24775,7 @@ static PyObject *mod_find_shader_texture_input(PyObject *self, PyObject *args) {
     if (!ret) {
         return Py_NewRef(Py_None);
     }
-    return to_pyobject_todo("ufbx_shader_texture_input*");
+    return ShaderTextureInput_from(ret, shader->ctx);
 }
 
 static PyObject *mod_vec3_normalize(PyObject *self, PyObject *args) {
@@ -24964,7 +24964,7 @@ static PyObject *mod_dom_find(PyObject *self, PyObject *args) {
     if (!ret) {
         return Py_NewRef(Py_None);
     }
-    return to_pyobject_todo("ufbx_dom_node*");
+    return DomNode_from(ret, parent->ctx);
 }
 
 static PyObject *mod_get_vertex_real(PyObject *self, PyObject *args) {
@@ -25797,7 +25797,7 @@ static PyObject *DomNode_find(PyObject *self, PyObject *args) {
     if (!ret) {
         return Py_NewRef(Py_None);
     }
-    return to_pyobject_todo("ufbx_dom_node*");
+    return DomNode_from(ret, parent->ctx);
 }
 
 static PyObject *DomNode_is_array(PyObject *self, PyObject *args) {
@@ -25910,7 +25910,7 @@ static PyObject *Props_find_prop(PyObject *self, PyObject *args) {
     if (!ret) {
         return Py_NewRef(Py_None);
     }
-    return to_pyobject_todo("ufbx_prop*");
+    return Prop_from(ret, props->ctx);
 }
 
 static PyObject *Props_find_real(PyObject *self, PyObject *args) {
@@ -26114,7 +26114,7 @@ static PyObject *AnimLayer_find_anim_prop(PyObject *self, PyObject *args) {
     if (!ret) {
         return Py_NewRef(Py_None);
     }
-    return to_pyobject_todo("ufbx_anim_prop*");
+    return AnimProp_from(ret, layer->ctx);
 }
 
 static PyObject *AnimLayer_find_anim_props(PyObject *self, PyObject *args) {
