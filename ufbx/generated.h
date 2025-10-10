@@ -138,7 +138,6 @@ static PyObject *SceneSettings_from(ufbx_scene_settings *data, Context *ctx);
 static PyObject *Scene_from(ufbx_scene *data, Context *ctx);
 static PyObject *VertexStream_from(ufbx_vertex_stream *data, Context *ctx);
 static PyObject *OpenFileInfo_from(ufbx_open_file_info *data, Context *ctx);
-static PyObject *OpenFileOpts_from(ufbx_open_file_opts *data, Context *ctx);
 static PyObject *ErrorFrame_from(ufbx_error_frame *data, Context *ctx);
 static PyObject *Error_from(ufbx_error *data, Context *ctx);
 static PyObject *Progress_from(ufbx_progress *data, Context *ctx);
@@ -22395,87 +22394,6 @@ static PyObject *OpenFileInfo_from(ufbx_open_file_info *data, Context *ctx) {
     return (PyObject*)obj;
 }
 
-#define SLOT_COUNT_OPEN_FILE_OPTS 2
-enum {
-    SLOT_OPEN_FILE_OPTS__ALLOCATOR,
-    SLOT_OPEN_FILE_OPTS__FILENAME_NULL_TERMINATED,
-};
-
-typedef struct {
-    PyObject_HEAD
-    ufbx_open_file_opts *data;
-    Context *ctx;
-    PyObject *slots[SLOT_COUNT_OPEN_FILE_OPTS];
-} OpenFileOpts;
-
-static PyObject *OpenFileOpts_get_allocator(OpenFileOpts *self, void *closure) {
-    PyObject *slot = self->slots[SLOT_OPEN_FILE_OPTS__ALLOCATOR];
-    if (slot) return Py_NewRef(slot);
-    if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("ufbx_allocator_opts");
-    self->slots[SLOT_OPEN_FILE_OPTS__ALLOCATOR] = slot;
-    return Py_NewRef(slot);
-}
-
-static PyObject *OpenFileOpts_get_filename_null_terminated(OpenFileOpts *self, void *closure) {
-    PyObject *slot = self->slots[SLOT_OPEN_FILE_OPTS__FILENAME_NULL_TERMINATED];
-    if (slot) return Py_NewRef(slot);
-    if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("bool unsafe");
-    self->slots[SLOT_OPEN_FILE_OPTS__FILENAME_NULL_TERMINATED] = slot;
-    return Py_NewRef(slot);
-}
-
-static int OpenFileOpts_traverse(OpenFileOpts *self, visitproc visit, void *arg) {
-    Py_VISIT(self->ctx);
-    for (size_t i = 0; i < SLOT_COUNT_OPEN_FILE_OPTS; i++) {
-        Py_VISIT(self->slots[i]);
-    }
-    return 0;
-}
-
-static int OpenFileOpts_clear(OpenFileOpts *self) {
-    Py_CLEAR(self->ctx);
-    for (size_t i = 0; i < SLOT_COUNT_OPEN_FILE_OPTS; i++) {
-        Py_CLEAR(self->slots[i]);
-    }
-    return 0;
-}
-
-void OpenFileOpts_dealloc(OpenFileOpts *self) {
-    PyObject_GC_UnTrack(self);
-    OpenFileOpts_clear(self);
-    Py_TYPE(self)->tp_free((PyObject *) self);
-}
-
-static PyGetSetDef OpenFileOpts_getset[] = {
-    { "allocator", (getter)OpenFileOpts_get_allocator, NULL, "allocator" },
-    { "filename_null_terminated", (getter)OpenFileOpts_get_filename_null_terminated, NULL, "filename_null_terminated" },
-    { NULL },
-};
-
-static PyTypeObject OpenFileOpts_Type = {
-    .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "ufbx.OpenFileOpts",
-    .tp_doc = PyDoc_STR("OpenFileOpts"),
-    .tp_basicsize = sizeof(OpenFileOpts),
-    .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
-    .tp_new = PyType_GenericNew,
-    .tp_dealloc = (destructor)&OpenFileOpts_dealloc,
-    .tp_traverse = (traverseproc)&OpenFileOpts_traverse,
-    .tp_clear = (inquiry)&OpenFileOpts_clear,
-    .tp_getset = OpenFileOpts_getset,
-};
-
-static PyObject *OpenFileOpts_from(ufbx_open_file_opts *data, Context *ctx) {
-    OpenFileOpts *obj = (OpenFileOpts*)PyObject_CallObject((PyObject*)&OpenFileOpts_Type, NULL);
-    if (!obj) return NULL;
-    obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->data = data;
-    return (PyObject*)obj;
-}
-
 #define SLOT_COUNT_ERROR_FRAME 3
 enum {
     SLOT_ERROR_FRAME__SOURCE_LINE,
@@ -24007,6 +23925,11 @@ static int to_allocator_opts(ufbx_allocator_opts *dst, PyObject *src) {
         dst->max_chunk_size = PyLong_AsSize_t(value);
         if (PyErr_Occurred()) return -1;
     }
+    return 0;
+}
+
+static int to_open_file_opts(ufbx_open_file_opts *dst, PyObject *src) {
+    if (!src) return 0;
     return 0;
 }
 
@@ -26991,7 +26914,6 @@ static ModuleType generated_types[] = {
     { &Scene_Type, "Scene" },
     { &VertexStream_Type, "VertexStream" },
     { &OpenFileInfo_Type, "OpenFileInfo" },
-    { &OpenFileOpts_Type, "OpenFileOpts" },
     { &ErrorFrame_Type, "ErrorFrame" },
     { &Error_Type, "Error" },
     { &Progress_Type, "Progress" },

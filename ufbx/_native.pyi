@@ -2637,12 +2637,6 @@ class OpenFileInfo:
     @property
     def original_filename(self) -> bytes: ...
 
-class OpenFileOpts:
-    @property
-    def allocator(self) -> Any: ...
-    @property
-    def filename_null_terminated(self) -> Any: ...
-
 class ErrorFrame:
     @property
     def source_line(self) -> int: ...
@@ -2800,6 +2794,9 @@ class AllocatorOpts(TypedDict, total=False):
     allocation_limit: int
     huge_threshold: int
     max_chunk_size: int
+
+class OpenFileOpts(TypedDict, total=False):
+    pass
 
 class OpenMemoryOpts(TypedDict, total=False):
     pass
