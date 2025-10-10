@@ -25,6 +25,7 @@ typedef struct {
 	ufbx_scene *scene;
 	ufbx_anim *anim;
 	ufbx_baked_anim *baked;
+	ufbx_geometry_cache *cache;
 
     size_t num_elements;
 	PyObject **elements;
@@ -59,6 +60,8 @@ static void Context_dealloc(Context *self)
 
 	ufbx_free_scene(self->scene);
 	ufbx_free_anim(self->anim);
+	ufbx_free_baked_anim(self->baked);
+	ufbx_free_geometry_cache(self->cache);
 
 	free(self->elements);
 
@@ -232,6 +235,7 @@ static PyObject* Element_from(void *p_elem, Context *ctx)
 static PyObject* Scene_create(ufbx_scene *scene);
 static PyObject* Anim_create(ufbx_anim *anim);
 static PyObject* BakedAnim_create(ufbx_baked_anim *baked);
+static PyObject* GeometryCache_create(ufbx_geometry_cache *cache);
 
 static PyObject* to_pyobject_todo(const char *type)
 {

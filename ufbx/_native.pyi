@@ -564,31 +564,31 @@ class DomNode:
     @property
     def values(self) -> DomValueList: ...
 
-    def dom_find(self, name: str) -> Optional[DomNode]:
+    def find(self, name: str) -> Optional[DomNode]:
         ...
 
-    def dom_is_array(self) -> bool:
+    def is_array(self) -> bool:
         ...
 
-    def dom_array_size(self) -> int:
+    def array_size(self) -> int:
         ...
 
-    def dom_as_int32_list(self) -> Int32List:
+    def as_int32_list(self) -> Int32List:
         ...
 
-    def dom_as_int64_list(self) -> Int64List:
+    def as_int64_list(self) -> Int64List:
         ...
 
-    def dom_as_float_list(self) -> FloatList:
+    def as_float_list(self) -> FloatList:
         ...
 
-    def dom_as_double_list(self) -> DoubleList:
+    def as_double_list(self) -> DoubleList:
         ...
 
-    def dom_as_real_list(self) -> RealList:
+    def as_real_list(self) -> RealList:
         ...
 
-    def dom_as_blob_list(self) -> BlobList:
+    def as_blob_list(self) -> BlobList:
         ...
 
 class Prop:
@@ -1200,7 +1200,7 @@ class NurbsCurve:
     @property
     def control_points(self) -> Vec4List: ...
 
-    def evaluate_nurbs_curve(self, u: float) -> CurvePoint:
+    def evaluate(self, u: float) -> CurvePoint:
         ...
 
 class NurbsSurface:
@@ -1233,7 +1233,7 @@ class NurbsSurface:
     @property
     def material(self) -> Optional["Material"]: ...
 
-    def evaluate_nurbs_surface(self, u: float, v: float) -> SurfacePoint:
+    def evaluate(self, u: float, v: float) -> SurfacePoint:
         ...
 
 class NurbsTrimSurface:
@@ -1364,7 +1364,7 @@ class SkinDeformer:
     @property
     def dq_weights(self) -> RealList: ...
 
-    def get_skin_vertex_matrix(self, vertex: int, fallback: Matrix) -> Matrix:
+    def catch_get_skin_vertex_matrix(self, vertex: int, fallback: Matrix) -> Matrix:
         ...
 
 class SkinCluster:
@@ -1407,7 +1407,7 @@ class BlendDeformer:
     @property
     def channels(self) -> BlendChannelList: ...
 
-    def get_blend_vertex_offset(self, vertex: int) -> Vec3:
+    def get_vertex_offset(self, vertex: int) -> Vec3:
         ...
 
 class BlendKeyframe:
@@ -1457,7 +1457,7 @@ class BlendShape:
     @property
     def offset_weights(self) -> RealList: ...
 
-    def get_blend_shape_vertex_offset(self, vertex: int) -> Vec3:
+    def get_vertex_offset(self, vertex: int) -> Vec3:
         ...
 
 class CacheFrame:
@@ -2102,10 +2102,10 @@ class AnimValue:
     @property
     def curves(self) -> Tuple[Optional["AnimCurve"], Optional["AnimCurve"], Optional["AnimCurve"]]: ...
 
-    def evaluate_anim_value_real(self, time: float) -> float:
+    def evaluate_real(self, time: float) -> float:
         ...
 
-    def evaluate_anim_value_vec3(self, time: float) -> Vec3:
+    def evaluate_vec3(self, time: float) -> Vec3:
         ...
 
 class Extrapolation:
@@ -2138,7 +2138,7 @@ class AnimCurve:
     @property
     def max_time(self) -> float: ...
 
-    def evaluate_curve(self, time: float, default_value: float) -> float:
+    def evaluate(self, time: float, default_value: float) -> float:
         ...
 
 class DisplayLayer:
@@ -2594,7 +2594,7 @@ class Scene:
     def find_anim_stack(self, name: str) -> Optional[AnimStack]:
         ...
 
-    def evaluate_scene(self, anim: Anim, time: float, **kwargs: Unpack[EvaluateOpts]) -> Scene:
+    def evaluate(self, anim: Anim, time: float, **kwargs: Unpack[EvaluateOpts]) -> Scene:
         ...
 
 class OpenFileInfo:
@@ -3044,6 +3044,9 @@ def find_face_index(mesh: Mesh, index: int) -> int:
     ...
 
 def get_weighted_face_normal(positions: VertexVec3, face: Face) -> Vec3:
+    ...
+
+def load_geometry_cache(filename: str, **kwargs: Unpack[GeometryCacheOpts]) -> GeometryCache:
     ...
 
 def dom_find(parent: DomNode, name: str) -> Optional[DomNode]:

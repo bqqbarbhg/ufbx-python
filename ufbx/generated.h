@@ -24655,6 +24655,24 @@ static PyObject *mod_get_weighted_face_normal(PyObject *self, PyObject *args) {
     return Vec3_from(&ret);
 }
 
+static PyObject *mod_load_geometry_cache(PyObject *self, PyObject *args, PyObject *kwargs) {
+    const char *filename;
+    Py_ssize_t filename_len;
+    ufbx_geometry_cache_opts opts = { 0 };
+    ufbx_error error;
+    if (!PyArg_ParseTuple(args, "s#", &filename, &filename_len)) {
+        return NULL;
+    }
+    if (to_geometry_cache_opts(&opts, kwargs) < 0) {
+        return NULL;
+    }
+    ufbx_geometry_cache* ret = ufbx_load_geometry_cache_len(filename, (size_t)filename_len, &opts, &error);
+    if (error.type != UFBX_ERROR_NONE) {
+        return UfbxError_raise(&error);
+    }
+    return GeometryCache_create(ret);
+}
+
 static PyObject *mod_dom_find(PyObject *self, PyObject *args) {
     DomNode *parent;
     const char *name;
@@ -26401,6 +26419,7 @@ static PyMethodDef mod_methods[] = {
     { "evaluate_nurbs_surface", &mod_evaluate_nurbs_surface, METH_VARARGS, NULL },
     { "find_face_index", &mod_find_face_index, METH_VARARGS, NULL },
     { "get_weighted_face_normal", &mod_get_weighted_face_normal, METH_VARARGS, NULL },
+    { "load_geometry_cache", (PyCFunction)&mod_load_geometry_cache, METH_VARARGS|METH_KEYWORDS, NULL },
     { "dom_find", &mod_dom_find, METH_VARARGS, NULL },
     { "get_vertex_real", &mod_get_vertex_real, METH_VARARGS, NULL },
     { "get_vertex_vec2", &mod_get_vertex_vec2, METH_VARARGS, NULL },
@@ -26457,39 +26476,6 @@ static PyMethodDef mod_methods[] = {
     { "dom_as_double_list", &mod_dom_as_double_list, METH_VARARGS, NULL },
     { "dom_as_real_list", &mod_dom_as_real_list, METH_VARARGS, NULL },
     { "dom_as_blob_list", &mod_dom_as_blob_list, METH_VARARGS, NULL },
-    { "dom_find", &mod_dom_find, METH_VARARGS, NULL },
-    { "dom_is_array", &mod_dom_is_array, METH_VARARGS, NULL },
-    { "dom_array_size", &mod_dom_array_size, METH_VARARGS, NULL },
-    { "dom_as_int32_list", &mod_dom_as_int32_list, METH_VARARGS, NULL },
-    { "dom_as_int64_list", &mod_dom_as_int64_list, METH_VARARGS, NULL },
-    { "dom_as_float_list", &mod_dom_as_float_list, METH_VARARGS, NULL },
-    { "dom_as_double_list", &mod_dom_as_double_list, METH_VARARGS, NULL },
-    { "dom_as_real_list", &mod_dom_as_real_list, METH_VARARGS, NULL },
-    { "dom_as_blob_list", &mod_dom_as_blob_list, METH_VARARGS, NULL },
-    { "find_prop", &mod_find_prop, METH_VARARGS, NULL },
-    { "find_real", &mod_find_real, METH_VARARGS, NULL },
-    { "find_vec3", &mod_find_vec3, METH_VARARGS, NULL },
-    { "find_int", &mod_find_int, METH_VARARGS, NULL },
-    { "find_bool", &mod_find_bool, METH_VARARGS, NULL },
-    { "get_compatible_matrix_for_normals", &mod_get_compatible_matrix_for_normals, METH_VARARGS, NULL },
-    { "evaluate_transform", &mod_evaluate_transform, METH_VARARGS, NULL },
-    { "evaluate_nurbs_curve", &mod_evaluate_nurbs_curve, METH_VARARGS, NULL },
-    { "evaluate_nurbs_surface", &mod_evaluate_nurbs_surface, METH_VARARGS, NULL },
-    { "get_skin_vertex_matrix", &mod_get_skin_vertex_matrix, METH_VARARGS, NULL },
-    { "get_blend_vertex_offset", &mod_get_blend_vertex_offset, METH_VARARGS, NULL },
-    { "evaluate_blend_weight", &mod_evaluate_blend_weight, METH_VARARGS, NULL },
-    { "get_blend_shape_vertex_offset", &mod_get_blend_shape_vertex_offset, METH_VARARGS, NULL },
-    { "find_prop_texture", &mod_find_prop_texture, METH_VARARGS, NULL },
-    { "find_shader_prop", &mod_find_shader_prop, METH_VARARGS, NULL },
-    { "find_anim_prop", &mod_find_anim_prop, METH_VARARGS, NULL },
-    { "find_anim_props", &mod_find_anim_props, METH_VARARGS, NULL },
-    { "evaluate_anim_value_real", &mod_evaluate_anim_value_real, METH_VARARGS, NULL },
-    { "evaluate_anim_value_vec3", &mod_evaluate_anim_value_vec3, METH_VARARGS, NULL },
-    { "evaluate_curve", &mod_evaluate_curve, METH_VARARGS, NULL },
-    { "find_element", &mod_find_element, METH_VARARGS, NULL },
-    { "find_node", &mod_find_node, METH_VARARGS, NULL },
-    { "find_anim_stack", &mod_find_anim_stack, METH_VARARGS, NULL },
-    { "evaluate_scene", (PyCFunction)&mod_evaluate_scene, METH_VARARGS|METH_KEYWORDS, NULL },
     { NULL },
 };
 

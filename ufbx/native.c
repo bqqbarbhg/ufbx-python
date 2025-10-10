@@ -54,7 +54,7 @@ static PyObject* BakedAnim_create(ufbx_baked_anim *baked)
         return NULL;
     }
 
-    Anim *obj = (Anim*)PyObject_CallObject((PyObject*)&Anim_Type, NULL);
+    BakedAnim *obj = (BakedAnim*)PyObject_CallObject((PyObject*)&BakedAnim_Type, NULL);
     if (!obj) {
         Py_DECREF(ctx);
         return NULL;
@@ -66,6 +66,28 @@ static PyObject* BakedAnim_create(ufbx_baked_anim *baked)
 
     obj->ctx = ctx;
     obj->data = baked;
+    return (PyObject*)obj;
+}
+
+static PyObject* GeometryCache_create(ufbx_geometry_cache *cache)
+{
+    Context *ctx = (Context*)PyObject_CallObject((PyObject*)&Context_Type, NULL);
+    if (!ctx) {
+        return NULL;
+    }
+
+    GeometryCache *obj = (GeometryCache*)PyObject_CallObject((PyObject*)&GeometryCache_Type, NULL);
+    if (!obj) {
+        Py_DECREF(ctx);
+        return NULL;
+    }
+
+    ctx->name = PyUnicode_FromString("geometry_cache");
+    ctx->cache = cache;
+    ctx->ok = true;
+
+    obj->ctx = ctx;
+    obj->data = cache;
     return (PyObject*)obj;
 }
 

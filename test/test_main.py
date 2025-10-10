@@ -94,4 +94,19 @@ def test_anim_evaluation():
     transform = node.evaluate_transform(anim, 0.5)
     assert transform.translation == approx(ufbx.Vec3(-3.0, 0.0, 0.0))
 
-    # curve = scene.find_anim_prop(
+    layer = scene.anim_layers[0]
+    assert layer
+
+    props = layer.find_anim_props(node)
+    assert len(props) == 3
+
+    names = set(p.prop_name for p in props)
+    assert names == { "Lcl Translation", "Lcl Scaling", "Lcl Rotation" }
+
+    prop = layer.find_anim_prop(node, "Lcl Translation")
+    assert prop
+
+    curve = prop.anim_value.curves[0]
+    assert curve
+
+    assert curve.evaluate(0.5, 0.0) == approx(-3.0)

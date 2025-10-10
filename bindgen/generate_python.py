@@ -155,6 +155,7 @@ create_funcs = {
     "scene": "Scene_create",
     "anim": "Anim_create",
     "bakedAnim": "BakedAnim_create",
+    "geometryCache": "GeometryCache_create",
 }
 
 @dataclass
@@ -469,8 +470,6 @@ unsupported_funcs = {
     "ufbx_evaluate_prop_len",
     "ufbx_evaluate_prop_len_flags",
     "ufbx_evaluate_props",
-    "ufbx_load_geometry_cache",
-    "ufbx_load_geometry_cache_len",
     "ufbx_load_stdio",
     "ufbx_load_stdio_prefix",
     "ufbx_load_stream_prefix",
@@ -1288,7 +1287,8 @@ def emit_func(pf: PythonFunc, method: Optional[PythonMethod] = None):
 
     args = pf.get_args(method)
 
-    module_funcs.append(pf)
+    if not method:
+        module_funcs.append(pf)
 
     ctx = None
     for arg in args:
@@ -1658,9 +1658,13 @@ def emit_pyi_func(pf: PythonFunc, method: Optional[PythonMethod] = None):
     if pf.ir.nullable_return:
         ret_str = f"Optional[{ret_str}]"
 
+    name = pf.name
+    if method:
+        name = method.name
+
     emit()
     emit_lines(f"""
-        def {pf.name}({arg_str}) -> {ret_str}:
+        def {name}({arg_str}) -> {ret_str}:
             ...
     """)
 
