@@ -2715,14 +2715,6 @@ class ThreadPoolInfo:
     @property
     def max_concurrent_tasks(self) -> int: ...
 
-class Panic:
-    @property
-    def did_panic(self) -> bool: ...
-    @property
-    def message_length(self) -> int: ...
-    @property
-    def message(self) -> Any: ...
-
 class AllocatorOpts(TypedDict, total=False):
     memory_limit: int
     allocation_limit: int

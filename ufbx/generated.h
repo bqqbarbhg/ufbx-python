@@ -147,7 +147,6 @@ static PyObject *BakedElement_from(ufbx_baked_element *data, Context *ctx);
 static PyObject *BakedAnimMetadata_from(ufbx_baked_anim_metadata *data, Context *ctx);
 static PyObject *BakedAnim_from(ufbx_baked_anim *data, Context *ctx);
 static PyObject *ThreadPoolInfo_from(ufbx_thread_pool_info *data, Context *ctx);
-static PyObject *Panic_from(ufbx_panic *data, Context *ctx);
 
 static PyObject *error_type_objs[24];
 
@@ -23178,98 +23177,6 @@ static PyObject *ThreadPoolInfo_from(ufbx_thread_pool_info *data, Context *ctx) 
     return (PyObject*)obj;
 }
 
-#define SLOT_COUNT_PANIC 3
-enum {
-    SLOT_PANIC__DID_PANIC,
-    SLOT_PANIC__MESSAGE_LENGTH,
-    SLOT_PANIC__MESSAGE,
-};
-
-typedef struct {
-    PyObject_HEAD
-    ufbx_panic *data;
-    Context *ctx;
-    PyObject *slots[SLOT_COUNT_PANIC];
-} Panic;
-
-static PyObject *Panic_get_did_panic(Panic *self, void *closure) {
-    PyObject *slot = self->slots[SLOT_PANIC__DID_PANIC];
-    if (slot) return Py_NewRef(slot);
-    if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = Py_NewRef(self->data->did_panic ? Py_True : Py_False);
-    self->slots[SLOT_PANIC__DID_PANIC] = slot;
-    return Py_NewRef(slot);
-}
-
-static PyObject *Panic_get_message_length(Panic *self, void *closure) {
-    PyObject *slot = self->slots[SLOT_PANIC__MESSAGE_LENGTH];
-    if (slot) return Py_NewRef(slot);
-    if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = PyLong_FromSize_t(self->data->message_length);
-    self->slots[SLOT_PANIC__MESSAGE_LENGTH] = slot;
-    return Py_NewRef(slot);
-}
-
-static PyObject *Panic_get_message(Panic *self, void *closure) {
-    PyObject *slot = self->slots[SLOT_PANIC__MESSAGE];
-    if (slot) return Py_NewRef(slot);
-    if (!self->ctx->ok) return Context_error(self->ctx);
-    slot = to_pyobject_todo("char[128]");
-    self->slots[SLOT_PANIC__MESSAGE] = slot;
-    return Py_NewRef(slot);
-}
-
-static int Panic_traverse(Panic *self, visitproc visit, void *arg) {
-    Py_VISIT(self->ctx);
-    for (size_t i = 0; i < SLOT_COUNT_PANIC; i++) {
-        Py_VISIT(self->slots[i]);
-    }
-    return 0;
-}
-
-static int Panic_clear(Panic *self) {
-    Py_CLEAR(self->ctx);
-    for (size_t i = 0; i < SLOT_COUNT_PANIC; i++) {
-        Py_CLEAR(self->slots[i]);
-    }
-    return 0;
-}
-
-void Panic_dealloc(Panic *self) {
-    PyObject_GC_UnTrack(self);
-    Panic_clear(self);
-    Py_TYPE(self)->tp_free((PyObject *) self);
-}
-
-static PyGetSetDef Panic_getset[] = {
-    { "did_panic", (getter)Panic_get_did_panic, NULL, "did_panic" },
-    { "message_length", (getter)Panic_get_message_length, NULL, "message_length" },
-    { "message", (getter)Panic_get_message, NULL, "message" },
-    { NULL },
-};
-
-static PyTypeObject Panic_Type = {
-    .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "ufbx.Panic",
-    .tp_doc = PyDoc_STR("Panic"),
-    .tp_basicsize = sizeof(Panic),
-    .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
-    .tp_new = PyType_GenericNew,
-    .tp_dealloc = (destructor)&Panic_dealloc,
-    .tp_traverse = (traverseproc)&Panic_traverse,
-    .tp_clear = (inquiry)&Panic_clear,
-    .tp_getset = Panic_getset,
-};
-
-static PyObject *Panic_from(ufbx_panic *data, Context *ctx) {
-    Panic *obj = (Panic*)PyObject_CallObject((PyObject*)&Panic_Type, NULL);
-    if (!obj) return NULL;
-    obj->ctx = (Context*)Py_NewRef(ctx);
-    obj->data = data;
-    return (PyObject*)obj;
-}
-
 static int to_allocator_opts(ufbx_allocator_opts *dst, PyObject *src) {
     if (!src) return 0;
     PyObject *value;
@@ -26289,7 +26196,6 @@ static ModuleType generated_types[] = {
     { &BakedAnimMetadata_Type, "BakedAnimMetadata" },
     { &BakedAnim_Type, "BakedAnim" },
     { &ThreadPoolInfo_Type, "ThreadPoolInfo" },
-    { &Panic_Type, "Panic" },
 };
 
 static PyMethodDef mod_methods[] = {

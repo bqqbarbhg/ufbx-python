@@ -363,6 +363,7 @@ manual_types = {
     "ufbx_vertex_attrib",
     "ufbx_inflate_input",
     "ufbx_inflate_retain",
+    "ufbx_panic",
 }
 
 pyobject_primtive = {
