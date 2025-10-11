@@ -67,16 +67,6 @@ jobs:
         with:
           name: merged-artifacts
           path: dist
-
-      - name: Release
-        uses: softprops/action-gh-release@v1
-        with:
-          body: |
-            development testing release
-          files: |
-            dist/*
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: pypa/gh-action-pypi-publish@master
         with:
           user: __token__
