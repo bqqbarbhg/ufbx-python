@@ -63,7 +63,7 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.event.inputs.publish }}
     steps:
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v4
         with:
           name: merged-artifacts
           path: dist
