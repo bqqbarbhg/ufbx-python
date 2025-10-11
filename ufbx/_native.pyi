@@ -2,6 +2,9 @@ from typing import Any, Iterator, Optional, Tuple
 from typing_extensions import Unpack
 from ._generated import *
 
+class UseAfterFreeError(Exception):
+    pass
+
 class UfbxError(Exception):
     pass
 
@@ -1510,6 +1513,15 @@ class GeometryCache:
     @property
     def extra_info(self) -> StringList: ...
 
+    def free(self):
+        ...
+
+    def __enter__(self):
+        ...
+
+    def __exit__(self, exc_type: Any, exc_value: Any, traceback: Any):
+        ...
+
 class CacheDeformer:
     @property
     def name(self) -> str: ...
@@ -2027,6 +2039,15 @@ class Anim:
     def ignore_connections(self) -> bool: ...
     @property
     def custom(self) -> bool: ...
+
+    def free(self):
+        ...
+
+    def __enter__(self):
+        ...
+
+    def __exit__(self, exc_type: Any, exc_value: Any, traceback: Any):
+        ...
 
 class AnimStack:
     @property
@@ -2597,6 +2618,15 @@ class Scene:
     def evaluate(self, anim: Anim, time: float, **kwargs: Unpack[EvaluateOpts]) -> Scene:
         ...
 
+    def free(self):
+        ...
+
+    def __enter__(self):
+        ...
+
+    def __exit__(self, exc_type: Any, exc_value: Any, traceback: Any):
+        ...
+
 class OpenFileInfo:
     @property
     def context(self) -> Any: ...
@@ -2694,6 +2724,15 @@ class BakedAnim:
     def key_time_max(self) -> float: ...
     @property
     def metadata(self) -> BakedAnimMetadata: ...
+
+    def free(self):
+        ...
+
+    def __enter__(self):
+        ...
+
+    def __exit__(self, exc_type: Any, exc_value: Any, traceback: Any):
+        ...
 
 class ThreadPoolInfo:
     @property

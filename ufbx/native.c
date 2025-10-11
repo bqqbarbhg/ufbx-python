@@ -14,7 +14,7 @@ static PyObject* Scene_create(ufbx_scene *scene)
         return NULL;
     }
 
-    ctx->name = PyUnicode_FromString("scene");
+    ctx->name = PyUnicode_FromString("Scene");
     ctx->scene = scene;
     ctx->num_elements = scene->elements.count;
     ctx->elements = (PyObject**)calloc(ctx->num_elements, sizeof(PyObject*));
@@ -38,7 +38,7 @@ static PyObject* Anim_create(ufbx_anim *anim)
         return NULL;
     }
 
-    ctx->name = PyUnicode_FromString("anim");
+    ctx->name = PyUnicode_FromString("Anim");
     ctx->anim = anim;
     ctx->ok = true;
 
@@ -60,7 +60,7 @@ static PyObject* BakedAnim_create(ufbx_baked_anim *baked)
         return NULL;
     }
 
-    ctx->name = PyUnicode_FromString("baked_anim");
+    ctx->name = PyUnicode_FromString("BakedAnim");
     ctx->baked = baked;
     ctx->ok = true;
 
@@ -82,7 +82,7 @@ static PyObject* GeometryCache_create(ufbx_geometry_cache *cache)
         return NULL;
     }
 
-    ctx->name = PyUnicode_FromString("geometry_cache");
+    ctx->name = PyUnicode_FromString("GeometryCache");
     ctx->cache = cache;
     ctx->ok = true;
 
@@ -156,6 +156,11 @@ static int ufbx_module_exec(PyObject *m)
 
     UfbxError = PyErr_NewException("ufbx.UfbxError", NULL, NULL);
     if (PyModule_AddObject(m, "UfbxError", Py_NewRef(UfbxError)) < 0) {
+        return -1;
+    }
+
+    UseAfterFreeError = PyErr_NewException("ufbx.UseAfterFreeError", NULL, NULL);
+    if (PyModule_AddObject(m, "UseAfterFreeError", Py_NewRef(UseAfterFreeError)) < 0) {
         return -1;
     }
 

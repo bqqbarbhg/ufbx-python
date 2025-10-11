@@ -6,6 +6,7 @@
 #define array_count(arr) (sizeof(arr) / sizeof(*(arr)))
 
 static PyObject *UfbxError = NULL;
+static PyObject *UseAfterFreeError = NULL;
 
 #if PY_MINOR_VERSION < 10
 static PyObject *_Py_NewRef(PyObject *obj)
@@ -33,6 +34,35 @@ typedef struct {
 	ptrdiff_t buffer_refs;
 } Context;
 
+static PyObject *Element_clear_slots(PyObject *elem);
+
+static void Context_free(Context *self)
+{
+	if (!self->ok) return;
+	self->ok = false;
+
+	for (size_t i = 0; i < self->num_elements; i++) {
+		PyObject *obj = self->elements[i];
+		if (!obj) continue;
+
+		Element_clear_slots(obj);
+
+		Py_SETREF(self->elements[i], Py_NewRef(Py_None));
+	}
+
+	ufbx_free_scene(self->scene);
+	ufbx_free_anim(self->anim);
+	ufbx_free_baked_anim(self->baked);
+	ufbx_free_geometry_cache(self->cache);
+
+	free(self->elements);
+
+	self->scene = NULL;
+	self->anim = NULL;
+	self->baked = NULL;
+	self->cache = NULL;
+}
+
 static int Context_traverse(Context *self, visitproc visit, void *arg)
 {
 	Py_VISIT(self->name);
@@ -53,17 +83,8 @@ static int Context_clear(Context *self)
 
 static void Context_dealloc(Context *self)
 {
-	Py_XDECREF(self->name);
-	for (size_t i = 0; i < self->num_elements; i++) {
-		Py_XDECREF(self->elements[i]);
-	}
-
-	ufbx_free_scene(self->scene);
-	ufbx_free_anim(self->anim);
-	ufbx_free_baked_anim(self->baked);
-	ufbx_free_geometry_cache(self->cache);
-
-	free(self->elements);
+	Context_free(self);
+	Py_DECREF(self->name);
 
 	Py_TYPE(self)->tp_free((PyObject*)self);
 }
@@ -88,8 +109,7 @@ static PyObject *Panic_raise(ufbx_panic *panic);
 
 static PyObject *Context_error(Context *ctx)
 {
-	// TODO: Proper error type
-	PyErr_Format(PyExc_RuntimeError, "context freed: %U", ctx->name);
+	PyErr_Format(UseAfterFreeError, "%U used after being freed", ctx->name);
 	return NULL;
 }
 

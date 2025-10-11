@@ -130,3 +130,65 @@ def test_opts_bytes():
     assert scene
 
     assert scene.metadata.raw_filename == b"bad\xff.fbx"
+
+def test_unload():
+    scene = ufbx.load_file(os.path.join(data_root, "blender-default.fbx"))
+    assert scene
+
+    scene.free()
+
+def test_unload_error():
+    scene = ufbx.load_file(os.path.join(data_root, "blender-default.fbx"))
+    assert scene
+
+    root = scene.root_node
+    name = root.name
+
+    scene.free()
+
+    try:
+        node = scene.find_node("Cube")
+        assert False
+    except ufbx.UseAfterFreeError:
+        pass
+
+    try:
+        children = root.children
+        assert False
+    except ufbx.UseAfterFreeError:
+        pass
+
+    try:
+        name = root.name
+        assert False
+    except ufbx.UseAfterFreeError:
+        pass
+
+def test_context():
+    with ufbx.load_file(os.path.join(data_root, "blender-default.fbx")) as scene:
+        assert scene
+
+def test_unload_error():
+    with ufbx.load_file(os.path.join(data_root, "blender-default.fbx")) as scene:
+        assert scene
+
+        root = scene.root_node
+        name = root.name
+
+    try:
+        node = scene.find_node("Cube")
+        assert False
+    except ufbx.UseAfterFreeError:
+        pass
+
+    try:
+        children = root.children
+        assert False
+    except ufbx.UseAfterFreeError:
+        pass
+
+    try:
+        name = root.name
+        assert False
+    except ufbx.UseAfterFreeError:
+        pass

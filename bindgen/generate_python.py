@@ -5,7 +5,7 @@ import json
 import re
 import dataclasses
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Union
 
 g_file: ir.File = None
 g_outfile = None
@@ -158,6 +158,13 @@ create_funcs = {
     "geometryCache": "GeometryCache_create",
 }
 
+context_types = {
+    "ufbx_scene": "scene",
+    "ufbx_anim": "anim",
+    "ufbx_baked_anim": "baked",
+    "ufbx_geometry_cache": "cache",
+}
+
 @dataclass
 class BufferSpec:
     prim_type: str
@@ -284,10 +291,16 @@ def crawl_fields(ps: "PythonStruct", list: list[PythonField], field: ir.Field):
                 crawl_fields(ps, list, child)
 
 class PythonMethod:
-    def __init__(self, ps: "PythonStruct", ir_member: ir.MemberFunction):
-        self.ir = ir_member
+    def __init__(self, ps: "PythonStruct", ir: Optional[ir.MemberFunction], **kwargs):
+        if ir:
+            self.ir = ir
+            self.name = self.ir.member_name.removesuffix("_len")
+        else:
+            self.ir = None
+            self.name = kwargs["name"]
+            self.c_name = kwargs["c_name"]
+            self.py_sig = kwargs["py_sig"]
         self.struct = ps
-        self.name = self.ir.member_name.removesuffix("_len")
 
 class PythonStruct:
     def __init__(self, ir_struct: ir.Struct):
@@ -330,6 +343,14 @@ class PythonStruct:
         for mf_name in self.ir.member_functions:
             mf = g_file.member_functions[mf_name]
             methods.append(PythonMethod(self, mf))
+
+        if self.ir.name in context_types:
+            methods += [
+                PythonMethod(self, None, name="free", c_name="free", py_sig="self"),
+                PythonMethod(self, None, name="__enter__", c_name="enter", py_sig="self"),
+                PythonMethod(self, None, name="__exit__", c_name="exit", py_sig="self, exc_type: Any, exc_value: Any, traceback: Any"),
+            ]
+
         self.methods = methods
 
 class PythonEnumValue:
@@ -1044,21 +1065,27 @@ def emit_struct(ps: PythonStruct):
     if ps.methods:
         emit()
         for member in ps.methods:
-            pf = py_funcs[member.ir.func]
-            if pf.input_type:
-                emit(f"static PyObject *{ps.name}_{member.name}(PyObject *self, PyObject *args, PyObject *kwargs);")
+            if member.ir:
+                pf = py_funcs[member.ir.func]
+                if pf.input_type:
+                    emit(f"static PyObject *{ps.name}_{member.name}(PyObject *self, PyObject *args, PyObject *kwargs);")
+                else:
+                    emit(f"static PyObject *{ps.name}_{member.name}(PyObject *self, PyObject *args);")
             else:
-                emit(f"static PyObject *{ps.name}_{member.name}(PyObject *self, PyObject *args);")
+                emit(f"static PyObject *{ps.name}_{member.c_name}(PyObject *self, PyObject *args);")
 
         emit()
         emit(f"static PyMethodDef {ps.name}_methods[] = {{")
         indent()
         for member in ps.methods:
-            pf = py_funcs[member.ir.func]
-            if pf.input_type:
-                emit(f"{{ \"{member.name}\", (PyCFunction)&{ps.name}_{member.name}, METH_VARARGS|METH_KEYWORDS, NULL }},")
+            if member.ir:
+                pf = py_funcs[member.ir.func]
+                if pf.input_type:
+                    emit(f"{{ \"{member.name}\", (PyCFunction)&{ps.name}_{member.name}, METH_VARARGS|METH_KEYWORDS, NULL }},")
+                else:
+                    emit(f"{{ \"{member.name}\", &{ps.name}_{member.name}, METH_VARARGS, NULL }},")
             else:
-                emit(f"{{ \"{member.name}\", &{ps.name}_{member.name}, METH_VARARGS, NULL }},")
+                emit(f"{{ \"{member.name}\", &{ps.name}_{member.c_name}, METH_VARARGS, NULL }},")
         emit(f"{{ NULL }},")
         unindent()
         emit("};")
@@ -1176,6 +1203,33 @@ def emit_element():
     unindent()
     emit("}")
 
+    emit()
+    emit(f"static PyObject **Element_get_slots(Element *elem, size_t *p_count) {{")
+    indent()
+
+    emit("switch (elem->data->type) {")
+    indent()
+
+    for typ in g_file.element_types:
+        ps = py_structs.get(typ)
+        if ps.ir.is_element and ps.ir.name != "ufbx_element":
+            emit_lines(f"""
+                case UFBX_ELEMENT_{ps.ir.short_name.upper()}:
+                    *p_count = SLOT_COUNT_{ps.ir.short_name.upper()};
+                    return (({ps.name}*)elem)->slots;
+            """)
+    emit_lines(f"""
+        default:
+            *p_count = 0;
+            return NULL;
+    """)
+
+    unindent()
+    emit("}")
+
+    unindent()
+    emit("}")
+
     emit(f"static PyObject *Element_create(ufbx_element *elem, Context *ctx) {{")
     indent()
 
@@ -1186,6 +1240,25 @@ def emit_element():
         obj->ctx = (Context*)Py_NewRef(ctx);
         obj->data = elem;
         return (PyObject*)obj;
+    """)
+
+    unindent()
+    emit("}")
+
+    emit(f"static PyObject *Element_clear_slots(PyObject *obj) {{")
+    indent()
+
+    emit_lines(f"""
+        Element *elem = (Element*)obj;
+        for (size_t i = 0; i < SLOT_COUNT_ELEMENT; i++) {{
+            Py_CLEAR(elem->slots[i]);
+        }}
+
+        size_t num_slots;
+        PyObject **slots = Element_get_slots(elem, &num_slots);
+        for (size_t i = 0; i < num_slots; i++) {{
+            Py_CLEAR(slots[i]);
+        }}
     """)
 
     unindent()
@@ -1288,7 +1361,7 @@ def func_arg(arg: ir.Argument) -> Optional[PythonArg]:
         if arg_type.kind == "enum":
             enum = g_file.enums[arg_type.key]
             pe = py_enums[arg_type.key]
-            return PythonArg(arg.name, pe.name, "O!", f"&{pe.name}_Enum, &{name}", f"{name}", f"""
+            return PythonArg(arg.name, pe.name, "O!", f"&{pe.name}_Enum, &{name}_obj", f"{name}", f"""
                     PyObject *{name}_obj;
                     {enum.name} {name};
                 """, pre=f"""
@@ -1424,6 +1497,50 @@ def emit_func(pf: PythonFunc, method: Optional[PythonMethod] = None):
         emit_lines(f"""
             return Py_NewRef(Py_None);
         """)
+
+    unindent()
+    emit("}")
+
+def emit_synthetic_method(method: PythonMethod):
+    emit()
+
+    ps = method.struct
+    emit_lines(f"""
+        static PyObject *{ps.name}_{method.c_name}(PyObject *self, PyObject *args) {{
+    """)
+    indent()
+
+    if method.name == "free":
+        ctx = context_types[ps.ir.name]
+        emit_lines(f"""
+            if (!PyArg_ParseTuple(args, "")) return NULL;
+
+            {ps.name} *s = ({ps.name}*)self;
+            if (s->ctx->{ctx} == s->data) {{
+                Context_free(s->ctx);
+            }}
+            Py_RETURN_NONE;
+        """)
+    elif method.name == "__enter__":
+        emit_lines(f"""
+            if (!PyArg_ParseTuple(args, "")) return NULL;
+
+            return Py_NewRef(self);
+        """)
+    elif method.name == "__exit__":
+        ctx = context_types[ps.ir.name]
+        emit_lines(f"""
+            PyObject *exc_type, *exc_value, *exc_tb;
+            if (!PyArg_ParseTuple(args, "OOO", &exc_type, &exc_value, &exc_tb)) return NULL;
+
+            {ps.name} *s = ({ps.name}*)self;
+            if (s->ctx->{ctx} == s->data) {{
+                Context_free(s->ctx);
+            }}
+            Py_RETURN_NONE;
+        """)
+    else:
+        assert False, f"unknown method: {method.name}"
 
     unindent()
     emit("}")
@@ -1586,6 +1703,9 @@ def emit_pyi_prefix():
 
     emit()
     emit_lines(f"""
+        class UseAfterFreeError(Exception):
+            pass
+
         class UfbxError(Exception):
             pass
     """)
@@ -1652,9 +1772,16 @@ def emit_pyi_struct(ps: PythonStruct):
         has_any = True
 
     for method in ps.methods:
-        pf = py_funcs[method.ir.func]
-        emit_pyi_func(pf, method=method)
-        has_any = True
+        if method.ir:
+            pf = py_funcs[method.ir.func]
+            emit_pyi_func(pf, method=method)
+            has_any = True
+        else:
+            emit()
+            emit_lines(f"""
+                def {method.name}({method.py_sig}):
+                    ...
+            """)
 
     if not has_any:
         emit("...")
@@ -1751,7 +1878,7 @@ def main():
             py_funcs[key] = PythonFunc(func)
 
         for ps in py_structs.values():
-            ps.methods = [m for m in ps.methods if py_funcs[m.ir.func].is_emitted]
+            ps.methods = [m for m in ps.methods if not m.ir or py_funcs[m.ir.func].is_emitted]
 
         emit()
         for pe in py_enums.values():
@@ -1784,8 +1911,11 @@ def main():
 
         for pf in py_structs.values():
             for method in pf.methods:
-                pf = py_funcs[method.ir.func]
-                emit_func(pf, method=method)
+                if method.ir:
+                    pf = py_funcs[method.ir.func]
+                    emit_func(pf, method=method)
+                else:
+                    emit_synthetic_method(method)
 
         emit_element()
 

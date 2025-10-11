@@ -13930,6 +13930,17 @@ static PyGetSetDef GeometryCache_getset[] = {
     { NULL },
 };
 
+static PyObject *GeometryCache_free(PyObject *self, PyObject *args);
+static PyObject *GeometryCache_enter(PyObject *self, PyObject *args);
+static PyObject *GeometryCache_exit(PyObject *self, PyObject *args);
+
+static PyMethodDef GeometryCache_methods[] = {
+    { "free", &GeometryCache_free, METH_VARARGS, NULL },
+    { "__enter__", &GeometryCache_enter, METH_VARARGS, NULL },
+    { "__exit__", &GeometryCache_exit, METH_VARARGS, NULL },
+    { NULL },
+};
+
 static PyTypeObject GeometryCache_Type = {
     .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "ufbx.GeometryCache",
@@ -13942,6 +13953,7 @@ static PyTypeObject GeometryCache_Type = {
     .tp_traverse = (traverseproc)&GeometryCache_traverse,
     .tp_clear = (inquiry)&GeometryCache_clear,
     .tp_getset = GeometryCache_getset,
+    .tp_methods = GeometryCache_methods,
 };
 
 static PyObject *GeometryCache_from(ufbx_geometry_cache *data, Context *ctx) {
@@ -17708,6 +17720,17 @@ static PyGetSetDef Anim_getset[] = {
     { NULL },
 };
 
+static PyObject *Anim_free(PyObject *self, PyObject *args);
+static PyObject *Anim_enter(PyObject *self, PyObject *args);
+static PyObject *Anim_exit(PyObject *self, PyObject *args);
+
+static PyMethodDef Anim_methods[] = {
+    { "free", &Anim_free, METH_VARARGS, NULL },
+    { "__enter__", &Anim_enter, METH_VARARGS, NULL },
+    { "__exit__", &Anim_exit, METH_VARARGS, NULL },
+    { NULL },
+};
+
 static PyTypeObject Anim_Type = {
     .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "ufbx.Anim",
@@ -17720,6 +17743,7 @@ static PyTypeObject Anim_Type = {
     .tp_traverse = (traverseproc)&Anim_traverse,
     .tp_clear = (inquiry)&Anim_clear,
     .tp_getset = Anim_getset,
+    .tp_methods = Anim_methods,
 };
 
 static PyObject *Anim_from(ufbx_anim *data, Context *ctx) {
@@ -21877,12 +21901,18 @@ static PyObject *Scene_find_element(PyObject *self, PyObject *args);
 static PyObject *Scene_find_node(PyObject *self, PyObject *args);
 static PyObject *Scene_find_anim_stack(PyObject *self, PyObject *args);
 static PyObject *Scene_evaluate(PyObject *self, PyObject *args, PyObject *kwargs);
+static PyObject *Scene_free(PyObject *self, PyObject *args);
+static PyObject *Scene_enter(PyObject *self, PyObject *args);
+static PyObject *Scene_exit(PyObject *self, PyObject *args);
 
 static PyMethodDef Scene_methods[] = {
     { "find_element", &Scene_find_element, METH_VARARGS, NULL },
     { "find_node", &Scene_find_node, METH_VARARGS, NULL },
     { "find_anim_stack", &Scene_find_anim_stack, METH_VARARGS, NULL },
     { "evaluate", (PyCFunction)&Scene_evaluate, METH_VARARGS|METH_KEYWORDS, NULL },
+    { "free", &Scene_free, METH_VARARGS, NULL },
+    { "__enter__", &Scene_enter, METH_VARARGS, NULL },
+    { "__exit__", &Scene_exit, METH_VARARGS, NULL },
     { NULL },
 };
 
@@ -22906,6 +22936,17 @@ static PyGetSetDef BakedAnim_getset[] = {
     { NULL },
 };
 
+static PyObject *BakedAnim_free(PyObject *self, PyObject *args);
+static PyObject *BakedAnim_enter(PyObject *self, PyObject *args);
+static PyObject *BakedAnim_exit(PyObject *self, PyObject *args);
+
+static PyMethodDef BakedAnim_methods[] = {
+    { "free", &BakedAnim_free, METH_VARARGS, NULL },
+    { "__enter__", &BakedAnim_enter, METH_VARARGS, NULL },
+    { "__exit__", &BakedAnim_exit, METH_VARARGS, NULL },
+    { NULL },
+};
+
 static PyTypeObject BakedAnim_Type = {
     .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "ufbx.BakedAnim",
@@ -22918,6 +22959,7 @@ static PyTypeObject BakedAnim_Type = {
     .tp_traverse = (traverseproc)&BakedAnim_traverse,
     .tp_clear = (inquiry)&BakedAnim_clear,
     .tp_getset = BakedAnim_getset,
+    .tp_methods = BakedAnim_methods,
 };
 
 static PyObject *BakedAnim_from(ufbx_baked_anim *data, Context *ctx) {
@@ -23658,7 +23700,7 @@ static PyObject *mod_get_prop_element(PyObject *self, PyObject *args) {
     Prop *prop;
     PyObject *type_obj;
     ufbx_element_type type;
-    if (!PyArg_ParseTuple(args, "O!O!O!", &Element_Type, &element, &Prop_Type, &prop, &ElementType_Enum, &type)) {
+    if (!PyArg_ParseTuple(args, "O!O!O!", &Element_Type, &element, &Prop_Type, &prop, &ElementType_Enum, &type_obj)) {
         return NULL;
     }
     if (!element->ctx->ok) {
@@ -23678,7 +23720,7 @@ static PyObject *mod_find_prop_element(PyObject *self, PyObject *args) {
     Py_ssize_t name_len;
     PyObject *type_obj;
     ufbx_element_type type;
-    if (!PyArg_ParseTuple(args, "O!s#O!", &Element_Type, &element, &name, &name_len, &ElementType_Enum, &type)) {
+    if (!PyArg_ParseTuple(args, "O!s#O!", &Element_Type, &element, &name, &name_len, &ElementType_Enum, &type_obj)) {
         return NULL;
     }
     if (!element->ctx->ok) {
@@ -23698,7 +23740,7 @@ static PyObject *mod_find_element(PyObject *self, PyObject *args) {
     ufbx_element_type type;
     const char *name;
     Py_ssize_t name_len;
-    if (!PyArg_ParseTuple(args, "O!O!s#", &Scene_Type, &scene, &ElementType_Enum, &type, &name, &name_len)) {
+    if (!PyArg_ParseTuple(args, "O!O!s#", &Scene_Type, &scene, &ElementType_Enum, &type_obj, &name, &name_len)) {
         return NULL;
     }
     if (!scene->ctx->ok) {
@@ -24315,7 +24357,7 @@ static PyObject *mod_quat_to_euler(PyObject *self, PyObject *args) {
     ufbx_quat q;
     PyObject *order_obj;
     ufbx_rotation_order order;
-    if (!PyArg_ParseTuple(args, "O!O!", &Quat_Type, &q_obj, &RotationOrder_Enum, &order)) {
+    if (!PyArg_ParseTuple(args, "O!O!", &Quat_Type, &q_obj, &RotationOrder_Enum, &order_obj)) {
         return NULL;
     }
     q = Quat_to(q_obj);
@@ -24329,7 +24371,7 @@ static PyObject *mod_euler_to_quat(PyObject *self, PyObject *args) {
     ufbx_vec3 v;
     PyObject *order_obj;
     ufbx_rotation_order order;
-    if (!PyArg_ParseTuple(args, "O!O!", &Vec3_Type, &v_obj, &RotationOrder_Enum, &order)) {
+    if (!PyArg_ParseTuple(args, "O!O!", &Vec3_Type, &v_obj, &RotationOrder_Enum, &order_obj)) {
         return NULL;
     }
     v = Vec3_to(v_obj);
@@ -25712,6 +25754,33 @@ static PyObject *BlendShape_get_vertex_offset(PyObject *self, PyObject *args) {
     return Vec3_from(&ret);
 }
 
+static PyObject *GeometryCache_free(PyObject *self, PyObject *args) {
+    if (!PyArg_ParseTuple(args, "")) return NULL;
+
+    GeometryCache *s = (GeometryCache*)self;
+    if (s->ctx->cache == s->data) {
+        Context_free(s->ctx);
+    }
+    Py_RETURN_NONE;
+}
+
+static PyObject *GeometryCache_enter(PyObject *self, PyObject *args) {
+    if (!PyArg_ParseTuple(args, "")) return NULL;
+
+    return Py_NewRef(self);
+}
+
+static PyObject *GeometryCache_exit(PyObject *self, PyObject *args) {
+    PyObject *exc_type, *exc_value, *exc_tb;
+    if (!PyArg_ParseTuple(args, "OOO", &exc_type, &exc_value, &exc_tb)) return NULL;
+
+    GeometryCache *s = (GeometryCache*)self;
+    if (s->ctx->cache == s->data) {
+        Context_free(s->ctx);
+    }
+    Py_RETURN_NONE;
+}
+
 static PyObject *Material_find_prop_texture(PyObject *self, PyObject *args) {
     Material *material = (Material*)self;
     const char *name;
@@ -25741,6 +25810,33 @@ static PyObject *Shader_find_shader_prop(PyObject *self, PyObject *args) {
     }
     ufbx_string ret = ufbx_find_shader_prop_len(shader->data, name, (size_t)name_len);
     return String_from(ret);
+}
+
+static PyObject *Anim_free(PyObject *self, PyObject *args) {
+    if (!PyArg_ParseTuple(args, "")) return NULL;
+
+    Anim *s = (Anim*)self;
+    if (s->ctx->anim == s->data) {
+        Context_free(s->ctx);
+    }
+    Py_RETURN_NONE;
+}
+
+static PyObject *Anim_enter(PyObject *self, PyObject *args) {
+    if (!PyArg_ParseTuple(args, "")) return NULL;
+
+    return Py_NewRef(self);
+}
+
+static PyObject *Anim_exit(PyObject *self, PyObject *args) {
+    PyObject *exc_type, *exc_value, *exc_tb;
+    if (!PyArg_ParseTuple(args, "OOO", &exc_type, &exc_value, &exc_tb)) return NULL;
+
+    Anim *s = (Anim*)self;
+    if (s->ctx->anim == s->data) {
+        Context_free(s->ctx);
+    }
+    Py_RETURN_NONE;
 }
 
 static PyObject *AnimLayer_find_anim_prop(PyObject *self, PyObject *args) {
@@ -25820,7 +25916,7 @@ static PyObject *Scene_find_element(PyObject *self, PyObject *args) {
     ufbx_element_type type;
     const char *name;
     Py_ssize_t name_len;
-    if (!PyArg_ParseTuple(args, "O!s#", &ElementType_Enum, &type, &name, &name_len)) {
+    if (!PyArg_ParseTuple(args, "O!s#", &ElementType_Enum, &type_obj, &name, &name_len)) {
         return NULL;
     }
     if (!scene->ctx->ok) {
@@ -25890,6 +25986,60 @@ static PyObject *Scene_evaluate(PyObject *self, PyObject *args, PyObject *kwargs
     return Scene_create(ret);
 }
 
+static PyObject *Scene_free(PyObject *self, PyObject *args) {
+    if (!PyArg_ParseTuple(args, "")) return NULL;
+
+    Scene *s = (Scene*)self;
+    if (s->ctx->scene == s->data) {
+        Context_free(s->ctx);
+    }
+    Py_RETURN_NONE;
+}
+
+static PyObject *Scene_enter(PyObject *self, PyObject *args) {
+    if (!PyArg_ParseTuple(args, "")) return NULL;
+
+    return Py_NewRef(self);
+}
+
+static PyObject *Scene_exit(PyObject *self, PyObject *args) {
+    PyObject *exc_type, *exc_value, *exc_tb;
+    if (!PyArg_ParseTuple(args, "OOO", &exc_type, &exc_value, &exc_tb)) return NULL;
+
+    Scene *s = (Scene*)self;
+    if (s->ctx->scene == s->data) {
+        Context_free(s->ctx);
+    }
+    Py_RETURN_NONE;
+}
+
+static PyObject *BakedAnim_free(PyObject *self, PyObject *args) {
+    if (!PyArg_ParseTuple(args, "")) return NULL;
+
+    BakedAnim *s = (BakedAnim*)self;
+    if (s->ctx->baked == s->data) {
+        Context_free(s->ctx);
+    }
+    Py_RETURN_NONE;
+}
+
+static PyObject *BakedAnim_enter(PyObject *self, PyObject *args) {
+    if (!PyArg_ParseTuple(args, "")) return NULL;
+
+    return Py_NewRef(self);
+}
+
+static PyObject *BakedAnim_exit(PyObject *self, PyObject *args) {
+    PyObject *exc_type, *exc_value, *exc_tb;
+    if (!PyArg_ParseTuple(args, "OOO", &exc_type, &exc_value, &exc_tb)) return NULL;
+
+    BakedAnim *s = (BakedAnim*)self;
+    if (s->ctx->baked == s->data) {
+        Context_free(s->ctx);
+    }
+    Py_RETURN_NONE;
+}
+
 static PyTypeObject *Element_typeof(ufbx_element_type type) {
     switch (type) {
         case UFBX_ELEMENT_UNKNOWN: return &Unknown_Type;
@@ -25937,6 +26087,140 @@ static PyTypeObject *Element_typeof(ufbx_element_type type) {
         default: return NULL;
     }
 }
+
+static PyObject **Element_get_slots(Element *elem, size_t *p_count) {
+    switch (elem->data->type) {
+        case UFBX_ELEMENT_UNKNOWN:
+            *p_count = SLOT_COUNT_UNKNOWN;
+            return ((Unknown*)elem)->slots;
+        case UFBX_ELEMENT_NODE:
+            *p_count = SLOT_COUNT_NODE;
+            return ((Node*)elem)->slots;
+        case UFBX_ELEMENT_MESH:
+            *p_count = SLOT_COUNT_MESH;
+            return ((Mesh*)elem)->slots;
+        case UFBX_ELEMENT_LIGHT:
+            *p_count = SLOT_COUNT_LIGHT;
+            return ((Light*)elem)->slots;
+        case UFBX_ELEMENT_CAMERA:
+            *p_count = SLOT_COUNT_CAMERA;
+            return ((Camera*)elem)->slots;
+        case UFBX_ELEMENT_BONE:
+            *p_count = SLOT_COUNT_BONE;
+            return ((Bone*)elem)->slots;
+        case UFBX_ELEMENT_EMPTY:
+            *p_count = SLOT_COUNT_EMPTY;
+            return ((Empty*)elem)->slots;
+        case UFBX_ELEMENT_LINE_CURVE:
+            *p_count = SLOT_COUNT_LINE_CURVE;
+            return ((LineCurve*)elem)->slots;
+        case UFBX_ELEMENT_NURBS_CURVE:
+            *p_count = SLOT_COUNT_NURBS_CURVE;
+            return ((NurbsCurve*)elem)->slots;
+        case UFBX_ELEMENT_NURBS_SURFACE:
+            *p_count = SLOT_COUNT_NURBS_SURFACE;
+            return ((NurbsSurface*)elem)->slots;
+        case UFBX_ELEMENT_NURBS_TRIM_SURFACE:
+            *p_count = SLOT_COUNT_NURBS_TRIM_SURFACE;
+            return ((NurbsTrimSurface*)elem)->slots;
+        case UFBX_ELEMENT_NURBS_TRIM_BOUNDARY:
+            *p_count = SLOT_COUNT_NURBS_TRIM_BOUNDARY;
+            return ((NurbsTrimBoundary*)elem)->slots;
+        case UFBX_ELEMENT_PROCEDURAL_GEOMETRY:
+            *p_count = SLOT_COUNT_PROCEDURAL_GEOMETRY;
+            return ((ProceduralGeometry*)elem)->slots;
+        case UFBX_ELEMENT_STEREO_CAMERA:
+            *p_count = SLOT_COUNT_STEREO_CAMERA;
+            return ((StereoCamera*)elem)->slots;
+        case UFBX_ELEMENT_CAMERA_SWITCHER:
+            *p_count = SLOT_COUNT_CAMERA_SWITCHER;
+            return ((CameraSwitcher*)elem)->slots;
+        case UFBX_ELEMENT_MARKER:
+            *p_count = SLOT_COUNT_MARKER;
+            return ((Marker*)elem)->slots;
+        case UFBX_ELEMENT_LOD_GROUP:
+            *p_count = SLOT_COUNT_LOD_GROUP;
+            return ((LodGroup*)elem)->slots;
+        case UFBX_ELEMENT_SKIN_DEFORMER:
+            *p_count = SLOT_COUNT_SKIN_DEFORMER;
+            return ((SkinDeformer*)elem)->slots;
+        case UFBX_ELEMENT_SKIN_CLUSTER:
+            *p_count = SLOT_COUNT_SKIN_CLUSTER;
+            return ((SkinCluster*)elem)->slots;
+        case UFBX_ELEMENT_BLEND_DEFORMER:
+            *p_count = SLOT_COUNT_BLEND_DEFORMER;
+            return ((BlendDeformer*)elem)->slots;
+        case UFBX_ELEMENT_BLEND_CHANNEL:
+            *p_count = SLOT_COUNT_BLEND_CHANNEL;
+            return ((BlendChannel*)elem)->slots;
+        case UFBX_ELEMENT_BLEND_SHAPE:
+            *p_count = SLOT_COUNT_BLEND_SHAPE;
+            return ((BlendShape*)elem)->slots;
+        case UFBX_ELEMENT_CACHE_DEFORMER:
+            *p_count = SLOT_COUNT_CACHE_DEFORMER;
+            return ((CacheDeformer*)elem)->slots;
+        case UFBX_ELEMENT_CACHE_FILE:
+            *p_count = SLOT_COUNT_CACHE_FILE;
+            return ((CacheFile*)elem)->slots;
+        case UFBX_ELEMENT_MATERIAL:
+            *p_count = SLOT_COUNT_MATERIAL;
+            return ((Material*)elem)->slots;
+        case UFBX_ELEMENT_TEXTURE:
+            *p_count = SLOT_COUNT_TEXTURE;
+            return ((Texture*)elem)->slots;
+        case UFBX_ELEMENT_VIDEO:
+            *p_count = SLOT_COUNT_VIDEO;
+            return ((Video*)elem)->slots;
+        case UFBX_ELEMENT_SHADER:
+            *p_count = SLOT_COUNT_SHADER;
+            return ((Shader*)elem)->slots;
+        case UFBX_ELEMENT_SHADER_BINDING:
+            *p_count = SLOT_COUNT_SHADER_BINDING;
+            return ((ShaderBinding*)elem)->slots;
+        case UFBX_ELEMENT_ANIM_STACK:
+            *p_count = SLOT_COUNT_ANIM_STACK;
+            return ((AnimStack*)elem)->slots;
+        case UFBX_ELEMENT_ANIM_LAYER:
+            *p_count = SLOT_COUNT_ANIM_LAYER;
+            return ((AnimLayer*)elem)->slots;
+        case UFBX_ELEMENT_ANIM_VALUE:
+            *p_count = SLOT_COUNT_ANIM_VALUE;
+            return ((AnimValue*)elem)->slots;
+        case UFBX_ELEMENT_ANIM_CURVE:
+            *p_count = SLOT_COUNT_ANIM_CURVE;
+            return ((AnimCurve*)elem)->slots;
+        case UFBX_ELEMENT_DISPLAY_LAYER:
+            *p_count = SLOT_COUNT_DISPLAY_LAYER;
+            return ((DisplayLayer*)elem)->slots;
+        case UFBX_ELEMENT_SELECTION_SET:
+            *p_count = SLOT_COUNT_SELECTION_SET;
+            return ((SelectionSet*)elem)->slots;
+        case UFBX_ELEMENT_SELECTION_NODE:
+            *p_count = SLOT_COUNT_SELECTION_NODE;
+            return ((SelectionNode*)elem)->slots;
+        case UFBX_ELEMENT_CHARACTER:
+            *p_count = SLOT_COUNT_CHARACTER;
+            return ((Character*)elem)->slots;
+        case UFBX_ELEMENT_CONSTRAINT:
+            *p_count = SLOT_COUNT_CONSTRAINT;
+            return ((Constraint*)elem)->slots;
+        case UFBX_ELEMENT_AUDIO_LAYER:
+            *p_count = SLOT_COUNT_AUDIO_LAYER;
+            return ((AudioLayer*)elem)->slots;
+        case UFBX_ELEMENT_AUDIO_CLIP:
+            *p_count = SLOT_COUNT_AUDIO_CLIP;
+            return ((AudioClip*)elem)->slots;
+        case UFBX_ELEMENT_POSE:
+            *p_count = SLOT_COUNT_POSE;
+            return ((Pose*)elem)->slots;
+        case UFBX_ELEMENT_METADATA_OBJECT:
+            *p_count = SLOT_COUNT_METADATA_OBJECT;
+            return ((MetadataObject*)elem)->slots;
+        default:
+            *p_count = 0;
+            return NULL;
+    }
+}
 static PyObject *Element_create(ufbx_element *elem, Context *ctx) {
     PyTypeObject *type = Element_typeof(elem->type);
     Element *obj = (Element*)PyObject_CallObject((PyObject*)type, NULL);
@@ -25944,6 +26228,18 @@ static PyObject *Element_create(ufbx_element *elem, Context *ctx) {
     obj->ctx = (Context*)Py_NewRef(ctx);
     obj->data = elem;
     return (PyObject*)obj;
+}
+static PyObject *Element_clear_slots(PyObject *obj) {
+    Element *elem = (Element*)obj;
+    for (size_t i = 0; i < SLOT_COUNT_ELEMENT; i++) {
+        Py_CLEAR(elem->slots[i]);
+    }
+
+    size_t num_slots;
+    PyObject **slots = Element_get_slots(elem, &num_slots);
+    for (size_t i = 0; i < num_slots; i++) {
+        Py_CLEAR(slots[i]);
+    }
 }
 
 static ExternalType enum_types[] = {
