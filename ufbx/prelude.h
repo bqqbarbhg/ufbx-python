@@ -218,6 +218,31 @@ static PyObject* Blob_from(ufbx_blob v)
     return PyBytes_FromStringAndSize((const char *)v.data, (Py_ssize_t)v.size);
 }
 
+static ufbx_string String_to(PyObject* v)
+{
+	Py_ssize_t length;
+	const char *ptr = PyUnicode_AsUTF8AndSize(v, &length);
+	if (!ptr || length < 0) return ufbx_empty_string;
+
+	ufbx_string result;
+	result.data = ptr;
+	result.length = (size_t)length;
+	return result;
+}
+
+static ufbx_blob Blob_to(PyObject *v)
+{
+	Py_ssize_t size = 0;
+	char *buffer = NULL;
+	if (PyBytes_AsStringAndSize(v, &buffer, &size) < 0) return ufbx_empty_blob;
+	if (!buffer || size < 0) return ufbx_empty_blob;
+
+	ufbx_blob result;
+	result.data = buffer;
+	result.size = (size_t)size;
+	return result;
+}
+
 static PyObject* Element_from(void *p_elem, Context *ctx)
 {
 	if (!p_elem) return Py_NewRef(Py_None);

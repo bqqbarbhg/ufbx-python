@@ -110,3 +110,23 @@ def test_anim_evaluation():
     assert curve
 
     assert curve.evaluate(0.5, 0.0) == approx(-3.0)
+
+def test_separate_opts():
+    opts = ufbx.LoadOpts(
+        filename="fake.fbx",
+    )
+
+    scene = ufbx.load_file(os.path.join(data_root, "blender-default.fbx"), **opts)
+    assert scene
+
+    assert scene.metadata.filename == "fake.fbx"
+
+def test_opts_bytes():
+    opts = ufbx.LoadOpts(
+        raw_filename=b"bad\xff.fbx",
+    )
+
+    scene = ufbx.load_file(os.path.join(data_root, "blender-default.fbx"), **opts)
+    assert scene
+
+    assert scene.metadata.raw_filename == b"bad\xff.fbx"

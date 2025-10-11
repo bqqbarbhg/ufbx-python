@@ -371,7 +371,7 @@ class PythonFunc:
             args = [func_arg(arg) for arg in self.ir.arguments]
         except FunctionArgNotImplemented as e:
             if self.is_emitted:
-                print(f"cannot emit '{self.ir.name}': {e}")
+                print(f"bad function '{self.ir.name}': {e}")
             self.is_emitted = False
         args = [arg for arg in args if arg]
         self.args = args
@@ -405,6 +405,21 @@ manual_types = {
     "ufbx_panic",
     "ufbx_error",
     "ufbx_vertex_stream",
+    "ufbx_open_file_opts",
+    "ufbx_open_memory_opts",
+    # TODO: Tessellation/subdivision
+    "ufbx_tessellate_curve_opts",
+    "ufbx_tessellate_surface_opts",
+    "ufbx_subdivide_opts",
+    "ufbx_allocator_opts",
+    "ufbx_thread_opts",
+}
+
+ignore_input_field_types = {
+    "ufbx_allocator_opts",
+    "ufbx_thread_pool",
+    "ufbx_thread_opts",
+    "bool unsafe",
 }
 
 pyobject_primtive = {
@@ -578,6 +593,11 @@ def from_pyobject(irt: ir.Type, expr: str):
     manual = manual_to.get(irt.key)
     if manual:
         return manual[2](expr)
+
+    if irt.key == "ufbx_string":
+        return f"String_to({expr})"
+    elif irt.key == "ufbx_blob":
+        return f"Blob_to({expr})"
 
     en = py_enums.get(irt.key)
     if en:
@@ -1088,6 +1108,8 @@ def emit_struct(ps: PythonStruct):
 def emit_input_struct(ps: PythonStruct):
     if not ps.ir.is_input:
         return
+    if ps.ir.name in manual_types:
+        return
 
     emit()
     emit(f"static int to_{ps.ir.short_name}({ps.ir.name} *dst, PyObject *src) {{")
@@ -1097,14 +1119,27 @@ def emit_input_struct(ps: PythonStruct):
         if (!src) return 0;
     """)
 
-    has_any = any(from_pyobject(g_file.types[field.ir.type], "value") for field in ps.fields)
+    def get_fields():
+        for field in ps.fields:
+            irt = g_file.types[field.ir.type]
+            if irt.key in ignore_input_field_types:
+                continue
+            if irt.kind == "unsafe":
+                continue
+            yield field
+
+    fields = list(get_fields())
+    has_any = any(from_pyobject(g_file.types[field.ir.type], "value") for field in fields)
 
     if has_any:
         emit("PyObject *value;")
 
-    for field in ps.fields:
+    for field in fields:
         irt = g_file.types[field.ir.type]
         to_dst = from_pyobject(irt, "value")
+
+        if irt.key in ignore_input_field_types:
+            ignored = True
 
         if to_dst:
             emit_lines(f"""
@@ -1114,6 +1149,8 @@ def emit_input_struct(ps: PythonStruct):
                     if (PyErr_Occurred()) return -1;
                 }}
             """)
+        else:
+            print(f"bad input field '{ps.ir.name}.{field.name}'")
 
     emit("return 0;")
     unindent()
@@ -1461,7 +1498,7 @@ def emit_module_types():
 def emit_gen_prefix():
     emit_lines("""
         from ._types import *
-        from typing import NamedTuple
+        from typing import NamedTuple, TypedDict
         from enum import IntEnum, IntFlag
     """)
 
@@ -1505,6 +1542,31 @@ def emit_gen_pod_struct(ps: PythonStruct):
 
     unindent()
 
+def emit_gen_input_struct(ps: PythonStruct):
+    if not ps.ir.is_input:
+        return
+
+    pyi_structs.add(ps.ir.name)
+
+    emit()
+    emit(f"class {ps.name}(TypedDict, total=False):")
+    indent()
+
+    has_any = False
+    for field in ps.fields:
+        irt = g_file.types[field.ir.type]
+        to_dst = from_pyobject(irt, "value")
+
+        if to_dst:
+            pyi_typ = py_types[field.ir.type].pyi_name()
+            emit(f"{field.name}: {pyi_typ}")
+            has_any = True
+
+    if not has_any:
+        emit("pass")
+
+    unindent()
+
 def emit_gen_suffix():
     emit()
     emit_lines("""
@@ -1517,7 +1579,7 @@ def emit_gen_suffix():
 
 def emit_pyi_prefix():
     emit_lines(f"""
-        from typing import Any, Iterator, Optional, TypedDict, Tuple
+        from typing import Any, Iterator, Optional, Tuple
         from typing_extensions import Unpack
         from ._generated import *
     """)
@@ -1596,31 +1658,6 @@ def emit_pyi_struct(ps: PythonStruct):
 
     if not has_any:
         emit("...")
-
-    unindent()
-
-def emit_pyi_input_struct(ps: PythonStruct):
-    if not ps.ir.is_input:
-        return
-
-    pyi_structs.add(ps.ir.name)
-
-    emit()
-    emit(f"class {ps.name}(TypedDict, total=False):")
-    indent()
-
-    has_any = False
-    for field in ps.fields:
-        irt = g_file.types[field.ir.type]
-        to_dst = from_pyobject(irt, "value")
-
-        if to_dst:
-            pyi_typ = py_types[field.ir.type].pyi_name()
-            emit(f"{field.name}: {pyi_typ}")
-            has_any = True
-
-    if not has_any:
-        emit("pass")
 
     unindent()
 
@@ -1767,6 +1804,9 @@ def main():
         for ps in py_structs.values():
             emit_gen_pod_struct(ps)
 
+        for ps in py_structs.values():
+            emit_gen_input_struct(ps)
+
         emit_gen_suffix()
 
     with open(os.path.join(output_path, "_native.pyi"), "wt", encoding="utf-8") as f:
@@ -1779,9 +1819,6 @@ def main():
 
         for ps in py_structs.values():
             emit_pyi_struct(ps)
-
-        for ps in py_structs.values():
-            emit_pyi_input_struct(ps)
 
         for pf in py_funcs.values():
             emit_pyi_func(pf)

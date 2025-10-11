@@ -22998,58 +22998,6 @@ static PyObject *ThreadPoolInfo_from(ufbx_thread_pool_info *data, Context *ctx) 
     return (PyObject*)obj;
 }
 
-static int to_allocator_opts(ufbx_allocator_opts *dst, PyObject *src) {
-    if (!src) return 0;
-    PyObject *value;
-    value = PyDict_GetItemString(src, "memory_limit");
-    if (value) {
-        dst->memory_limit = PyLong_AsSize_t(value);
-        if (PyErr_Occurred()) return -1;
-    }
-    value = PyDict_GetItemString(src, "allocation_limit");
-    if (value) {
-        dst->allocation_limit = PyLong_AsSize_t(value);
-        if (PyErr_Occurred()) return -1;
-    }
-    value = PyDict_GetItemString(src, "huge_threshold");
-    if (value) {
-        dst->huge_threshold = PyLong_AsSize_t(value);
-        if (PyErr_Occurred()) return -1;
-    }
-    value = PyDict_GetItemString(src, "max_chunk_size");
-    if (value) {
-        dst->max_chunk_size = PyLong_AsSize_t(value);
-        if (PyErr_Occurred()) return -1;
-    }
-    return 0;
-}
-
-static int to_open_file_opts(ufbx_open_file_opts *dst, PyObject *src) {
-    if (!src) return 0;
-    return 0;
-}
-
-static int to_open_memory_opts(ufbx_open_memory_opts *dst, PyObject *src) {
-    if (!src) return 0;
-    return 0;
-}
-
-static int to_thread_opts(ufbx_thread_opts *dst, PyObject *src) {
-    if (!src) return 0;
-    PyObject *value;
-    value = PyDict_GetItemString(src, "num_tasks");
-    if (value) {
-        dst->num_tasks = PyLong_AsSize_t(value);
-        if (PyErr_Occurred()) return -1;
-    }
-    value = PyDict_GetItemString(src, "memory_limit");
-    if (value) {
-        dst->memory_limit = PyLong_AsSize_t(value);
-        if (PyErr_Occurred()) return -1;
-    }
-    return 0;
-}
-
 static int to_load_opts(ufbx_load_opts *dst, PyObject *src) {
     if (!src) return 0;
     PyObject *value;
@@ -23183,6 +23131,16 @@ static int to_load_opts(ufbx_load_opts *dst, PyObject *src) {
         dst->read_buffer_size = PyLong_AsSize_t(value);
         if (PyErr_Occurred()) return -1;
     }
+    value = PyDict_GetItemString(src, "filename");
+    if (value) {
+        dst->filename = String_to(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "raw_filename");
+    if (value) {
+        dst->raw_filename = Blob_to(value);
+        if (PyErr_Occurred()) return -1;
+    }
     value = PyDict_GetItemString(src, "progress_interval_hint");
     if (value) {
         dst->progress_interval_hint = (uint64_t)PyLong_AsUnsignedLongLong(value);
@@ -23246,6 +23204,16 @@ static int to_load_opts(ufbx_load_opts *dst, PyObject *src) {
     value = PyDict_GetItemString(src, "target_light_axes");
     if (value) {
         dst->target_light_axes = CoordinateAxes_to(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "geometry_transform_helper_name");
+    if (value) {
+        dst->geometry_transform_helper_name = String_to(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "scale_helper_name");
+    if (value) {
+        dst->scale_helper_name = String_to(value);
         if (PyErr_Occurred()) return -1;
     }
     value = PyDict_GetItemString(src, "normalize_normals");
@@ -23328,6 +23296,16 @@ static int to_load_opts(ufbx_load_opts *dst, PyObject *src) {
         dst->obj_split_groups = PyObject_IsTrue(value);
         if (PyErr_Occurred()) return -1;
     }
+    value = PyDict_GetItemString(src, "obj_mtl_path");
+    if (value) {
+        dst->obj_mtl_path = String_to(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "obj_mtl_data");
+    if (value) {
+        dst->obj_mtl_data = Blob_to(value);
+        if (PyErr_Occurred()) return -1;
+    }
     value = PyDict_GetItemString(src, "obj_unit_meters");
     if (value) {
         dst->obj_unit_meters = (ufbx_real)PyFloat_AsDouble(value);
@@ -23375,9 +23353,19 @@ static int to_prop_override_desc(ufbx_prop_override_desc *dst, PyObject *src) {
         dst->element_id = (uint32_t)PyLong_AsUnsignedLong(value);
         if (PyErr_Occurred()) return -1;
     }
+    value = PyDict_GetItemString(src, "prop_name");
+    if (value) {
+        dst->prop_name = String_to(value);
+        if (PyErr_Occurred()) return -1;
+    }
     value = PyDict_GetItemString(src, "value");
     if (value) {
         dst->value = Vec4_to(value);
+        if (PyErr_Occurred()) return -1;
+    }
+    value = PyDict_GetItemString(src, "value_str");
+    if (value) {
+        dst->value_str = String_to(value);
         if (PyErr_Occurred()) return -1;
     }
     value = PyDict_GetItemString(src, "value_int");
@@ -23485,94 +23473,6 @@ static int to_bake_opts(ufbx_bake_opts *dst, PyObject *src) {
     value = PyDict_GetItemString(src, "key_reduction_passes");
     if (value) {
         dst->key_reduction_passes = PyLong_AsSize_t(value);
-        if (PyErr_Occurred()) return -1;
-    }
-    return 0;
-}
-
-static int to_tessellate_curve_opts(ufbx_tessellate_curve_opts *dst, PyObject *src) {
-    if (!src) return 0;
-    PyObject *value;
-    value = PyDict_GetItemString(src, "span_subdivision");
-    if (value) {
-        dst->span_subdivision = PyLong_AsSize_t(value);
-        if (PyErr_Occurred()) return -1;
-    }
-    return 0;
-}
-
-static int to_tessellate_surface_opts(ufbx_tessellate_surface_opts *dst, PyObject *src) {
-    if (!src) return 0;
-    PyObject *value;
-    value = PyDict_GetItemString(src, "span_subdivision_u");
-    if (value) {
-        dst->span_subdivision_u = PyLong_AsSize_t(value);
-        if (PyErr_Occurred()) return -1;
-    }
-    value = PyDict_GetItemString(src, "span_subdivision_v");
-    if (value) {
-        dst->span_subdivision_v = PyLong_AsSize_t(value);
-        if (PyErr_Occurred()) return -1;
-    }
-    value = PyDict_GetItemString(src, "skip_mesh_parts");
-    if (value) {
-        dst->skip_mesh_parts = PyObject_IsTrue(value);
-        if (PyErr_Occurred()) return -1;
-    }
-    return 0;
-}
-
-static int to_subdivide_opts(ufbx_subdivide_opts *dst, PyObject *src) {
-    if (!src) return 0;
-    PyObject *value;
-    value = PyDict_GetItemString(src, "boundary");
-    if (value) {
-        dst->boundary = (ufbx_subdivision_boundary)PyLong_AsLong(value);
-        if (PyErr_Occurred()) return -1;
-    }
-    value = PyDict_GetItemString(src, "uv_boundary");
-    if (value) {
-        dst->uv_boundary = (ufbx_subdivision_boundary)PyLong_AsLong(value);
-        if (PyErr_Occurred()) return -1;
-    }
-    value = PyDict_GetItemString(src, "ignore_normals");
-    if (value) {
-        dst->ignore_normals = PyObject_IsTrue(value);
-        if (PyErr_Occurred()) return -1;
-    }
-    value = PyDict_GetItemString(src, "interpolate_normals");
-    if (value) {
-        dst->interpolate_normals = PyObject_IsTrue(value);
-        if (PyErr_Occurred()) return -1;
-    }
-    value = PyDict_GetItemString(src, "interpolate_tangents");
-    if (value) {
-        dst->interpolate_tangents = PyObject_IsTrue(value);
-        if (PyErr_Occurred()) return -1;
-    }
-    value = PyDict_GetItemString(src, "evaluate_source_vertices");
-    if (value) {
-        dst->evaluate_source_vertices = PyObject_IsTrue(value);
-        if (PyErr_Occurred()) return -1;
-    }
-    value = PyDict_GetItemString(src, "max_source_vertices");
-    if (value) {
-        dst->max_source_vertices = PyLong_AsSize_t(value);
-        if (PyErr_Occurred()) return -1;
-    }
-    value = PyDict_GetItemString(src, "evaluate_skin_weights");
-    if (value) {
-        dst->evaluate_skin_weights = PyObject_IsTrue(value);
-        if (PyErr_Occurred()) return -1;
-    }
-    value = PyDict_GetItemString(src, "max_skin_weights");
-    if (value) {
-        dst->max_skin_weights = PyLong_AsSize_t(value);
-        if (PyErr_Occurred()) return -1;
-    }
-    value = PyDict_GetItemString(src, "skin_deformer_index");
-    if (value) {
-        dst->skin_deformer_index = PyLong_AsSize_t(value);
         if (PyErr_Occurred()) return -1;
     }
     return 0;

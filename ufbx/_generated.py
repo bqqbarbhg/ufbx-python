@@ -1,5 +1,5 @@
 from ._types import *
-from typing import NamedTuple
+from typing import NamedTuple, TypedDict
 from enum import IntEnum, IntFlag
 
 class RotationOrder(IntEnum):
@@ -680,6 +680,154 @@ class TopoEdge(NamedTuple):
     face: int
     edge: int
     flags: TopoFlags
+
+class AllocatorOpts(TypedDict, total=False):
+    memory_limit: int
+    allocation_limit: int
+    huge_threshold: int
+    max_chunk_size: int
+
+class OpenFileOpts(TypedDict, total=False):
+    pass
+
+class OpenMemoryOpts(TypedDict, total=False):
+    pass
+
+class ThreadOpts(TypedDict, total=False):
+    num_tasks: int
+    memory_limit: int
+
+class LoadOpts(TypedDict, total=False):
+    ignore_geometry: bool
+    ignore_animation: bool
+    ignore_embedded: bool
+    ignore_all_content: bool
+    evaluate_skinning: bool
+    evaluate_caches: bool
+    load_external_files: bool
+    ignore_missing_external_files: bool
+    skip_skin_vertices: bool
+    skip_mesh_parts: bool
+    clean_skin_weights: bool
+    use_blender_pbr_material: bool
+    disable_quirks: bool
+    strict: bool
+    force_single_thread_ascii_parsing: bool
+    index_error_handling: IndexErrorHandling
+    connect_broken_elements: bool
+    allow_nodes_out_of_root: bool
+    allow_missing_vertex_position: bool
+    allow_empty_faces: bool
+    generate_missing_normals: bool
+    open_main_file_with_default: bool
+    path_separator: int
+    node_depth_limit: int
+    file_size_estimate: int
+    read_buffer_size: int
+    filename: str
+    raw_filename: bytes
+    progress_interval_hint: int
+    geometry_transform_handling: GeometryTransformHandling
+    inherit_mode_handling: InheritModeHandling
+    space_conversion: SpaceConversion
+    pivot_handling: PivotHandling
+    pivot_handling_retain_empties: bool
+    handedness_conversion_axis: MirrorAxis
+    handedness_conversion_retain_winding: bool
+    reverse_winding: bool
+    target_axes: CoordinateAxes
+    target_unit_meters: float
+    target_camera_axes: CoordinateAxes
+    target_light_axes: CoordinateAxes
+    geometry_transform_helper_name: str
+    scale_helper_name: str
+    normalize_normals: bool
+    normalize_tangents: bool
+    use_root_transform: bool
+    root_transform: Transform
+    key_clamp_threshold: float
+    unicode_error_handling: UnicodeErrorHandling
+    retain_vertex_attrib_w: bool
+    retain_dom: bool
+    file_format: FileFormat
+    file_format_lookahead: int
+    no_format_from_content: bool
+    no_format_from_extension: bool
+    obj_search_mtl_by_filename: bool
+    obj_merge_objects: bool
+    obj_merge_groups: bool
+    obj_split_groups: bool
+    obj_mtl_path: str
+    obj_mtl_data: bytes
+    obj_unit_meters: float
+    obj_axes: CoordinateAxes
+
+class EvaluateOpts(TypedDict, total=False):
+    evaluate_skinning: bool
+    evaluate_caches: bool
+    evaluate_flags: int
+    load_external_files: bool
+
+class PropOverrideDesc(TypedDict, total=False):
+    element_id: int
+    prop_name: str
+    value: Vec4
+    value_str: str
+    value_int: int
+
+class AnimOpts(TypedDict, total=False):
+    ignore_connections: bool
+
+class BakeOpts(TypedDict, total=False):
+    trim_start_time: bool
+    resample_rate: float
+    minimum_sample_rate: float
+    maximum_sample_rate: float
+    bake_transform_props: bool
+    skip_node_transforms: bool
+    no_resample_rotation: bool
+    ignore_layer_weight_animation: bool
+    max_keyframe_segments: int
+    step_handling: BakeStepHandling
+    step_custom_duration: float
+    step_custom_epsilon: float
+    evaluate_flags: int
+    key_reduction_enabled: bool
+    key_reduction_rotation: bool
+    key_reduction_threshold: float
+    key_reduction_passes: int
+
+class TessellateCurveOpts(TypedDict, total=False):
+    span_subdivision: int
+
+class TessellateSurfaceOpts(TypedDict, total=False):
+    span_subdivision_u: int
+    span_subdivision_v: int
+    skip_mesh_parts: bool
+
+class SubdivideOpts(TypedDict, total=False):
+    boundary: SubdivisionBoundary
+    uv_boundary: SubdivisionBoundary
+    ignore_normals: bool
+    interpolate_normals: bool
+    interpolate_tangents: bool
+    evaluate_source_vertices: bool
+    max_source_vertices: int
+    evaluate_skin_weights: bool
+    max_skin_weights: int
+    skin_deformer_index: int
+
+class GeometryCacheOpts(TypedDict, total=False):
+    frames_per_second: float
+    mirror_axis: MirrorAxis
+    use_scale_factor: bool
+    scale_factor: float
+
+class GeometryCacheDataOpts(TypedDict, total=False):
+    additive: bool
+    use_weight: bool
+    weight: float
+    ignore_transform: bool
 
 identity_transform = Transform(zero_vec3, identity_quat, Vec3(1, 1, 1))
 axes_right_handed_y_up = CoordinateAxes(CoordinateAxis.POSITIVE_X, CoordinateAxis.POSITIVE_Y, CoordinateAxis.POSITIVE_Z)
