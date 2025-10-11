@@ -7,6 +7,7 @@
 
 static PyObject *UfbxError = NULL;
 static PyObject *UseAfterFreeError = NULL;
+static PyObject *BufferReferenceError = NULL;
 
 #if PY_MINOR_VERSION < 10
 static PyObject *_Py_NewRef(PyObject *obj)
@@ -36,10 +37,16 @@ typedef struct {
 
 static PyObject *Element_clear_slots(PyObject *elem);
 
-static void Context_free(Context *self)
+static bool Context_free(Context *self)
 {
 	if (!self->ok) return;
 	self->ok = false;
+
+	if (self->buffer_refs > 0) {
+		PyErr_Format(BufferReferenceError, "%U has %lld buffer references preventing it from unloading",
+			self->name, (long long)self->buffer_refs);
+		return false;
+	}
 
 	for (size_t i = 0; i < self->num_elements; i++) {
 		PyObject *obj = self->elements[i];
@@ -61,6 +68,7 @@ static void Context_free(Context *self)
 	self->anim = NULL;
 	self->baked = NULL;
 	self->cache = NULL;
+	return true;
 }
 
 static int Context_traverse(Context *self, visitproc visit, void *arg)

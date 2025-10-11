@@ -164,6 +164,11 @@ static int ufbx_module_exec(PyObject *m)
         return -1;
     }
 
+    BufferReferenceError = PyErr_NewException("ufbx.BufferReferenceError", NULL, NULL);
+    if (PyModule_AddObject(m, "BufferReferenceError", Py_NewRef(BufferReferenceError)) < 0) {
+        return -1;
+    }
+
     for (size_t i = 0; i < array_count(prelude_types); i++) {
         register_type(m, prelude_types[i].type, prelude_types[i].name);
     }

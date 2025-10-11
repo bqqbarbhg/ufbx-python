@@ -1517,7 +1517,7 @@ def emit_synthetic_method(method: PythonMethod):
 
             {ps.name} *s = ({ps.name}*)self;
             if (s->ctx->{ctx} == s->data) {{
-                Context_free(s->ctx);
+                if (!Context_free(s->ctx)) return NULL;
             }}
             Py_RETURN_NONE;
         """)
@@ -1535,7 +1535,7 @@ def emit_synthetic_method(method: PythonMethod):
 
             {ps.name} *s = ({ps.name}*)self;
             if (s->ctx->{ctx} == s->data) {{
-                Context_free(s->ctx);
+                if (!Context_free(s->ctx)) return NULL;
             }}
             Py_RETURN_NONE;
         """)
@@ -1704,6 +1704,9 @@ def emit_pyi_prefix():
     emit()
     emit_lines(f"""
         class UseAfterFreeError(Exception):
+            pass
+
+        class BufferReferenceError(Exception):
             pass
 
         class UfbxError(Exception):

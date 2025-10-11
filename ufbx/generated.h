@@ -25759,7 +25759,7 @@ static PyObject *GeometryCache_free(PyObject *self, PyObject *args) {
 
     GeometryCache *s = (GeometryCache*)self;
     if (s->ctx->cache == s->data) {
-        Context_free(s->ctx);
+        if (!Context_free(s->ctx)) return NULL;
     }
     Py_RETURN_NONE;
 }
@@ -25776,7 +25776,7 @@ static PyObject *GeometryCache_exit(PyObject *self, PyObject *args) {
 
     GeometryCache *s = (GeometryCache*)self;
     if (s->ctx->cache == s->data) {
-        Context_free(s->ctx);
+        if (!Context_free(s->ctx)) return NULL;
     }
     Py_RETURN_NONE;
 }
@@ -25817,7 +25817,7 @@ static PyObject *Anim_free(PyObject *self, PyObject *args) {
 
     Anim *s = (Anim*)self;
     if (s->ctx->anim == s->data) {
-        Context_free(s->ctx);
+        if (!Context_free(s->ctx)) return NULL;
     }
     Py_RETURN_NONE;
 }
@@ -25834,7 +25834,7 @@ static PyObject *Anim_exit(PyObject *self, PyObject *args) {
 
     Anim *s = (Anim*)self;
     if (s->ctx->anim == s->data) {
-        Context_free(s->ctx);
+        if (!Context_free(s->ctx)) return NULL;
     }
     Py_RETURN_NONE;
 }
@@ -25991,7 +25991,7 @@ static PyObject *Scene_free(PyObject *self, PyObject *args) {
 
     Scene *s = (Scene*)self;
     if (s->ctx->scene == s->data) {
-        Context_free(s->ctx);
+        if (!Context_free(s->ctx)) return NULL;
     }
     Py_RETURN_NONE;
 }
@@ -26008,7 +26008,7 @@ static PyObject *Scene_exit(PyObject *self, PyObject *args) {
 
     Scene *s = (Scene*)self;
     if (s->ctx->scene == s->data) {
-        Context_free(s->ctx);
+        if (!Context_free(s->ctx)) return NULL;
     }
     Py_RETURN_NONE;
 }
@@ -26018,7 +26018,7 @@ static PyObject *BakedAnim_free(PyObject *self, PyObject *args) {
 
     BakedAnim *s = (BakedAnim*)self;
     if (s->ctx->baked == s->data) {
-        Context_free(s->ctx);
+        if (!Context_free(s->ctx)) return NULL;
     }
     Py_RETURN_NONE;
 }
@@ -26035,7 +26035,7 @@ static PyObject *BakedAnim_exit(PyObject *self, PyObject *args) {
 
     BakedAnim *s = (BakedAnim*)self;
     if (s->ctx->baked == s->data) {
-        Context_free(s->ctx);
+        if (!Context_free(s->ctx)) return NULL;
     }
     Py_RETURN_NONE;
 }

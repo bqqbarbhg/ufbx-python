@@ -5,6 +5,9 @@ from ._generated import *
 class UseAfterFreeError(Exception):
     pass
 
+class BufferReferenceError(Exception):
+    pass
+
 class UfbxError(Exception):
     pass
 

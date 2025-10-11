@@ -192,3 +192,21 @@ def test_unload_error():
         assert False
     except ufbx.UseAfterFreeError:
         pass
+
+def test_dangling_buffer():
+    scene = ufbx.load_file(os.path.join(data_root, "blender-default.fbx"))
+    assert scene
+
+    mesh = scene.meshes[0]
+    vertices = memoryview(mesh.vertices)
+    assert vertices
+    assert vertices.shape == (8, 3)
+
+    try:
+        scene.free()
+    except ufbx.BufferReferenceError:
+        pass
+
+    del vertices
+
+    scene.free()
