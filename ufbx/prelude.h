@@ -39,7 +39,7 @@ static PyObject *Element_clear_slots(PyObject *elem);
 
 static bool Context_free(Context *self)
 {
-	if (!self->ok) return;
+	if (!self->ok) return true;
 	self->ok = false;
 
 	if (self->buffer_refs > 0) {
