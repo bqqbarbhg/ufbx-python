@@ -40,13 +40,13 @@ static PyObject *Element_clear_slots(PyObject *elem);
 static bool Context_free(Context *self)
 {
 	if (!self->ok) return true;
-	self->ok = false;
-
 	if (self->buffer_refs > 0) {
 		PyErr_Format(BufferReferenceError, "%U has %lld buffer references preventing it from unloading",
 			self->name, (long long)self->buffer_refs);
 		return false;
 	}
+
+	self->ok = false;
 
 	for (size_t i = 0; i < self->num_elements; i++) {
 		PyObject *obj = self->elements[i];
