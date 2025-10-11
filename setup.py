@@ -8,7 +8,7 @@ ufbx_module = Extension(
 
 setup(
     name="ufbx",
-    version="0.0.1",
+    version="0.0.2",
     packages=find_packages(exclude=["test"]),
     ext_modules=[ufbx_module],
 )
