@@ -1,6 +1,6 @@
 [tool.ufbx]
 name = "ufbx"
-version = "0.0.3"
+version = "0.0.4"
 description = "Python bindings for ufbx"
 license="MIT"
 homepage="https://ufbx.github.io/"
