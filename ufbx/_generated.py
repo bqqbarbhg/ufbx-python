@@ -453,6 +453,7 @@ class Exporter(IntEnum):
     BLENDER_BINARY = 2
     BLENDER_ASCII = 3
     MOTION_BUILDER = 4
+    UFBX_WRITE = 5
 
 class FileFormat(IntEnum):
     UNKNOWN = 0
