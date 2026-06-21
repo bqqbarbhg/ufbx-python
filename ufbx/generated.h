@@ -7668,7 +7668,7 @@ static PyTypeObject Unknown_Type = {
     .tp_base = &Element_Type,
 };
 
-#define SLOT_COUNT_NODE 46
+#define SLOT_COUNT_NODE 47
 enum {
     SLOT_NODE__NAME,
     SLOT_NODE__PROPS,
@@ -7710,6 +7710,7 @@ enum {
     SLOT_NODE__VISIBLE,
     SLOT_NODE__IS_ROOT,
     SLOT_NODE__HAS_GEOMETRY_TRANSFORM,
+    SLOT_NODE__USE_ROTATION_SPACE,
     SLOT_NODE__HAS_ADJUST_TRANSFORM,
     SLOT_NODE__HAS_ROOT_ADJUST_TRANSFORM,
     SLOT_NODE__IS_GEOMETRY_TRANSFORM_HELPER,
@@ -8090,6 +8091,15 @@ static PyObject *Node_get_has_geometry_transform(Node *self, void *closure) {
     return Py_NewRef(slot);
 }
 
+static PyObject *Node_get_use_rotation_space(Node *self, void *closure) {
+    PyObject *slot = self->slots[SLOT_NODE__USE_ROTATION_SPACE];
+    if (slot) return Py_NewRef(slot);
+    if (!self->ctx->ok) return Context_error(self->ctx);
+    slot = Py_NewRef(self->data->use_rotation_space ? Py_True : Py_False);
+    self->slots[SLOT_NODE__USE_ROTATION_SPACE] = slot;
+    return Py_NewRef(slot);
+}
+
 static PyObject *Node_get_has_adjust_transform(Node *self, void *closure) {
     PyObject *slot = self->slots[SLOT_NODE__HAS_ADJUST_TRANSFORM];
     if (slot) return Py_NewRef(slot);
@@ -8207,6 +8217,7 @@ static PyGetSetDef Node_getset[] = {
     { "visible", (getter)Node_get_visible, NULL, "visible" },
     { "is_root", (getter)Node_get_is_root, NULL, "is_root" },
     { "has_geometry_transform", (getter)Node_get_has_geometry_transform, NULL, "has_geometry_transform" },
+    { "use_rotation_space", (getter)Node_get_use_rotation_space, NULL, "use_rotation_space" },
     { "has_adjust_transform", (getter)Node_get_has_adjust_transform, NULL, "has_adjust_transform" },
     { "has_root_adjust_transform", (getter)Node_get_has_root_adjust_transform, NULL, "has_root_adjust_transform" },
     { "is_geometry_transform_helper", (getter)Node_get_is_geometry_transform_helper, NULL, "is_geometry_transform_helper" },
